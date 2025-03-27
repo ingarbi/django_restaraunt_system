@@ -1,0 +1,42 @@
+<div class="row">
+    {% for order in orders %}
+        <div class="col-md-3 col-sm-4 col-6 mb-4">
+            <div class="card-order border border-secondary d-flex flex-column h-100 rounded-3" id="order-{{ order.id }}">
+                <div class="card-body flex-fill">
+                    <h5 class="card-title">Заказ #{% if order.order_number|slice:'12:'|length >= 99 %}{{ order.order_number|slice:'11:' }}{% else %}{{ order.order_number|slice:'12:' }}{% endif %} </h5>
+                    <p class="card-text mb-1">{{ order.created_at }}</p>
+                    <ol>
+                        {% for item in order.items.all %}
+                            <li>{{ item.menu_item.name }} x {{ item.quantity }}</li>
+                        {% endfor %}
+                    </ol>
+                </div>
+                <div class="card-footer text-center mb-1">
+                    <!--  Order Ready Button -->
+                    <button type="button" class="btn btn-info btn-sm fw-bold text-light" data-bs-toggle="modal" data-bs-target="#deliverModal{{ order.id }}">
+                        Заказ готов
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Ready Modal -->
+        <div class="modal fade" id="deliverModal{{ order.id }}" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="deliverModalLabel{{ order.id }}" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="deliverModalLabel{{ order.id }}">Вы уверены, что хотите подтвердить готовность заказа?</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        Заказ #{{ order.order_number|slice:'11:' }} будет отмечен как готовый.
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                        <a href="{% url 'mark_order_completed' order.id %}" class="btn btn-info text-light">Подтвердить</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>

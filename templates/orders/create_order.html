@@ -1,0 +1,171 @@
+{% extends 'main/base.html' %}
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3>Сделать новый заказ</h3>
+    </div>
+    <div class="card-body">
+        <form method="post" id="order-form" autocomplete="off">
+            {% csrf_token %}
+            <!-- Order Type Dropdown -->
+            <div class="d-inline-flex align-items-end">
+                <div class="me-2">
+                    <label for="id_order_type">Тип заказа:</label>
+                </div>
+                <select name="order_type" id="id_order_type" class="form-control-sm w-auto">
+                    <option value="dine_in">В зале</option>
+                    <option value="takeaway">На вынос</option>
+                    <option value="delivery">Доставка</option>
+                </select>
+                <div id="id_delivery" class="ms-1" style="display: none;">
+                    <label class="ms-1" for="phone">Тел.:</label>
+                    <input type="tel" id="phone" name="phone" placeholder="+79380076243">
+                    <label class="ms-1" for="first_name">Имя:</label>
+                    <input type="text" id="first_name" name="first_name" placeholder="Арби">
+                    <label class="ms-1" for="addres">Адрес:</label>
+                    <input type="text" id="addres" name="addres" placeholder="Сунжа, Осканова 23А" size="40">
+                </div>
+            </div>
+
+            <!-- Selected Items Section -->
+            <div class="mb-1">
+                <span class="fs-5 text-decoration-underline">Выбранные товары:</span>
+                <ul id="selected-items-list" class="list-group list-group-horizontal list-group-numbered list-group-flush">
+                </ul>
+            </div>
+
+            <!-- Total and Submit -->
+            <div class="d-flex justify-content-between align-items-center mb-1">
+                <h6 class="mb-0 bg-warning">Итого: <span id="total-sum">0.00</span> рублей.</h6>
+                <button type="submit" class="btn btn-primary">Отправить на кухню</button>
+            </div>
+
+            <!-- Menu Items -->
+            <div>
+                <h4>Меню:</h4>
+                {% for category, items in menu_items_by_category.items %}
+                <h5 class="fs-6 fst-normal">{{ category }}:</h5>
+                <div class="row">
+                    {% for item in items %}
+                    <div class="col-lg-2 col-sm-3 text-center">
+                        <label class="fs-6 fw-light" for="id_item_{{ item.id }}">{{ item.name }} ({{ item.price|floatformat:"0" }} р.)</label>
+                        <input type="number" min="0" name="item_{{ item.id }}" value="0" class="form-control form-control-sm item-quantity text-center" data-price="{{ item.price }}" data-item-id="{{ item.id }}" data-item-name="{{ item.name }}">
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endfor %}
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const orderSocket = new WebSocket('ws://' + window.location.host + '/ws/orders/');
+    
+    // Handle form submission via AJAX
+    document.getElementById('order-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        fetch("{% url 'create_order' %}", {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Reset form and UI
+                this.reset();
+                document.querySelectorAll('.item-quantity').forEach(input => input.value = 0);
+                selectedItems = {};
+                updateSelectedItems();
+                calculateTotal();
+                
+                // Optional: Show success message
+                alert('Заказ успешно создан!');
+            }
+        });
+    });
+
+    // Existing quantity input handlers
+    const selectElement = document.getElementById('id_order_type');
+    const targetDiv = document.getElementById('id_delivery');
+    const quantityInputs = document.querySelectorAll('.item-quantity');
+    const selectedItemsList = document.getElementById('selected-items-list');
+    const totalSumElement = document.getElementById('total-sum');
+    let selectedItems = {};
+
+    selectElement.addEventListener('change', function() {
+        if (['delivery', 'takeaway'].includes(this.value)) {
+            targetDiv.style.display = 'inline';
+            this.style.background = '#007bff';
+            this.style.color = '#fff';
+        } else {
+            targetDiv.style.display = 'none';
+            this.style.background = '';
+            this.style.color = '#000';
+        }
+    });
+    selectElement.dispatchEvent(new Event('change'));
+
+    function updateSelectedItems() {
+        selectedItemsList.innerHTML = '';
+        for (const [id, item] of Object.entries(selectedItems)) {
+            if (item.quantity > 0) {
+                const li = document.createElement('li');
+                li.className = 'list-group-item align-items-start';
+                li.innerHTML = `${item.name} x ${item.quantity} = ${item.total.toFixed(2)} руб.`;
+                selectedItemsList.appendChild(li);
+            }
+        }
+    }
+
+    function calculateTotal() {
+        let total = 0;
+        for (const item of Object.values(selectedItems)) {
+            total += item.price * item.quantity;
+        }
+        totalSumElement.textContent = total.toFixed(2);
+    }
+
+    quantityInputs.forEach(input => {
+        input.addEventListener('input', function() {
+            const itemId = this.dataset.itemId;
+            const itemPrice = parseFloat(this.dataset.price);
+            const itemName = this.dataset.itemName;
+            const quantity = parseInt(this.value) || 0;
+
+            if (quantity > 0) {
+                selectedItems[itemId] = {
+                    name: itemName,
+                    price: itemPrice,
+                    quantity: quantity,
+                    total: itemPrice * quantity
+                };
+                this.classList.add('highlight');
+            } else {
+                delete selectedItems[itemId];
+                this.classList.remove('highlight');
+            }
+
+            updateSelectedItems();
+            calculateTotal();
+        });
+    });
+
+    // WebSocket message handler
+    orderSocket.onmessage = function(event) {
+        const data = JSON.parse(event.data);
+        if (data.message === 'new_order') {
+            // Optional: Add visual feedback for new order confirmation
+            console.log('Order created:', data.order_data);
+        }
+    };
+});
+</script>
+{% endblock %}

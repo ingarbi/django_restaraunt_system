@@ -1,0 +1,84 @@
+<div class="row" id="pending-orders">
+    {% for order in orders %}
+        {% if order.status != 'delivered' and order.status != 'cancelled' %}
+            <div class="col-md-3 col-sm-4 col-6 mb-1">
+                <div class="card-order border border-secondary d-flex flex-column h-100 rounded-3" id="order-{{ order.id }}">
+                    <div class="card-body flex-fill" >
+                        <h6 class="card-title">Заказ #{{ order.order_number|slice:'12:' }} 
+                            {% if order.status == 'done' %}
+                                <span class="badge bg-info">{{order.get_status_display}}</span>
+                            {% else %}
+                                <span class="badge bg-warning text-dark">Готовится на кухне</span>
+                            {% endif %}
+                        </h6>
+                        <span class="card-text text-decoration-underline">{{ order.created_at }}</span>
+                        <span >{% if order.order_type == "takeaway" or order.order_type == "delivery" %}{{order.phone_number|default:"Нет номера"}}{% endif %}</span>
+                        <ul class="list-unstyled mt-1 mb-1">
+                        {% for item in order.items.all|slice:":3" %}
+                            <li>{{ item.menu_item.name }} x {{ item.quantity }}</li>
+                        {% endfor %}
+                        {% if order.items.all|length > 3 %}
+                            <li>Еще...</li> <!-- Show dots if there are more than 3 items -->
+                        {% endif %}
+                        </ul>   
+                    </div>
+                    <div class="d-flex flex-row text-center justify-content-evenly mb-1">
+                        {% if order.status == 'done' %}
+                            <!-- Cancel Order Button -->
+                            <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#cancelModal{{ order.id }}">
+                                Отменить заказ
+                            </button>
+                            <!-- Deliver Order Button -->
+                            <button type="button" class="btn btn-info btn-sm fw-bold text-light" data-bs-toggle="modal" data-bs-target="#deliverModal{{ order.id }}">
+                                Вручить заказ
+                            </button>
+                        {% else %}
+                            <!-- Cancel Order Button -->
+                            <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#cancelModal{{ order.id }}">
+                                Отменить заказ
+                            </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cancel Order Modal -->
+            <div class="modal fade" id="cancelModal{{ order.id }}" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="cancelModalLabel{{ order.id }}" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="cancelModalLabel{{ order.id }}">Вы уверены, что хотите отменить заказ?</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            Заказ #{{ order.order_number|slice:'12:' }} будет отменен.
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                            <a href="{% url 'mark_order_cancelled' order.id %}" class="btn btn-danger">Подтвердить отмену</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Deliver Order Modal -->
+            <div class="modal fade" id="deliverModal{{ order.id }}" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="deliverModalLabel{{ order.id }}" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="deliverModalLabel{{ order.id }}">Вы уверены, что хотите вручить заказ?</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            Заказ #{{ order.order_number|slice:'11:' }} будет отмечен как врученный.
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                            <a href="{% url 'mark_order_delivered' order.id %}" class="btn btn-info text-light">Подтвердить вручение</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    {% endfor %}
+</div>
