@@ -13,7 +13,7 @@ class OrderItemInline(admin.TabularInline):
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ('id', 'status', 'order_number', 'created_at', )
+    list_display = ('id', 'status', 'order_number', 'created_at', 'order_type', "total_sum" )
     inlines = [OrderItemInline]
 
 @admin.register(MenuItem)

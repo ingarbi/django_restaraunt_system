@@ -100,7 +100,8 @@
             </div>
         </div>
     </nav>
-    <audio id="order-notification" src="{% static 'audio/new_order.mp3' %}" preload="auto"></audio>
+    <audio id="order-notification" src="{% static 'audio/new-order.mp3' %}" preload="auto"></audio>
+    <audio id="order-status-change-notification" src="{% static 'audio/status-change.mp3' %}" preload="auto"></audio>
     <div class="container mt-4">
         {% block content %}{% endblock %}
     </div>
@@ -109,6 +110,7 @@
    <script>
     let isSoundEnabled = false;
     const notificationSound = document.getElementById('order-notification');
+    const notificationStatusSound = document.getElementById('order-status-change-notification');
     const enableSoundBtn = document.getElementById('enable-sound-btn');
 
      // Enable sound when the button is clicked

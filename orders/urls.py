@@ -8,5 +8,9 @@ urlpatterns = [
     path('complete/<int:order_id>/', views.mark_order_completed, name='mark_order_completed'),
     path('delivere/<int:order_id>/', views.mark_order_delivered, name='mark_order_delivered'),
     path('cancel/<int:order_id>/', views.mark_order_cancelled, name='mark_order_cancelled'),
+     path(
+        "order/<int:order_id>/pdf/", views.order_pdf, name="order_pdf"
+    ),
+    path('order/<int:order_id>/', views.order_detail, name='order_detail'),
     path('orders/', views.all_orders, name='all_orders'),
 ]

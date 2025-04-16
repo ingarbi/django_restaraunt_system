@@ -1,50 +1,61 @@
-{% extends 'main/base.html' %}
-{% block content %}
+{% extends 'main/base.html' %} {% block content %}
 <div class="container">
-    <h1>Заказы кухни</h1>
-    
-    <!-- Container for pending orders -->
-    <div id="orders-container">
-        {% include 'orders/kitchen_order_list.html' %}
-    </div>
+  <h1>Заказы кухни</h1>
+
+  <!-- Container for pending orders -->
+  <div id="orders-container">
+    {% include 'orders/kitchen_order_list.html' %}
+  </div>
 </div>
 
 <script>
-    const socket = new WebSocket('ws://' + window.location.host + '/ws/orders/');
+  const socket = new WebSocket("ws://" + window.location.host + "/ws/orders/");
 
-    socket.onmessage = function(event) {
-        const data = JSON.parse(event.data);
-        console.log(data);
+  socket.onmessage = function (event) {
+    const data = JSON.parse(event.data);
+    console.log(data);
 
-        // Handle status change updates
-        if (data.action === "status_change") {
-            fetch("{% url 'kitchen_orders' %}", {
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                },
-            })
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById("orders-container").innerHTML = data.html;
-            });
-        }
+    // Handle status change updates
+    if (data.action === "status_change") {
+      fetch("{% url 'kitchen_orders' %}", {
+        headers: {
+          "X-Requested-With": "XMLHttpRequest",
+        },
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          document.getElementById("orders-container").innerHTML = data.html;
+        });
+      if (notificationStatusSound) {
+        notificationStatusSound.play().catch((error) => {
+          console.error("Error playing sound:", error);
+        });
+      }
+    }
 
-        // Handle new order creation
-        if (data.message === 'new_order') {
-            const ordersContainer = document.getElementById('orders-container');
-            const order = data.order_data;
+    // Handle new order creation
+    if (data.message === "new_order") {
+      const ordersContainer = document.getElementById("orders-container");
+      const order = data.order_data;
 
-            // Dynamically create the new order card using JavaScript
-            const card = document.createElement('div');
-            card.className = 'col-md-3 col-sm-4 col-6 mb-4';
-            card.innerHTML = `
-                <div class="card-order border border-secondary d-flex flex-column h-100 rounded-3" data-order-id="${order.id}">
+      // Dynamically create the new order card using JavaScript
+      const card = document.createElement("div");
+      card.className = "col-md-3 col-sm-4 col-6 mb-4";
+      card.innerHTML = `
+                <div class="card-order border border-secondary d-flex flex-column h-100 rounded-3" data-order-id="${
+                  order.id
+                }">
                     <div class="card-body flex-fill">
                         <h4 class="card-title">Новый Заказ</h4>
                         <h5 class="card-title">Заказ #${order.order_number}</h5>
                         <p class="card-text mb-1">${order.created_at}</p>
                         <ol>
-                            ${order.items.map(item => `<li>${item.name} x ${item.quantity}</li>`).join('')}
+                            ${order.items
+                              .map(
+                                (item) =>
+                                  `<li>${item.name} x ${item.quantity}</li>`
+                              )
+                              .join("")}
                         </ol>
                     </div>
                     <div class="card-footer text-center mb-1">
@@ -54,15 +65,18 @@
                     </div>
                 </div>
             `;
-            ordersContainer.prepend(card); // Add the new card at the top of the container
-            if (notificationSound) {
-                notificationSound.play().catch(error => {
-                    console.error('Error playing sound:', error);
-                });
-            setTimeout(function(){
-                window.location.reload(1);
-             }, 7000);
-        }
-    };
+      ordersContainer.prepend(card); // Add the new card at the top of the container
+
+      if (notificationSound) {
+        notificationSound.play().catch((error) => {
+          console.error("Error playing sound:", error);
+        });
+      }
+
+      setTimeout(function () {
+        window.location.reload(1);
+      }, 7000);
+    }
+  };
 </script>
 {% endblock %}

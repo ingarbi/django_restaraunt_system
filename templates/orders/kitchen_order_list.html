@@ -3,6 +3,7 @@
         <div class="col-md-3 col-sm-4 col-6 mb-4">
             <div class="card-order border border-secondary d-flex flex-column h-100 rounded-3" id="order-{{ order.id }}">
                 <div class="card-body flex-fill">
+                    <a href="{% url 'order_detail' order.id %}" class="text-decoration-none text-dark">
                     <h5 class="card-title">Заказ #{% if order.order_number|slice:'12:'|length >= 99 %}{{ order.order_number|slice:'11:' }}{% else %}{{ order.order_number|slice:'12:' }}{% endif %} </h5>
                     <p class="card-text mb-1">{{ order.created_at }}</p>
                     <ol>
@@ -10,6 +11,7 @@
                             <li>{{ item.menu_item.name }} x {{ item.quantity }}</li>
                         {% endfor %}
                     </ol>
+                    </a>
                 </div>
                 <div class="card-footer text-center mb-1">
                     <!--  Order Ready Button -->

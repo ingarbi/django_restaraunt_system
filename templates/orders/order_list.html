@@ -4,11 +4,12 @@
             <div class="col-md-3 col-sm-4 col-6 mb-1">
                 <div class="card-order border border-secondary d-flex flex-column h-100 rounded-3" id="order-{{ order.id }}">
                     <div class="card-body flex-fill" >
+                        <a href="{% url 'order_detail' order.id %}" class="text-decoration-none text-dark">
                         <h6 class="card-title">Заказ #{{ order.order_number|slice:'12:' }} 
                             {% if order.status == 'done' %}
-                                <span class="badge bg-info">{{order.get_status_display}}</span>
+                                <span class="badge bg-info">{{order.get_status_display}}</span> {{ order.total_sum|floatformat:"-3g" }}₽
                             {% else %}
-                                <span class="badge bg-warning text-dark">Готовится на кухне</span>
+                                <span class="badge bg-warning text-dark">Готовится...</span> {{ order.total_sum|floatformat:"-3g" }}₽
                             {% endif %}
                         </h6>
                         <span class="card-text text-decoration-underline">{{ order.created_at }}</span>
@@ -21,6 +22,7 @@
                             <li>Еще...</li> <!-- Show dots if there are more than 3 items -->
                         {% endif %}
                         </ul>   
+                    </a>
                     </div>
                     <div class="d-flex flex-row text-center justify-content-evenly mb-1">
                         {% if order.status == 'done' %}

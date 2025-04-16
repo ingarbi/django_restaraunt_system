@@ -1,0 +1,97 @@
+{% load custom_filters %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Чек #{{ order.order_number|slice:"12:" }}</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 1cm;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .restaurant-name {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .order-info {
+            margin-bottom: 15px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 5px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .total {
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="restaurant-name">Кафе Аль-Арабия</div>
+        <div>Кассовый чек</div>
+    </div>
+
+    <div class="order-info">
+        <div><strong>Номер заказа:</strong> #{{ order.order_number|slice:"12:" }}</div>
+        <div><strong>Дата:</strong> {{ order.created_at|date:"d.m.Y H:i" }}</div>
+        <div><strong>Тип заказа:</strong> {{ order.get_order_type_display }}</div>
+        {% if order.name %}<div><strong>Клиент:</strong> {{ order.name }}</div>{% endif %}
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>№</th>
+                <th>Наименование</th>
+                <th>Кол-во</th>
+                <th>Цена</th>
+                <th>Сумма</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in order.items.all %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ item.menu_item.name }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>{{ item.menu_item.price }} ₽</td>
+                <td>{{ item.menu_item.price|mul:item.quantity }} ₽</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="total">
+        Итого к оплате: {{ order.total_sum }} ₽
+    </div>
+
+    <div class="footer">
+        Спасибо за посещение!<br>
+        {{ order.created_at|date:"d.m.Y H:i" }}<br>
+        Кассир: {{ request.user.get_full_name|default:"Кассир" }}
+    </div>
+</body>
+</html>
