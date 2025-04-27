@@ -30,6 +30,8 @@ def create_order(request):
             phone = request.POST.get("phone", "")
             first_name = request.POST.get("first_name", "")
             address = request.POST.get("addres", "")
+           
+            payment_type = request.POST.get("payment_type", "")
 
             total_sum = 0
             for item in menu_items:
@@ -47,6 +49,8 @@ def create_order(request):
             order.phone_number = phone
             order.name = first_name
             order.address = address
+
+            order.payment_type = payment_type
 
             order.save()
 

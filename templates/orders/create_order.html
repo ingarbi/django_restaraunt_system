@@ -17,6 +17,9 @@
                     <option value="takeaway">На вынос</option>
                     <option value="delivery">Доставка</option>
                 </select>
+                
+                
+
                 <div id="id_delivery" class="ms-1" style="display: none;">
                     <label class="ms-1" for="phone">Тел.:</label>
                     <input type="tel" id="phone" name="phone" placeholder="+79380076243">
@@ -27,6 +30,14 @@
                 </div>
             </div>
 
+            <div class="d-flex flex-row bd-highlight m-1">
+                <label for="id_payment_type" class="me-2">Способ оплаты:</label>
+            <select name="payment_type" id="id_payment_type" class="form-control-sm w-auto">
+                <option value="cash"> Наличными</option>
+                <option value="online"> Переводом</option>
+            </select>
+            </div>
+            
             <!-- Selected Items Section -->
             <div class="mb-1">
                 <span class="fs-5 text-decoration-underline">Выбранные товары:</span>
@@ -165,6 +176,9 @@ document.addEventListener('DOMContentLoaded', function() {
             // Optional: Add visual feedback for new order confirmation
             console.log('Order created:', data.order_data);
         }
+        setTimeout(function () {
+        window.location.reload(1);
+      }, 2000);
     };
 });
 </script>

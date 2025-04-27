@@ -18,6 +18,7 @@
                     <p><strong>Тип:</strong> {{ order.get_order_type_display }}</p>
                     <p><strong>Дата создания:</strong> {{ order.created_at|date:"d.m.Y H:i" }}</p>
                     <p><strong>Итого:</strong> {{ order.total_sum }} руб.</p>
+                    <strong>Оплата:</strong> {{ order.get_payment_type_display }}
                 </div>
                 
                 {% if order.order_type == "delivery" or order.order_type == "takeaway" %}

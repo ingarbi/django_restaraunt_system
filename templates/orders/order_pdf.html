@@ -58,6 +58,7 @@
         <div><strong>Номер заказа:</strong> #{{ order.order_number|slice:"12:" }}</div>
         <div><strong>Дата:</strong> {{ order.created_at|date:"d.m.Y H:i" }}</div>
         <div><strong>Тип заказа:</strong> {{ order.get_order_type_display }}</div>
+        <div><strong>Оплата:</strong> {{ order.get_payment_type_display }}</div>
         {% if order.name %}<div><strong>Клиент:</strong> {{ order.name }}</div>{% endif %}
     </div>
 

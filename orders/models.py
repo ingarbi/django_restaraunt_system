@@ -14,11 +14,12 @@ class Category(models.Model):
     
     
 class MenuItem(models.Model):
-    name = models.CharField(max_length=100)
-    price = models.DecimalField(max_digits=6, decimal_places=2)
+    name = models.CharField(verbose_name="Название блюда", max_length=100)
+    price = models.DecimalField(verbose_name="Цена",max_digits=6, decimal_places=2)
     category = models.ForeignKey(
         Category,
         related_name="menu_items",
+        verbose_name="Категория",
         on_delete=models.CASCADE,
         null=True,
         blank=True,
@@ -44,7 +45,10 @@ class Order(models.Model):
         ("takeaway", "На вынос"),
         ("delivery", "Доставка"),
     ]
-
+    PAYMENT_TYPE_CHOICES = (
+        ("cash", "Наличный"),
+        ("online", "Перевод"),
+    )
     order_number = models.CharField(verbose_name="№ Заказа", max_length=10, unique=True, editable=False)
     created_at = models.DateTimeField(verbose_name="Дата", auto_now_add=True)
     status = models.CharField(verbose_name="Статус", max_length=10, choices=STATUS_CHOICES, default="pending")
@@ -55,7 +59,7 @@ class Order(models.Model):
         blank=True,
         null=True,
     )
-    
+    payment_type = models.CharField(verbose_name="Оплата",choices=PAYMENT_TYPE_CHOICES,max_length=15, default="cash" )
     phone_number = models.CharField(verbose_name="Телефон", max_length=15, null=True, blank=True)  # Unique phone number
     name = models.CharField(verbose_name="Имя", max_length=100, null=True, blank=True)  # Optional name
     address = models.CharField(verbose_name="Адрес", max_length=300,null=True, blank=True)  # Optional address
@@ -94,10 +98,10 @@ class Order(models.Model):
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, related_name="items", on_delete=models.CASCADE)
     menu_item = models.ForeignKey(MenuItem, on_delete=models.CASCADE)
-    quantity = models.PositiveIntegerField(default=1)
+    quantity = models.PositiveIntegerField(verbose_name="Количество",default=1)
 
     def __str__(self):
-        return f"{self.quantity}x {self.menu_item.name} для заказа - {self.order.order_number}"
+        return f"{self.quantity} шт. {self.menu_item.name} для заказа - {self.order.order_number}"
 
     class Meta:
         verbose_name = 'Список заказанных блюд'
