@@ -1,0 +1,57 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+<div class="sales-report">
+    <h1>{{ title }}</h1>
+    
+    <form method="get" class="date-selector">
+        <label for="date">Select Date:</label>
+        <input type="date" name="date" value="{{ selected_date|date:'Y-m-d' }}">
+        <button type="submit" class="button">Show Report</button>
+    </form>
+    
+    <table class="sales-table">
+        <thead>
+            <tr>
+                <th>Menu Item</th>
+                <th>Total Sold</th>
+                <th>Total Revenue</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in sales_data %}
+            <tr>
+                <td>{{ item.menu_item__name }}</td>
+                <td>{{ item.total_quantity }}</td>
+                <td>{{ item.total_revenue }} ₽</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="3">No sales for this date</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<style>
+.sales-report {
+    padding: 20px;
+}
+.date-selector {
+    margin: 20px 0;
+}
+.sales-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.sales-table th, .sales-table td {
+    padding: 8px;
+    border: 1px solid #ddd;
+    text-align: left;
+}
+.sales-table th {
+    background-color: #f2f2f2;
+}
+</style>
+{% endblock %}

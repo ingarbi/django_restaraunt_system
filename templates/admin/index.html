@@ -1,0 +1,18 @@
+{% extends "admin/index.html" %}
+
+{% block sidebar %}
+{{ block.super }}
+<div class="module">
+    <table>
+        <caption>Отчет продаж</caption>
+        <tbody>
+            <tr>
+                <th scope="row">
+                    <a href="/admin/orders/orderitem/sales-report/">Отчет по выбранным дням</a>
+                </th>
+                <td></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -12,7 +12,8 @@
                 <div class="me-2">
                     <label for="id_order_type">Тип заказа:</label>
                 </div>
-                <select name="order_type" id="id_order_type" class="form-control-sm w-auto">
+                <select name="order_type" id="id_order_type" class="form-control-sm w-auto" required>
+                    <option value="" selected disabled>Выбрать</option>
                     <option value="dine_in">В зале</option>
                     <option value="takeaway">На вынос</option>
                     <option value="delivery">Доставка</option>
@@ -32,7 +33,8 @@
 
             <div class="d-flex flex-row bd-highlight m-1">
                 <label for="id_payment_type" class="me-2">Способ оплаты:</label>
-            <select name="payment_type" id="id_payment_type" class="form-control-sm w-auto">
+            <select name="payment_type" id="id_payment_type" class="form-control-sm w-auto"required>
+                <option value="" selected disabled>Выбрать</option>
                 <option value="cash"> Наличными</option>
                 <option value="online"> Переводом</option>
             </select>
