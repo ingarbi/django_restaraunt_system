@@ -136,3 +136,7 @@ class CustomAdminSite(admin.AdminSite):
 
 
 admin_site = CustomAdminSite(name="myadmin")
+
+admin.site.site_header="Панель администратора"
+admin.site.site_title="Панель администратора"
+admin.site.index_title=""
