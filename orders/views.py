@@ -12,6 +12,7 @@ import weasyprint
 from django.conf import settings
 
 
+
 def create_order(request):
     menu_items = MenuItem.objects.all().select_related("category")
     menu_items_by_category = {}

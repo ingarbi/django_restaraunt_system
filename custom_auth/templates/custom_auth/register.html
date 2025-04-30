@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css"
+      rel="stylesheet"
+    />
+    <title>Register</title>
+  </head>
+  <body>
+    <div class="container">
+      <div class="container__left">
+        <div class="content">
+          <div class="header">
+            <span class="back__btn">
+              <i class="ri-arrow-left-line"></i>
+            </span>
+            <span class="register"><a href="{% url 'login' %}">Login</a></span>
+          </div>
+          <div class="form__content">
+            <h3 class="form__title">Register</h3>
+
+            <form method="POST" action="{% url 'register' %}">
+              {% csrf_token %}
+              
+              {% if messages %}
+                <div class="alert alert-danger">
+                  {% for message in messages %}
+                    <p>{{ message }}</p>
+                  {% endfor %}
+                </div>
+              {% endif %}
+              
+              <input type="text" name="username" placeholder="Username" required />
+              <input type="email" name="email" placeholder="Email" required />
+              <input type="password" name="password" placeholder="Password" required />
+              <input type="password" name="confirm_password" placeholder="Password confirm" required />
+              <button class="submit__btn" type="submit">Register</button>
+            </form>
+
+            <span class="bottom__line"></span>
+          </div>
+          
+        </div>
+      </div>
+      <div class="container__right">
+        <div class="image">
+          {% comment %} <img src="{% static 'custom_auth/img/login.jpg' %}" alt="" /> {% endcomment %}
+        </div>
+      </div>
+    </div>
+    
+  </body>
+</html>
+<style>
+  @import url("https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap");
+
+:root {
+  --primary-color: #0891b2;
+  --primary-color-dark: #0e7490;
+  --text-dark: #1f2937;
+  --text-light: #6b7280;
+  --extra-light: #f3f4f6;
+}
+
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Lato", sans-serif;
+}
+
+.container {
+  display: flex;
+  min-height: 100vh;
+  min-height: 100svh;
+}
+
+.container__left {
+  flex: 1;
+}
+
+.content {
+  max-width: 450px;
+  padding: 1rem;
+  margin: auto;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--text-light);
+  margin: 1rem 0;
+}
+
+.header .register {
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.header .back__btn {
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+.form__content {
+  max-width: 350px;
+  margin: 4rem auto 0;
+}
+
+.form__content .form__title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  color: var(--text-dark);
+}
+
+.form__content .form__subtitle {
+  font-size: 1rem;
+  margin-bottom: 2.5rem;
+  color: var(--text-light);
+}
+
+.form__content input {
+  display: block;
+  width: 100%;
+  margin-bottom: 1rem;
+  outline: none;
+  border: none;
+  border-radius: 2px;
+  padding: 0.75rem;
+  font-size: 1rem;
+  background-color: var(--extra-light);
+}
+
+.form__content .forgot__password {
+  text-align: right;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  cursor: pointer;
+  color: var(--text-light);
+}
+
+.form__content .submit__btn {
+  width: 100%;
+  padding: 1rem;
+  background-color: var(--primary-color);
+  color: #ffffff;
+  font-size: 1rem;
+  border: none;
+  border-radius: 5rem;
+  cursor: pointer;
+  transition: 0.3s;
+}
+.form__content .submit__btn:hover {
+  background-color: var(--primary-color-dark);
+}
+
+.form__content .bottom__line {
+  display: block;
+  height: 3px;
+  width: 100%;
+  background-color: var(--extra-light);
+  margin: 2rem 0;
+}
+
+.footer__title {
+  text-align: center;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  color: var(--text-light);
+}
+
+.social__icons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+}
+
+.social__icons i {
+  font-size: 1.5rem;
+  color: var(--primary-color);
+  cursor: pointer;
+  transition: 0.3s;
+}
+.social__icons i:hover {
+  color: var(--primary-color-dark);
+}
+
+.container__right {
+  display: flex;
+  flex: 1.5;
+  background: url({% static 'custom_auth/img/login.jpg' %});
+  background-position: center center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  position: relative;
+}
+
+.container__right::before {
+  content: "";
+  position: absolute;
+  height: 75%;
+  width: 100%;
+  left: 0;
+  bottom: 0;
+  background: linear-gradient(to top, #000000, #00000000);
+}
+
+.image {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: grid;
+  gap: 1rem;
+  width: 100%;
+  max-width: 30rem;
+  color: #ffffff;
+}
+
+.image h3 {
+  font-size: 2rem;
+  position: relative;
+}
+
+.image h3::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: -4rem;
+  height: 2px;
+  width: 3rem;
+  background-color: #ffffff;
+}
+
+.image p {
+  font-size: 1rem;
+}
+
+@media screen and (width < 750px) {
+  .container__right {
+    display: none;
+  }
+}
+</style>
+
