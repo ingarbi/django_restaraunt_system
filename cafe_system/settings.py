@@ -17,6 +17,7 @@ INSTALLED_APPS = [
     "channels",
     "orders",
     "main",
+    'custom_auth',
 ]
 
 MIDDLEWARE = [
