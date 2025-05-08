@@ -1,6 +1,16 @@
 from django.db import models
 from django.urls import reverse
 from django.utils import timezone
+from django.contrib.auth.models import AbstractUser
+
+# class User(AbstractUser):
+#     is_cashier = models.BooleanField(default=False, verbose_name="Кассир")
+#     is_cooker = models.BooleanField(default=False, verbose_name="Повыр")
+    
+#     class Meta:
+#         verbose_name = "User"
+#         verbose_name_plural = "Users"
+   
 
 class Category(models.Model):
     name = models.CharField(max_length=100)

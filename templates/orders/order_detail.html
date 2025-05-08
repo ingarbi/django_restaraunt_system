@@ -3,79 +3,95 @@
 
 {% block content %}
 <div class="container mt-4">
-    <div class="card">
-        <div class="card-header">
-            <h3>Детали заказа #{{ order.order_number|slice:"12:" }}</h3>
-            <span class="badge {{ order.get_status_color }}">
-                {{ order.get_status_display }}
-            </span>
+    <div class="card border-0 shadow-sm rounded-3">
+        <div class="card-header border-0 rounded-top-3" style="background-color: #3b5d50; color: white;">
+            <div class="d-flex justify-content-between align-items-center">
+                <h3 class="mb-0">
+                    <i class="fas fa-receipt me-2"></i>
+                    Заказ #{{ order.order_number|slice:"12:" }}
+                </h3>
+                <span class="badge {% if order.status == 'completed' %}bg-success
+                      {% elif order.status == 'in_progress' %}bg-warning text-dark
+                      {% else %}bg-light text-dark{% endif %} rounded-pill py-2 px-3">
+                    {{ order.get_status_display }}
+                </span>
+            </div>
         </div>
         
         <div class="card-body">
             <div class="row mb-4">
                 <div class="col-md-6">
-                
-                    <p><strong>Тип:</strong> {{ order.get_order_type_display }}</p>
-                    <p><strong>Дата создания:</strong> {{ order.created_at|date:"d.m.Y H:i" }}</p>
-                    <p><strong>Итого:</strong> {{ order.total_sum }} руб.</p>
-                    <strong>Оплата:</strong> {{ order.get_payment_type_display }}
+                    <div class="info-card p-3 mb-3 rounded-3" style="background-color: #f8f9fa; border-left: 4px solid #3b5d50;">
+                        <h5 class="mb-3"><i class="fas fa-info-circle me-2"></i>Информация о заказе</h5>
+                        <p><strong><i class="fas fa-utensils me-2"></i>Тип:</strong> {{ order.get_order_type_display }}</p>
+                        <p><strong><i class="far fa-clock me-2"></i>Дата:</strong> {{ order.created_at|date:"d.m.Y H:i" }}</p>
+                        <p><strong><i class="fas fa-wallet me-2"></i>Оплата:</strong> {{ order.get_payment_type_display }}</p>
+                        <p><strong><i class="fas fa-ruble-sign me-2"></i>Итого:</strong> {{ order.total_sum }} руб.</p>
+                    </div>
                 </div>
                 
                 {% if order.order_type == "delivery" or order.order_type == "takeaway" %}
                 <div class="col-md-6">
-                    <h5>Клиент:</h5>
-                    <p><strong>Имя:</strong> {{ order.name|default:"Не указано" }}</p>
-                    <p><strong>Телефон:</strong> {{ order.phone_number|default:"Не указан" }}</p>
-                    {% if order.order_type == "delivery" %}
-                        <p><strong>Адрес:</strong> {{ order.address|default:"Не указан" }}</p>
-                    {% endif %}
+                    <div class="info-card p-3 rounded-3" style="background-color: #f8f9fa; border-left: 4px solid #f9bf29;">
+                        <h5 class="mb-3"><i class="fas fa-user me-2"></i>Информация о клиенте</h5>
+                        <p><strong><i class="far fa-user me-2"></i>Имя:</strong> {{ order.name|default:"Не указано" }}</p>
+                        <p><strong><i class="fas fa-phone me-2"></i>Телефон:</strong> {{ order.phone_number|default:"Не указан" }}</p>
+                        {% if order.order_type == "delivery" %}
+                            <p><strong><i class="fas fa-map-marker-alt me-2"></i>Адрес:</strong> {{ order.address|default:"Не указан" }}</p>
+                        {% endif %}
+                    </div>
                 </div>
                 {% endif %}
             </div>
 
-    
-            <table class="table table-bordered">
-                <thead class="table-light">
-                    <tr>
-                        <th>№</th>
-                        <th>Наименование</th>
-                        <th>Количество</th>
-                        <th>Цена</th>
-                        <th>Сумма</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for item in order.items.all %}
-                    <tr>
-                        <td>{{ forloop.counter }}</td>
-                        <td>{{ item.menu_item.name }}</td>
-                        <td>{{ item.quantity }}</td>
-                        <td>{{ item.menu_item.price }} руб.</td>
-                        <td>{{ item.menu_item.price|mul:item.quantity }} руб.</td>
-                    </tr>
-                    {% endfor %}
-                    <tr class="table-secondary">
-                        <td colspan="4" class="text-end"><strong>Итого:</strong></td>
-                        <td><strong>{{ order.total_sum }} руб.</strong></td>
-                    </tr>
-                </tbody>
-            </table>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead style="background-color: #3b5d50; color: white;">
+                        <tr>
+                            <th style="width: 5%">№</th>
+                            <th style="width: 45%">Наименование</th>
+                            <th style="width: 15%" class="text-center">Количество</th>
+                            <th style="width: 15%" class="text-end">Цена</th>
+                            <th style="width: 20%" class="text-end">Сумма</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in order.items.all %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ item.menu_item.name }}</td>
+                            <td class="text-center">{{ item.quantity }}</td>
+                            <td class="text-end">{{ item.menu_item.price }} руб.</td>
+                            <td class="text-end">{{ item.menu_item.price|mul:item.quantity }} руб.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr style="background-color: #f8f9fa;">
+                            <td colspan="4" class="text-end fw-bold">Итого:</td>
+                            <td class="text-end fw-bold">{{ order.total_sum }} руб.</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
             
             <div class="d-flex justify-content-between mt-4">
-                <a href="{% url 'all_orders' %}" class="btn btn-secondary">
-                    ← Вернуться к списку заказов
+                <a href="{% url 'all_orders' %}" class="btn btn-outline-secondary rounded-pill px-4">
+                    <i class="fas fa-arrow-left me-2"></i> К списку заказов
                 </a>
                 
-                <a href="{% url 'order_pdf' order.id %}" class="btn btn-primary" target="_blank">
-                    <i class="bi bi-file-earmark-pdf"></i> Печать чека
-                </a>
+                <div>
+                    <a href="{% url 'order_pdf' order.id %}" class="btn btn-success rounded-pill px-4 me-2" target="_blank">
+                        <i class="fas fa-file-pdf me-2"></i> Печать чека
+                    </a>
 
-                {% if order.status == 'done' %}
-                <button class="btn btn-success" 
-                        onclick="markAsDelivered({{ order.id }})">
-                    Отметить как выданный
-                </button>
-                {% endif %}
+                    {% if order.status == 'done' %}
+                    <button class="btn btn-success rounded-pill px-4" 
+                            onclick="markAsDelivered({{ order.id }})">
+                        <i class="fas fa-check-circle me-2"></i> Отметить выданным
+                    </button>
+                    {% endif %}
+                </div>
             </div>
         </div>
     </div>
@@ -83,6 +99,10 @@
 
 <script>
 function markAsDelivered(orderId) {
+    if (!confirm('Вы уверены, что хотите отметить заказ как выданный?')) {
+        return;
+    }
+    
     fetch(`/orders/delivere/${orderId}/`, {
         method: 'GET',
         headers: {
@@ -90,18 +110,76 @@ function markAsDelivered(orderId) {
             'X-CSRFToken': '{{ csrf_token }}',
         }
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
     .then(data => {
         if (data.success) {
-            window.location.reload();
+            showAlert('success', 'Статус заказа успешно обновлен');
+            setTimeout(() => window.location.reload(), 1500);
         } else {
-            alert('Ошибка: ' + (data.message || 'Неизвестная ошибка'));
+            showAlert('danger', data.message || 'Неизвестная ошибка');
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        alert('Произошла ошибка при обновлении статуса');
+        showAlert('danger', 'Произошла ошибка при обновлении статуса');
     });
 }
+
+function showAlert(type, message) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+    alertDiv.style.top = '20px';
+    alertDiv.style.right = '20px';
+    alertDiv.style.zIndex = '9999';
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    `;
+    document.body.appendChild(alertDiv);
+    
+    setTimeout(() => {
+        alertDiv.classList.remove('show');
+        setTimeout(() => alertDiv.remove(), 150);
+    }, 3000);
+}
 </script>
+
+<style>
+    .info-card {
+        transition: transform 0.3s ease;
+    }
+    
+    .info-card:hover {
+        transform: translateY(-3px);
+    }
+    
+    .table-hover tbody tr:hover {
+        background-color: rgba(59, 93, 80, 0.05);
+    }
+    
+    .btn {
+        transition: all 0.3s ease;
+    }
+    
+    .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    @media (max-width: 768px) {
+        .d-flex {
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .btn {
+            width: 100%;
+        }
+    }
+</style>
 {% endblock %}
