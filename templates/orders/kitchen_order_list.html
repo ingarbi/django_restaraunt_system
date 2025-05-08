@@ -1,44 +1,112 @@
 <div class="row">
     {% for order in orders %}
-        <div class="col-md-3 col-sm-4 col-6 mb-4">
-            <div class="card-order border border-secondary d-flex flex-column h-100 rounded-3" id="order-{{ order.id }}">
+        <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+            <div class="card-order border-0 shadow-sm d-flex flex-column h-100 rounded-3" 
+                 id="order-{{ order.id }}"
+                 style="background-color: #f8f9fa; transition: all 0.3s ease;">
                 <div class="card-body flex-fill">
-                    <a href="{% url 'order_detail' order.id %}" class="text-decoration-none text-dark">
-                    <h5 class="card-title">Заказ #{% if order.order_number|slice:'12:'|length >= 99 %}{{ order.order_number|slice:'11:' }}{% else %}{{ order.order_number|slice:'12:' }}{% endif %} </h5>
-                    <p class="card-text mb-1">{{ order.created_at }}</p>
-                    <ol>
-                        {% for item in order.items.all %}
-                            <li>{{ item.menu_item.name }} x {{ item.quantity }}</li>
-                        {% endfor %}
-                    </ol>
+                    <a href="{% url 'order_detail' order.id %}" class="text-decoration-none text-dark stretched-link">
+                        <h5 class="card-title fw-bold text-primary mb-3">
+                            <i class="fas fa-receipt me-2"></i>
+                            Заказ #{{ order.order_number|slice:'12:' }}
+                        </h5>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted small">
+                                <i class="far fa-clock me-1"></i>
+                                {{ order.created_at|time:"H:i" }}
+                            </span>
+                            <span class="badge 
+                                {% if order.status == 'completed' %}bg-success
+                                {% elif order.status == 'in_progress' %}bg-warning text-dark
+                                {% else %}bg-info{% endif %}">
+                                {{ order.get_status_display }}
+                            </span>
+                        </div>
+                        <ul class="list-group list-group-flush mb-3">
+                            {% for item in order.items.all %}
+                            <li class="list-group-item bg-transparent px-0 py-1 d-flex justify-content-between">
+                                <span>{{ item.menu_item.name }}</span>
+                                <span class="fw-bold">x{{ item.quantity }}</span>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                        <div class="d-flex justify-content-between align-items-center mt-auto">
+                            <span class="small text-muted">{{ order.created_at|date:"d.m.Y" }}</span>
+                        </div>
                     </a>
                 </div>
-                <div class="card-footer text-center mb-1">
-                    <!--  Order Ready Button -->
-                    <button type="button" class="btn btn-info btn-sm fw-bold text-light" data-bs-toggle="modal" data-bs-target="#deliverModal{{ order.id }}">
-                        Заказ готов
+                {% if order.status != 'completed' %}
+                <div class="card-footer bg-transparent border-0 text-center pt-0">
+                    <button type="button" 
+                            class="btn btn-sm fw-bold text-light" 
+                            style="background-color: #3b5d50;"
+                            data-bs-toggle="modal" 
+                            data-bs-target="#deliverModal{{ order.id }}">
+                        <i class="fas fa-check-circle me-1"></i> Заказ готов
                     </button>
                 </div>
+                {% endif %}
             </div>
         </div>
 
         <!-- Order Ready Modal -->
-        <div class="modal fade" id="deliverModal{{ order.id }}" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="deliverModalLabel{{ order.id }}" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="deliverModalLabel{{ order.id }}">Вы уверены, что хотите подтвердить готовность заказа?</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <div class="modal fade" id="deliverModal{{ order.id }}" tabindex="-1" 
+             aria-labelledby="deliverModalLabel{{ order.id }}" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow">
+                    <div class="modal-header border-0" style="background-color: #3b5d50; color: white;">
+                        <h5 class="modal-title" id="deliverModalLabel{{ order.id }}">
+                            <i class="fas fa-check-circle me-2"></i>
+                            Подтверждение готовности
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" 
+                                data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
-                    <div class="modal-body">
-                        Заказ #{{ order.order_number|slice:'11:' }} будет отмечен как готовый.
+                    <div class="modal-body py-4">
+                        <p class="lead">Вы уверены, что хотите отметить заказ как готовый?</p>
+                        <div class="alert alert-light border">
+                            <strong>Заказ #{{ order.order_number|slice:'12:' }}</strong><br>
+                            <small class="text-muted">{{ order.created_at }}</small>
+                        </div>
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-                        <a href="{% url 'mark_order_completed' order.id %}" class="btn btn-info text-light">Подтвердить</a>
+                    <div class="modal-footer border-0">
+                        <button type="button" class="btn btn-outline-secondary" 
+                                data-bs-dismiss="modal">
+                            <i class="fas fa-times me-1"></i> Отмена
+                        </button>
+                        <a href="{% url 'mark_order_completed' order.id %}" 
+                           class="btn text-light" style="background-color: #3b5d50;">
+                            <i class="fas fa-check me-1"></i> Подтвердить
+                        </a>
                     </div>
                 </div>
             </div>
         </div>
     {% endfor %}
 </div>
+
+<style>
+    .card-order {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        overflow: hidden;
+    }
+    
+    .card-order:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    
+    .list-group-item {
+        border-color: rgba(0,0,0,0.05);
+    }
+    
+    .modal-content {
+        border-radius: 12px;
+    }
+    
+    @media (max-width: 768px) {
+        .card-order {
+            margin-bottom: 1.5rem;
+        }
+    }
+</style>
