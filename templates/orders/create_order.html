@@ -49,7 +49,14 @@
 
             <!-- Total and Submit -->
             <div class="d-flex justify-content-between align-items-center mb-1">
-                <h6 class="mb-0 bg-warning">Итого: <span id="total-sum">0.00</span> рублей.</h6>
+                <div>
+                    <h6 class="mb-0 bg-warning">Итого: <span id="total-sum">0.00</span> рублей.</h6>
+                    <label for="cash-received" class="mt-2">Получено от клиента:</label>
+                    <input type="number" id="cash-received" name="cash_received" placeholder="Введите сумму" min="0" step="0.01" class="form-control form-control-sm d-inline w-auto ms-2">
+                </div>
+                <div>
+                    <h6 class="mb-0">Сдача: <span  id="change-amount">0.00</span> рублей.</h6>
+                </div>
                 <button type="submit" class="btn btn-primary">Отправить на кухню</button>
             </div>
 
@@ -111,6 +118,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const quantityInputs = document.querySelectorAll('.item-quantity');
     const selectedItemsList = document.getElementById('selected-items-list');
     const totalSumElement = document.getElementById('total-sum');
+    const cashReceivedInput = document.getElementById('cash-received');
+    const changeAmountElement = document.getElementById('change-amount');
     let selectedItems = {};
 
     selectElement.addEventListener('change', function() {
@@ -144,6 +153,15 @@ document.addEventListener('DOMContentLoaded', function() {
             total += item.price * item.quantity;
         }
         totalSumElement.textContent = total.toFixed(2);
+        calculateChange();
+    }
+
+    function calculateChange() {
+        const total = parseFloat(totalSumElement.textContent) || 0;
+        const cashReceived = parseFloat(cashReceivedInput.value) || 0;
+        const change = cashReceived - total;
+        changeAmountElement.textContent = change >= 0 ? change.toFixed(2) : 'Недостаточно';
+        changeAmountElement.style.color = change >= 0 ? '#28a745' : '#dc3545'; // Green for positive change, red for negative
     }
 
     quantityInputs.forEach(input => {
@@ -171,6 +189,14 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+    // Listen for changes in the cash received input
+    cashReceivedInput.addEventListener('input', function () {
+        calculateChange();
+    });
+
+    // Calculate total on page load (in case of pre-filled values)
+    calculateTotal();
+    
     // WebSocket message handler
     orderSocket.onmessage = function(event) {
         const data = JSON.parse(event.data);
