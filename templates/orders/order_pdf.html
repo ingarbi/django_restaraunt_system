@@ -3,50 +3,8 @@
 <html>
 <head>
     <meta charset="UTF-8">
+    <link href="{% static 'css/order_pdf.css' %}" rel="stylesheet"/>
     <title>Чек #{{ order.order_number|slice:"12:" }}</title>
-    <style>
-        @page {
-            size: A4;
-            margin: 1cm;
-        }
-        body {
-            font-family: Arial, sans-serif;
-            font-size: 12px;
-        }
-        .header {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .restaurant-name {
-            font-size: 18px;
-            font-weight: bold;
-        }
-        .order-info {
-            margin-bottom: 15px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 15px;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 5px;
-            text-align: left;
-        }
-        th {
-            background-color: #f2f2f2;
-        }
-        .total {
-            font-weight: bold;
-            font-size: 14px;
-        }
-        .footer {
-            margin-top: 30px;
-            text-align: center;
-            font-size: 10px;
-        }
-    </style>
 </head>
 <body>
     <div class="header">
