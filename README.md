@@ -10,6 +10,7 @@
    #On linux:
     -source venv/bin/activate
    #On windows:
+    - source venv/Scripts/activate
     -cd Scripts
     -activate 
 5) Install dependencies: 
