@@ -5,8 +5,9 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="{% static 'css/remixicon/remixicon.css' %}" rel="stylesheet"/>
     <link href="{% static 'css/login.css' %}" rel="stylesheet"/>
-    <title>Login</title>
+    <title>Авторизация</title>
   </head>
   <body>
     <div class="container">
@@ -16,10 +17,10 @@
             <span class="back__btn">
               <i class="ri-arrow-left-line"></i>
             </span>
-            <span class="register"><a href={% url 'register' %}> Register</a></span>
+            <span class="register"><a href={% url 'register' %}> Регистрация</a></span>
           </div>
           <div class="form__content">
-            <h3 class="form__title">Login</h3>
+            <h3 class="form__title">Войти</h3>
 
             <form method="POST" action="{% url 'login' %}">
               {% csrf_token %}
@@ -34,8 +35,8 @@
               
               <input type="text" name="username" placeholder="Username" required />
               <input type="password" name="password" placeholder="Password" required />
-              <p class="forgot__password"><a href="#">Forgot password?</a></p>
-              <button class="submit__btn" type="submit">Login</button>
+              <p class="forgot__password"><a href="#">Забыл пароль?</a></p>
+              <button class="submit__btn" type="submit">Войти</button>
             </form>
 
             <span class="bottom__line"></span>

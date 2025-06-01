@@ -6,7 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link href="{% static 'css/register.css' %}" rel="stylesheet"/>
-    <title>Register</title>
+    <title>Авторизация</title>
   </head>
   <body>
     <div class="container">
@@ -16,10 +16,10 @@
             <span class="back__btn">
               <i class="ri-arrow-left-line"></i>
             </span>
-            <span class="register"><a href="{% url 'login' %}">Login</a></span>
+            <span class="register"><a href="{% url 'login' %}">Войти</a></span>
           </div>
           <div class="form__content">
-            <h3 class="form__title">Register</h3>
+            <h3 class="form__title">Регистрация</h3>
 
             <form method="POST" action="{% url 'register' %}">
               {% csrf_token %}
@@ -36,7 +36,7 @@
               <input type="email" name="email" placeholder="Email" required />
               <input type="password" name="password" placeholder="Password" required />
               <input type="password" name="confirm_password" placeholder="Password confirm" required />
-              <button class="submit__btn" type="submit">Register</button>
+              <button class="submit__btn" type="submit">Регистрация</button>
             </form>
 
             <span class="bottom__line"></span>

@@ -86,8 +86,16 @@ document.addEventListener('DOMContentLoaded', function() {
     // Handle form submission via AJAX
     document.getElementById('order-form').addEventListener('submit', function(e) {
         e.preventDefault();
-        
-        const formData = new FormData(this);
+        const submitButton = document.querySelector('#order-form button[type="submit"]');
+        const total = parseFloat(totalSumElement.textContent) || 0;
+        const cashReceived = parseFloat(cashReceivedInput.value) || 0;
+
+        if (cashReceived < total) {
+            event.preventDefault(); // Prevent form submission
+            alert('Ошибка: Недостаточно средств для завершения заказа.');
+        }
+        else{
+                    const formData = new FormData(this);
         fetch("{% url 'create_order' %}", {
             method: 'POST',
             headers: {
@@ -110,6 +118,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 alert('Заказ успешно создан!');
             }
         });
+        }
+
     });
 
     // Existing quantity input handlers
