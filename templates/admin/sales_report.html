@@ -1,7 +1,8 @@
 {% extends "admin/base_site.html" %}
 {% block content %}
 <div class="sales-report">
-    
+    <link href="{% static 'css/sales_report.css' %}" rel="stylesheet"/>
+
     <form method="get" class="date-selector">
         <label for="date">Выбери дату:</label>
         <input type="date" name="date" value="{{ selected_date|date:'Y-m-d' }}">
@@ -31,25 +32,4 @@
         </tbody>
     </table>
 </div>
-
-<style>
-.sales-report {
-    padding: 20px;
-}
-.date-selector {
-    margin: 20px 0;
-}
-.sales-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-.sales-table th, .sales-table td {
-    padding: 8px;
-    border: 1px solid #ddd;
-    text-align: left;
-}
-.sales-table th {
-    background-color: #f2f2f2;
-}
-</style>
 {% endblock %}
