@@ -1,18 +1,19 @@
 .sales-report {
-    padding: 20px;
+  padding: 20px;
 }
 .date-selector {
-    margin: 20px 0;
+  margin: 20px 0;
 }
 .sales-table {
-    width: 100%;
-    border-collapse: collapse;
+  width: 100%;
+  border-collapse: collapse;
 }
-.sales-table th, .sales-table td {
-    padding: 8px;
-    border: 1px solid #ddd;
-    text-align: left;
+.sales-table th,
+.sales-table td {
+  padding: 8px;
+  border: 1px solid #ddd;
+  text-align: left;
 }
 .sales-table th {
-    background-color: #f2f2f2;
+  background-color: #f2f2f2;
 }

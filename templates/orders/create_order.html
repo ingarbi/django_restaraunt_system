@@ -57,7 +57,8 @@
                 <div>
                     <h6 class="mb-0">Сдача: <span  id="change-amount">0.00</span> рублей.</h6>
                 </div>
-                <button type="submit" class="btn btn-primary">Отправить на кухню</button>
+                <button type="submit" class="btn btn-primary" name="action" value="send">Отправить на кухню</button>
+                <button type="submit" class="btn btn-success" name="action" value="send_and_print">Отправить и распечатать чек</button>
             </div>
 
             <!-- Menu Items -->
@@ -82,9 +83,18 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const orderSocket = new WebSocket('ws://' + window.location.host + '/ws/orders/');
+
+    let clickedButton = null;
+
+    document.querySelectorAll('#order-form button[type="submit"]').forEach(btn => {
+        btn.addEventListener('click', function() {
+            clickedButton = this;
+        });
+    });
     
     // Handle form submission via AJAX
     document.getElementById('order-form').addEventListener('submit', function(e) {
+        
         e.preventDefault();
         const submitButton = document.querySelector('#order-form button[type="submit"]');
         const total = parseFloat(totalSumElement.textContent) || 0;
@@ -95,29 +105,36 @@ document.addEventListener('DOMContentLoaded', function() {
             alert('Ошибка: Недостаточно средств для завершения заказа.');
         }
         else{
-                    const formData = new FormData(this);
-        fetch("{% url 'create_order' %}", {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': '{{ csrf_token }}',
-                'X-Requested-With': 'XMLHttpRequest'
-            },
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                // Reset form and UI
-                this.reset();
-                document.querySelectorAll('.item-quantity').forEach(input => input.value = 0);
-                selectedItems = {};
-                updateSelectedItems();
-                calculateTotal();
-                
-                // Optional: Show success message
-                alert('Заказ успешно создан!');
+            const formData = new FormData(this);
+            if (clickedButton) {
+                formData.append('action', clickedButton.value);
             }
-        });
+
+            fetch("{% url 'create_order' %}", {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Reset form and UI
+                    this.reset();
+                    document.querySelectorAll('.item-quantity').forEach(input => input.value = 0);
+                    selectedItems = {};
+                    updateSelectedItems();
+                    calculateTotal();
+                    
+                    // Optional: Show success message
+                    alert('Заказ успешно создан!');
+                    if (data.order_id && clickedButton?.value === 'send_and_print') {
+                        window.open(`/orders/order/${data.order_id}/pdf/`, '_blank');
+                    }
+                }
+            });
         }
 
     });

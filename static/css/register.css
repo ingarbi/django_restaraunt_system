@@ -1,15 +1,15 @@
 @font-face {
-    font-family: 'Lato';
-    src: url('fonts/Lato-Regular.ttf') format('woff2');
-    font-weight: 400;
-    font-display: swap;
-  }
-  @font-face {
-    font-family: 'Lato';
-    src: url('fonts/Lato-Regular.ttf') format('woff2');
-    font-weight: 700;
-    font-display: swap;
-  }
+  font-family: "Lato";
+  src: url("fonts/Lato-Regular.ttf") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Lato";
+  src: url("fonts/Lato-Regular.ttf") format("woff2");
+  font-weight: 700;
+  font-display: swap;
+}
 
 /*@import url("https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap");*/
 
@@ -154,7 +154,7 @@ body {
 .container__right {
   display: flex;
   flex: 1.5;
-  background: url({% static 'custom_auth/img/login.jpg' %});
+  background: url({%static"custom_auth/img/login.jpg"%});
   background-position: center center;
   background-size: cover;
   background-repeat: no-repeat;

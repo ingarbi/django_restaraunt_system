@@ -1,3 +1,4 @@
+{% load static %}
 {% load custom_filters %}
 <!DOCTYPE html>
 <html>
@@ -6,7 +7,7 @@
     <link href="{% static 'css/order_pdf.css' %}" rel="stylesheet"/>
     <title>Чек #{{ order.order_number|slice:"12:" }}</title>
 </head>
-<body>
+<body >
     <div class="header">
         <div class="restaurant-name">Кафе Аль-Арабия</div>
         <div>Кассовый чек</div>

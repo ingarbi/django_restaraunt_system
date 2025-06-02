@@ -75,7 +75,7 @@ def create_order(request):
                 },
             )
             if request.headers.get("X-Requested-With") == "XMLHttpRequest":
-                return JsonResponse({"success": True})
+                return JsonResponse({'success': True, 'order_id': order.id})
             return redirect("create_order")
     else:
         context = {
