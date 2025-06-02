@@ -1,7 +1,8 @@
 {% extends 'main/base.html' %}
 {% load custom_filters %}
-
+{% load static %}
 {% block content %}
+<link href="{% static 'css/order_detail.css' %}" rel="stylesheet" />
 <div class="container mt-4">
     <div class="card">
         <div class="card-header">

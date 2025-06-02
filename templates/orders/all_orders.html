@@ -1,6 +1,8 @@
 {% extends 'main/base.html' %} {% block content %}
+{% load static %}
 <div class="container ms-2">
   <h2>Все заказы на сегодня</h2>
+  <link href="{% static 'css/all_order.css' %}" rel="stylesheet" />
 
   <!-- Container for pending orders -->
   <div id="orders-container">{% include 'orders/order_list.html' %}</div>
