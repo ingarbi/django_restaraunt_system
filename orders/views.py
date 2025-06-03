@@ -1,16 +1,13 @@
-from django.shortcuts import render, redirect
-from .models import Order, MenuItem, OrderItem
-from .forms import OrderForm
-from django.utils import timezone
-from django.http import JsonResponse
-from django.shortcuts import get_object_or_404
-from channels.layers import get_channel_layer
-from asgiref.sync import async_to_sync
-from django.template.loader import render_to_string
-from django.http import HttpResponse
 import weasyprint
-from django.conf import settings
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
+from django.http import HttpResponse, JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
+from django.template.loader import render_to_string
+from django.utils import timezone
 
+from .forms import OrderForm
+from .models import MenuItem, Order, OrderItem
 
 
 def create_order(request):
@@ -31,7 +28,7 @@ def create_order(request):
             phone = request.POST.get("phone", "")
             first_name = request.POST.get("first_name", "")
             address = request.POST.get("addres", "")
-           
+
             payment_type = request.POST.get("payment_type", "")
 
             total_sum = 0
@@ -75,7 +72,7 @@ def create_order(request):
                 },
             )
             if request.headers.get("X-Requested-With") == "XMLHttpRequest":
-                return JsonResponse({'success': True, 'order_id': order.id})
+                return JsonResponse({"success": True, "order_id": order.id})
             return redirect("create_order")
     else:
         context = {
@@ -179,16 +176,19 @@ def order_detail(request, order_id):
 
 def order_pdf(request, order_id):
     order = get_object_or_404(Order, id=order_id)
-    items = order.items.select_related('menu_item')
+    items = order.items.select_related("menu_item")
 
     # Render the HTML template for the invoice
-    html_string = render_to_string('orders/order_pdf.html', {'order': order, 'items': items})
+    html_string = render_to_string(
+        "orders/order_pdf.html", {"order": order, "items": items}
+    )
 
     # Generate the PDF
     pdf_file = weasyprint.HTML(string=html_string).write_pdf()
 
-
     # Create the HTTP response with the PDF file
-    response = HttpResponse(pdf_file, content_type='application/pdf')
-    response['Content-Disposition'] = f'inline; filename="invoice_order_{order.order_number}.pdf"'
+    response = HttpResponse(pdf_file, content_type="application/pdf")
+    response["Content-Disposition"] = (
+        f'inline; filename="invoice_order_{order.order_number}.pdf"'
+    )
     return response
