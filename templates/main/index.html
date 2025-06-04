@@ -1,15 +1,19 @@
 {% extends 'main/base.html' %}
 {% block content %}
-<div class="card">
-    <div class="card-body">
-        <h3>Добро пожаловать в систему кафе!</h3>
-        <p>Выберите страницу для перехода:</p>
-        <ul>
-            <li><a href="{% url 'create_order' %}">Создать новый заказ</a></li>
-            <li><a href="{% url 'all_orders' %}">Все заказы</a></li>
-            <li><a href="{% url 'kitchen_orders' %}">Заказы на кухне</a></li>
-            <li><a href="{% url 'admin:index' %}">Админка</a></li>
-        </ul>
+{% if user.is_superuser %}
+    <div class="card">
+        <div class="card-body">
+            <h3>Добро пожаловать в систему Yummy!</h3>
+            <p>Выберите страницу для перехода:</p>
+            <ul>
+                <li><a href="{% url 'create_order' %}">Создать новый заказ</a></li>
+                <li><a href="{% url 'all_orders' %}">Все заказы</a></li>
+                <li><a href="{% url 'kitchen_orders' %}">Заказы на кухне</a></li>
+                <li><a href="{% url 'admin:index' %}">Админка</a></li>
+            </ul>
+        </div>
     </div>
-</div>
+{% else %}
+    <h2> Добро пожаловать в систему Yummy!</h2>
+{% endif %}
 {% endblock %}
