@@ -192,3 +192,22 @@ def order_pdf(request, order_id):
         f'inline; filename="invoice_order_{order.order_number}.pdf"'
     )
     return response
+
+def quick_receipt_printing(request, order_id):
+    order = get_object_or_404(Order, id=order_id)
+    items = order.items.select_related("menu_item")
+
+    # Render the HTML template for the invoice
+    html_string = render_to_string(
+        "orders/quick_receipt_printing.html", {"order": order, "items": items}
+    )
+
+    # Generate the PDF
+    pdf_file = weasyprint.HTML(string=html_string).write_pdf()
+
+    # Create the HTTP response with the PDF file
+    response = HttpResponse(pdf_file, content_type="application/pdf")
+    response["Content-Disposition"] = (
+        f'inline; filename="invoice_order_{order.order_number}.pdf"'
+    )
+    return response
