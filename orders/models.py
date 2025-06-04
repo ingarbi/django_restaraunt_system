@@ -48,6 +48,7 @@ class Order(models.Model):
     PAYMENT_TYPE_CHOICES = (
         ("cash", "Наличный"),
         ("online", "Перевод"),
+        ("free", "Бесплатно"),
     )
     order_number = models.CharField(verbose_name="№ Заказа", max_length=10, unique=True, editable=False)
     created_at = models.DateTimeField(verbose_name="Дата", auto_now_add=True)
