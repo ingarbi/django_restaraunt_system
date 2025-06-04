@@ -1,6 +1,7 @@
 import weasyprint
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
+from django.conf import settings
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
@@ -184,7 +185,8 @@ def order_pdf(request, order_id):
     )
 
     # Generate the PDF
-    pdf_file = weasyprint.HTML(string=html_string).write_pdf()
+    pdf_file = weasyprint.HTML(string=html_string).write_pdf(
+        stylesheets=[weasyprint.CSS('static/css/order_pdf.css')])
 
     # Create the HTTP response with the PDF file
     response = HttpResponse(pdf_file, content_type="application/pdf")
@@ -192,22 +194,10 @@ def order_pdf(request, order_id):
         f'inline; filename="invoice_order_{order.order_number}.pdf"'
     )
     return response
+
 
 def quick_receipt_printing(request, order_id):
-    order = get_object_or_404(Order, id=order_id)
-    items = order.items.select_related("menu_item")
-
-    # Render the HTML template for the invoice
-    html_string = render_to_string(
-        "orders/quick_receipt_printing.html", {"order": order, "items": items}
+    order = get_object_or_404(
+        Order.objects.prefetch_related("items__menu_item"), id=order_id
     )
-
-    # Generate the PDF
-    pdf_file = weasyprint.HTML(string=html_string).write_pdf()
-
-    # Create the HTTP response with the PDF file
-    response = HttpResponse(pdf_file, content_type="application/pdf")
-    response["Content-Disposition"] = (
-        f'inline; filename="invoice_order_{order.order_number}.pdf"'
-    )
-    return response
+    return render(request, "orders/quick_receipt_printing.html", {"order": order})
