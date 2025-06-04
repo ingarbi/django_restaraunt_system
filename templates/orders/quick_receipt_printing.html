@@ -1,6 +1,6 @@
 {% load static %}
 {% load custom_filters %}
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
@@ -53,5 +53,9 @@
         {{ order.created_at|date:"d.m.Y H:i" }}<br>
         Кассир: {{ request.user.get_full_name|default:"Кассир" }}
     </div>
+    <script type="text/javascript">
+    window.print();
+    setTimeout(window.close, 0);
+</script>
 </body>
 </html>

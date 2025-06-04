@@ -1,6 +1,6 @@
 {% extends 'main/base.html' %}
-{% block content %}
 {% load static %}
+{% block content %}
 <div class="card">
 <link href="{% static 'css/create_order.css' %}" rel="stylesheet" />    
     <div class="card-header">
@@ -60,8 +60,8 @@
                 <div>
                     <h6 class="mb-0">Сдача: <span  id="change-amount">0.00</span> рублей.</h6>
                 </div>
-                <button type="submit" class="btn btn-primary" name="action" value="send">Отправить на кухню</button>
-                <button type="submit" class="btn btn-success" name="action" value="send_and_print">Отправить и распечатать чек</button>
+                <button type="submit" class="btn btn-info btn-sm" name="action" value="send">Отправить на кухню</button>
+                <button type="submit" class="btn btn-success btn-sm" name="action" value="send_and_print">Отправить и распечатать чек</button>
             </div>
 
             <!-- Menu Items -->
@@ -134,7 +134,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Optional: Show success message
                     alert('Заказ успешно создан!');
                     if (data.order_id && clickedButton?.value === 'send_and_print') {
-                        window.open(`/orders/order/${data.order_id}/pdf/`, '_blank');
+                        window.open(`/orders/order_quick/${data.order_id}/pdf/`, '_blank');
                     }
                 }
             });
