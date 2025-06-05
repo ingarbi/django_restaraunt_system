@@ -1,12 +1,15 @@
-from django.contrib import admin
-from .models import Order, OrderItem, MenuItem, Category
-from django.urls import path
 from datetime import date
-from django.shortcuts import render
-from django.db.models import Sum, F
+
+from admin_totals.admin import ModelAdminTotals
+from django.contrib import admin
 from django.contrib.admin import DateFieldListFilter
+from django.db.models import Avg, F, Sum
+from django.db.models.functions import Coalesce
+from django.shortcuts import render
+from django.urls import path, reverse
 from django.utils.html import format_html
-from django.urls import reverse
+
+from .models import Category, MenuItem, Order, OrderItem
 
 admin.site.register(Category)
 
@@ -17,7 +20,7 @@ class OrderItemInline(admin.TabularInline):
 
 
 @admin.register(Order)
-class OrderAdmin(admin.ModelAdmin):
+class OrderAdmin(ModelAdminTotals):
     list_display = (
         "id",
         "order_number",
@@ -27,6 +30,9 @@ class OrderAdmin(admin.ModelAdmin):
         "total_sum",
         "payment_type",
     )
+    list_totals = [
+        ("total_sum", lambda field: Coalesce(Sum(field), 0)),
+    ]
     inlines = [OrderItemInline]
     list_display_links = [
         "id",
@@ -73,7 +79,9 @@ class OrderItemAdmin(admin.ModelAdmin):
 
         # Get aggregated sales data
         sales_data = (
-            OrderItem.objects.filter(order__created_at__date=filter_date, order__status="delivered")
+            OrderItem.objects.filter(
+                order__created_at__date=filter_date, order__status="delivered"
+            )
             .values("menu_item__name")
             .annotate(
                 total_quantity=Sum("quantity"),
@@ -137,6 +145,6 @@ class CustomAdminSite(admin.AdminSite):
 
 admin_site = CustomAdminSite(name="myadmin")
 
-admin.site.site_header="Панель администратора"
-admin.site.site_title="Панель администратора"
-admin.site.index_title=""
+admin.site.site_header = "Панель администратора"
+admin.site.site_title = "Панель администратора"
+admin.site.index_title = ""
