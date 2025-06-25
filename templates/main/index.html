@@ -1,19 +1,89 @@
 {% extends 'main/base.html' %}
 {% block content %}
-{% if user.is_superuser %}
-    <div class="card">
-        <div class="card-body">
-            <h3>Добро пожаловать в систему Yummy!</h3>
-            <p>Выберите страницу для перехода:</p>
-            <ul>
-                <li><a href="{% url 'create_order' %}">Создать новый заказ</a></li>
-                <li><a href="{% url 'all_orders' %}">Все заказы</a></li>
-                <li><a href="{% url 'kitchen_orders' %}">Заказы на кухне</a></li>
-                <li><a href="{% url 'admin:index' %}">Админка</a></li>
-            </ul>
+<div class="welcome-container">
+  {% if user.is_superuser %}
+    <div class="admin-dashboard">
+      <div class="dashboard-header">
+        <h1>Добро пожаловать в систему Yummy!</h1>
+        <p class="dashboard-subtitle">Выберите нужный раздел:</p>
+      </div>
+      
+      <div class="dashboard-cards">
+        <div class="card">
+          <div class="card-icon bg-primary">
+            <i class="ri-shopping-cart-line"></i>
+          </div>
+          <div class="card-content">
+            <h3>Создать заказ</h3>
+            <a href="{% url 'create_order' %}" class="btn btn-primary">
+              <i class="ri-add-line"></i> Перейти
+            </a>
+          </div>
         </div>
+        
+        <div class="card">
+          <div class="card-icon bg-success">
+            <i class="ri-list-check"></i>
+          </div>
+          <div class="card-content">
+            <h3>Все заказы</h3>
+            <a href="{% url 'all_orders' %}" class="btn btn-success">
+              <i class="ri-eye-line"></i> Просмотреть
+            </a>
+          </div>
+        </div>
+        
+        <div class="card">
+          <div class="card-icon bg-warning">
+            <i class="ri-knife-line"></i>
+          </div>
+          <div class="card-content">
+            <h3>Заказы на кухне</h3>
+            <a href="{% url 'kitchen_orders' %}" class="btn btn-warning">
+              <i class="ri-cooking-line"></i> Открыть
+            </a>
+          </div>
+        </div>
+        
+        <div class="card">
+          <div class="card-icon bg-danger">
+            <i class="ri-settings-line"></i>
+          </div>
+          <div class="card-content">
+            <h3>Админ-панель</h3>
+            <a href="{% url 'admin:index' %}" class="btn btn-danger">
+              <i class="ri-admin-line"></i> Войти
+            </a>
+          </div>
+        </div>
+      </div>
     </div>
-{% else %}
-    <h2> Добро пожаловать в систему Yummy!</h2>
-{% endif %}
+  {% else %}
+    <div class="user-welcome">
+      <div class="welcome-card">
+        <div class="welcome-header">
+          <i class="ri-restaurant-line"></i>
+          <h1>Добро пожаловать в систему Yummy!</h1>
+        </div>
+        <div class="welcome-content">
+          <p>Система управления рестораном Yummy поможет вам эффективно управлять заказами, меню и персоналом.</p>
+          <div class="features">
+            <div class="feature-item">
+              <i class="ri-check-double-line"></i>
+              <span>Удобное создание заказов</span>
+            </div>
+            <div class="feature-item">
+              <i class="ri-timer-line"></i>
+              <span>Контроль времени выполнения заказов</span>
+            </div>
+            <div class="feature-item">
+              <i class="ri-bar-chart-grouped-line"></i>
+              <span>Статистика и аналитика</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+</div>
 {% endblock %}

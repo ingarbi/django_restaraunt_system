@@ -12,44 +12,75 @@
   <body>
     <div class="container">
       <div class="container__left">
-        <div class="content">
+        <div class="form-wrapper">
           <div class="header">
-            <span class="back__btn">
+            <span class="back__btn" title="Назад">
               <i class="ri-arrow-left-line"></i>
             </span>
-            <span class="register"><a href={% url 'register' %}> Регистрация</a></span>
+            <span class="register">
+              <a href={% url 'register' %}>Регистрация</a>
+            </span>
           </div>
-          <div class="form__content">
-            <h3 class="form__title">Войти</h3>
-
+          
+          <div class="form-card">
+            <h3 class="form__title">Добро пожаловать</h3>
+            
+            {% if messages %}
+              <div class="alert">
+                {% for message in messages %}
+                  <p>{{ message }}</p>
+                {% endfor %}
+              </div>
+            {% endif %}
+            
             <form method="POST" action="{% url 'login' %}">
               {% csrf_token %}
               
-              {% if messages %}
-                <div class="alert alert-danger">
-                  {% for message in messages %}
-                    <p>{{ message }}</p>
-                  {% endfor %}
-                </div>
-              {% endif %}
+              <div class="input-group">
+                <i class="ri-user-line icon"></i>
+                <input type="text" name="username" placeholder="Имя пользователя" required />
+              </div>
               
-              <input type="text" name="username" placeholder="Username" required />
-              <input type="password" name="password" placeholder="Password" required />
-              <p class="forgot__password"><a href="#">Забыл пароль?</a></p>
-              <button class="submit__btn" type="submit">Войти</button>
+              <div class="input-group">
+                <i class="ri-lock-line icon"></i>
+                <input type="password" name="password" placeholder="Пароль" required />
+              </div>
+              
+              <div class="form-options">
+                <label class="remember-me">
+                  <input type="checkbox">
+                  <span>Запомнить меня</span>
+                </label>
+                <a href="#" class="forgot-password">Забыл пароль?</a>
+              </div>
+              
+              <button class="submit__btn" type="submit">
+                <i class="ri-login-box-line btn-icon"></i>
+                Войти
+              </button>
             </form>
-
-            <span class="bottom__line"></span>
           </div>
           
+          <div class="social-login">
+            <span class="divider">или войти через</span>
+            <div class="social-icons">
+              <a href="#"><i class="ri-google-fill"></i></a>
+              <a href="#"><i class="ri-facebook-circle-fill"></i></a>
+              <a href="#"><i class="ri-twitter-x-fill"></i></a>
+            </div>
+          </div>
         </div>
       </div>
+      
       <div class="container__right">
-        <div class="image">
-          {% comment %} <img src="{% static 'custom_auth/img/login.jpg' %}" class="login_img" alt="" /> {% endcomment %}
+        <div class="hero-content">
+          <h1>Добро пожаловать в систему Yummy!</h1>
+          <p>Эффективно управляйте вашими проектами и задачами</p>
+          <div class="quote">
+            "Успех начинается с правильного входа"
+          </div>
         </div>
       </div>
     </div>
-    
   </body>
 </html>
