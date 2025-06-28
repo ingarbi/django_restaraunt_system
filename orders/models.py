@@ -50,6 +50,10 @@ class Order(models.Model):
         ("online", "Перевод"),
         ("free", "Бесплатно"),
     )
+    discount = models.PositiveSmallIntegerField(
+        default=0,
+        verbose_name="Скидка (%)"
+    )
     order_number = models.CharField(verbose_name="№ Заказа", max_length=10, unique=True, editable=False)
     created_at = models.DateTimeField(verbose_name="Дата", auto_now_add=True)
     status = models.CharField(verbose_name="Статус", max_length=10, choices=STATUS_CHOICES, default="pending")

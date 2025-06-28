@@ -27,6 +27,7 @@ class OrderAdmin(ModelAdminTotals):
         "status",
         "created_at",
         "order_type",
+        "discount",
         "total_sum",
         "payment_type",
     )

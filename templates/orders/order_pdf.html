@@ -44,10 +44,11 @@
         </tbody>
     </table>
 
-    <div class="total">
-        Итого к оплате: {{ order.total_sum }} ₽
-    </div>
-
+    <div><strong>Скидка:</strong> {{ order.discount }}%</div>
+        <div class="total">
+            Итого к оплате: {{ order.total_sum }} ₽
+        </div>
+        
     <div class="footer">
         Спасибо за посещение!<br>
         {{ order.created_at|date:"d.m.Y H:i" }}<br>

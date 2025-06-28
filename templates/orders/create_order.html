@@ -14,7 +14,7 @@
                 <div class="me-2">
                     <label for="id_order_type">Тип заказа:</label>
                 </div>
-                <select name="order_type" id="id_order_type" class="form-control-sm w-auto" required>
+                <select name="order_type" id="id_order_type" class="form-control-sm w-auto ms-4" required>
                     <option value="" selected disabled>Выбрать</option>
                     <option value="dine_in">В зале</option>
                     <option value="takeaway">На вынос</option>
@@ -33,14 +33,25 @@
                 </div>
             </div>
 
-            <div class="d-flex flex-row bd-highlight m-1">
-                <label for="id_payment_type" class="me-2">Способ оплаты:</label>
-            <select name="payment_type" id="id_payment_type" class="form-control-sm w-auto"required>
-                <option value="" selected disabled>Выбрать</option>
+            <div class="d-flex flex-row bd-highlight mt-1">
+                <label for="id_payment_type" class="me-2 ">Способ оплаты:</label>
+            <select name="payment_type" id="id_payment_type" class="form-control-sm w-auto " required>
+                <option value="" selected disabled >Выбрать</option>
                 <option value="cash"> Наличными</option>
                 <option value="online"> Переводом</option>
                 <option value="free"> Бесплатно</option>
             </select>
+            </div>
+
+            <div class="d-flex flex-row bd-highlight mt-1">
+                <label for="id_discount" class="me-2">Скидка (%):</label>      
+                <input list="discount-options" id="id_discount" name="id_discount" class="form-control-sm w-auto" />
+                    <datalist id="discount-options">
+                    <option value="5">
+                    <option value="10">
+                    <option value="15">
+                    <option value="20">
+                    </datalist>
             </div>
             
             <!-- Selected Items Section -->
@@ -51,7 +62,7 @@
             </div>
 
             <!-- Total and Submit -->
-            <div class="d-flex justify-content-between align-items-center mb-1">
+            <div class="d-flex justify-content-between align-items-center ">
                 <div>
                     <h6 class="mb-0 bg-warning">Итого: <span id="total-sum">0.00</span> рублей.</h6>
                     <label for="cash-received" class="mt-2">Получено от клиента:</label>
@@ -71,9 +82,9 @@
                 <h5 class="fs-6 fst-normal">{{ category }}:</h5>
                 <div class="row">
                     {% for item in items %}
-                    <div class="col-lg-2 col-sm-3 text-center">
+                    <div class="col-lg-2 col-sm-3 text-center ">
                         <label class="fs-6 fw-light" for="id_item_{{ item.id }}">{{ item.name }} ({{ item.price|floatformat:"0" }} р.)</label>
-                        <input type="number" min="0" name="item_{{ item.id }}" value="0" class="form-control form-control-sm item-quantity text-center" data-price="{{ item.price }}" data-item-id="{{ item.id }}" data-item-name="{{ item.name }}">
+                        <input type="number" min="0" name="item_{{ item.id }}" value="0" class="form-control form-control-sm ms-5 item-quantity text-center" data-price="{{ item.price }}" data-item-id="{{ item.id }}" data-item-name="{{ item.name }}">
                     </div>
                     {% endfor %}
                 </div>
@@ -150,6 +161,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const totalSumElement = document.getElementById('total-sum');
     const cashReceivedInput = document.getElementById('cash-received');
     const changeAmountElement = document.getElementById('change-amount');
+    const discountSelect = document.getElementById('id_discount');
     let selectedItems = {};
 
     selectElement.addEventListener('change', function() {
@@ -177,14 +189,25 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    
     function calculateTotal() {
         let total = 0;
         for (const item of Object.values(selectedItems)) {
             total += item.price * item.quantity;
         }
-        totalSumElement.textContent = total.toFixed(2);
+        
+        const discount = discountSelect.value || 0;
+        const discountedTotal = total * (discount / 100);
+        const totalAfterDiscount = total - discountedTotal;
+   
+        totalSumElement.textContent = totalAfterDiscount.toFixed(2);
         calculateChange();
     }
+
+    // Listen for discount changes
+    discountSelect.addEventListener('change', () => {
+        calculateTotal();
+    });
 
     function calculateChange() {
         const total = parseFloat(totalSumElement.textContent) || 0;
