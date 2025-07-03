@@ -1,5 +1,4 @@
 @echo off
-cd cafe_system 
 call venv\Scripts\activate
-python manage.py runserver
+python manage.py runserver 0.0.0.0:8000
 pause
