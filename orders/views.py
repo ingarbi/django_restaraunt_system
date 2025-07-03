@@ -29,7 +29,7 @@ def create_order(request):
             phone = request.POST.get("phone", "")
             first_name = request.POST.get("first_name", "")
             address = request.POST.get("addres", "")
-            discount = request.POST.get('discount', 0)
+            discount = int(request.POST.get("id_discount", 0))
             payment_type = request.POST.get("payment_type", "")
 
             total_sum = 0
@@ -40,10 +40,10 @@ def create_order(request):
                         order=order, menu_item=item, quantity=quantity
                     )
                     total_sum += item.price * quantity
-            
+
             order.discount = discount
             # Update the total sum of the order
-            order.total_sum = total_sum
+            order.total_sum = total_sum - (total_sum * discount / 100)
 
             # Update order details
             order.phone_number = phone
@@ -187,7 +187,8 @@ def order_pdf(request, order_id):
 
     # Generate the PDF
     pdf_file = weasyprint.HTML(string=html_string).write_pdf(
-        stylesheets=[weasyprint.CSS('static/css/order_pdf.css')])
+        stylesheets=[weasyprint.CSS("static/css/order_pdf.css")]
+    )
 
     # Create the HTTP response with the PDF file
     response = HttpResponse(pdf_file, content_type="application/pdf")

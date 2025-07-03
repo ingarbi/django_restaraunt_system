@@ -11,31 +11,34 @@
 2) Install Git (optional, but good if you send project over Git)
     [https://www.filepuma.com/download/git_for_windows_64bit_2.46.0-40344/download/](https://github.com/git-for-windows/git/releases/download/v2.50.0.windows.1/Git-2.50.0-64-bit.exe)
     or <https://git-scm.com/>
+
 3) Clone repository:
     [https://github.com/ingarbi/django_restaraunt_system.git](https://github.com/ingarbi/django_restaraunt_system.git)
 
-4) Create virtual environment:
+4) Install GTK from cloned repository
+
+5) Create virtual environment:
     python -m venv venv
 
-5) Activate virtual environment:
+6) Activate virtual environment:
     venv\Scripts\activate # Windows
 
-6) Install required packages:
+7) Install required packages:
     pip install -r requirements.txt
 
-7) Apply migrations:
+8) Apply migrations:
     python manage.py makemigrations
     python manage.py migrate
 
-8) Create superuser:
+9) Create superuser:
     python manage.py createsuperuser
 
-9) Create usual user in admin panel
+10) Create usual user in admin panel
 
-10) Run server:
+11) Run server:
     python manage.py runserver 0.0.0.0:8000
 
-11) Run the server by double-clicking your start.bat / running start.sh.
+12) Run the server by double-clicking your start.bat / running start.sh.
 
 ## 📦 Установка
 
