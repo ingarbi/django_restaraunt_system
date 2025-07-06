@@ -6,12 +6,16 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.utils import timezone
-
+from django.core.exceptions import PermissionDenied
+from django.contrib.auth.decorators import login_required
 from .forms import OrderForm
 from .models import MenuItem, Order, OrderItem
 
 
+@login_required
 def create_order(request):
+    if request.user.profile.role != 'cashier' and request.user.profile.role != 'supervisor':
+        raise PermissionDenied("У вас нет доступа к этой странице.")
     menu_items = MenuItem.objects.all().select_related("category")
     menu_items_by_category = {}
     for item in menu_items:
@@ -29,7 +33,10 @@ def create_order(request):
             phone = request.POST.get("phone", "")
             first_name = request.POST.get("first_name", "")
             address = request.POST.get("addres", "")
-            discount = int(request.POST.get("id_discount", 0))
+            try:
+                discount = int(request.POST.get("id_discount", 0))
+            except:
+                discount = 0
             payment_type = request.POST.get("payment_type", "")
 
             total_sum = 0
@@ -142,8 +149,10 @@ def mark_order_cancelled(request, order_id):
 
     return redirect("all_orders")
 
-
+@login_required
 def all_orders(request):
+    if request.user.profile.role != 'cashier' and request.user.profile.role != 'supervisor':
+        raise PermissionDenied("У вас нет доступа к этой странице.")
     # Get today's date
     today = timezone.now().date()
     # Filter orders created today and sort by status
@@ -158,8 +167,10 @@ def all_orders(request):
 
     return render(request, "orders/all_orders.html", {"orders": orders})
 
-
+@login_required
 def kitchen_orders(request):
+    if request.user.profile.role != 'cook' and request.user.profile.role != 'supervisor':
+        raise PermissionDenied("У вас нет доступа к этой странице.")
     orders = Order.objects.filter(status="pending")
 
     if request.headers.get("X-Requested-With") == "XMLHttpRequest":

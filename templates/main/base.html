@@ -14,11 +14,20 @@
         <h1 class="mt-0 p-0 icon-link"><a class="text-decoration-none text-dark ps-2" href="{% url 'index' %}">Кафе</a></h1>
         <button id="enable-sound-btn" class="btn bg-info ">Включить звуковые уведомления</button>
         <div class="navbar-nav pe-5">
-          <a class="nav-link" href="{% url 'create_order' %}">Новый заказ</a>
-          <a class="nav-link" href="{% url 'all_orders' %}">Все заказы</a>
-          <a class="nav-link" href="{% url 'kitchen_orders' %}">Кухня - очередь</a>
+           {% if request.user.profile.role == 'supervisor' %}
+            <a class="nav-link" href="{% url 'create_order' %}">Новый заказ</a>
+            <a class="nav-link" href="{% url 'all_orders' %}">Все заказы</a>
+            <a class="nav-link" href="{% url 'kitchen_orders' %}">Кухня - очередь</a>
+
+            {% elif request.user.profile.role == 'cashier' %}
+                  <a class="nav-link" href="{% url 'create_order' %}">Новый заказ</a>
+                  <a class="nav-link" href="{% url 'all_orders' %}">Все заказы</a>
+            {% elif request.user.profile.role == 'cook' %}
+                  <a class="nav-link" href="{% url 'kitchen_orders' %}">Кухня - очередь</a>
+            {% endif %}
           {% if user.is_authenticated %}
-            <a class="nav-link" href="{% url 'logout' %}">Выйти</a>
+              <a class="nav-link disabled text-primary"> {{ request.user.get_full_name|default:request.user.username }}</a>
+            <a class="nav-link" href="{% url 'logout' %}"> Выйти</a>
           {% else %}
             <a class="nav-link" href="{% url 'login' %}">Войти</a>
           {% endif %}

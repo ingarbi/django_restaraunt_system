@@ -1,7 +1,7 @@
 {% extends 'main/base.html' %}
 {% block content %}
 <div class="welcome-container">
-  {% if user.is_superuser %}
+  
     <div class="admin-dashboard">
       <div class="dashboard-header">
         <h1>Добро пожаловать в систему Yummy!</h1>
@@ -44,7 +44,7 @@
             </a>
           </div>
         </div>
-        
+    {% if user.is_superuser %}
         <div class="card">
           <div class="card-icon bg-danger">
             <i class="ri-settings-line"></i>
@@ -58,27 +58,18 @@
         </div>
       </div>
     </div>
+  
   {% else %}
     <div class="user-welcome">
       <div class="welcome-card">
-        <div class="welcome-header">
-          <i class="ri-restaurant-line"></i>
-          <h1>Добро пожаловать в систему Yummy!</h1>
-        </div>
         <div class="welcome-content">
-          <p>Система управления рестораном Yummy поможет вам эффективно управлять заказами, меню и персоналом.</p>
+          <p>Вы залогинены как:</p>
           <div class="features">
             <div class="feature-item">
               <i class="ri-check-double-line"></i>
-              <span>Удобное создание заказов</span>
-            </div>
-            <div class="feature-item">
-              <i class="ri-timer-line"></i>
-              <span>Контроль времени выполнения заказов</span>
-            </div>
-            <div class="feature-item">
-              <i class="ri-bar-chart-grouped-line"></i>
-              <span>Статистика и аналитика</span>
+              {% if request.user.is_authenticated %}
+              {{ request.user.get_full_name|default:request.user.username }}
+              {% endif %}
             </div>
           </div>
         </div>
