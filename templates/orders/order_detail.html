@@ -63,7 +63,7 @@
             </table>
             
             <div class="d-flex justify-content-between mt-4">
-                <a href="{% url 'all_orders' %}" class="btn btn-secondary">
+                <a href="{{request.META.HTTP_REFERER}}" class="btn btn-secondary">
                     ← Вернуться к списку заказов
                 </a>
                 
