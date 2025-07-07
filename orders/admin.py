@@ -22,7 +22,7 @@ class OrderItemInline(admin.TabularInline):
 @admin.register(Order)
 class OrderAdmin(ModelAdminTotals):
     list_display = (
-        "id",
+
         "order_number",
         "status",
         "created_at",
@@ -30,18 +30,23 @@ class OrderAdmin(ModelAdminTotals):
         "discount",
         "total_sum",
         "payment_type",
+        'created_by',
     )
+    readonly_fields = ('created_by',)
     list_totals = [
         ("total_sum", lambda field: Coalesce(Sum(field), 0)),
     ]
     inlines = [OrderItemInline]
     list_display_links = [
-        "id",
         "order_number",
     ]
     search_fields = ["order_number"]
-    list_filter = ["status", "order_type", "created_at"]
+    list_filter = ["status", "order_type", "created_at", 'created_by',]
 
+    def save_model(self, request, obj, form, change):
+        if not obj.pk:
+            obj.created_by = request.user
+        super().save_model(request, obj, form, change)
 
 @admin.register(MenuItem)
 class MenuItemAdmin(admin.ModelAdmin):

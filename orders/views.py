@@ -10,7 +10,7 @@ from django.core.exceptions import PermissionDenied
 from django.contrib.auth.decorators import login_required
 from .forms import OrderForm
 from .models import MenuItem, Order, OrderItem
-
+import os
 
 @login_required
 def create_order(request):
@@ -56,6 +56,7 @@ def create_order(request):
             order.phone_number = phone
             order.name = first_name
             order.address = address
+            order.created_by = request.user
 
             order.payment_type = payment_type
 
@@ -191,9 +192,20 @@ def order_pdf(request, order_id):
     order = get_object_or_404(Order, id=order_id)
     items = order.items.select_related("menu_item")
 
+    file_path = os.path.join(settings.BASE_DIR, "main/cafe_name.txt")
+    cafe_name = ""
+    try:
+        with open(file_path, "r") as file:
+            file_content = file.read()
+           
+            cafe_name = file_content
+            
+    except FileNotFoundError:
+        cafe_name = "A&I SOFT"
+
     # Render the HTML template for the invoice
     html_string = render_to_string(
-        "orders/order_pdf.html", {"order": order, "items": items}
+        "orders/order_pdf.html", {"order": order, "items": items, "CAFE_NAME":cafe_name}
     )
 
     # Generate the PDF

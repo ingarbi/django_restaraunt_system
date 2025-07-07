@@ -1,6 +1,8 @@
 from django.db import models
 from django.urls import reverse
 from django.utils import timezone
+from django.conf import settings
+
 
 class Category(models.Model):
     name = models.CharField(max_length=100)
@@ -69,8 +71,18 @@ class Order(models.Model):
     name = models.CharField(verbose_name="Имя", max_length=100, null=True, blank=True)  # Optional name
     address = models.CharField(verbose_name="Адрес", max_length=300,null=True, blank=True)  # Optional address
     total_sum = models.PositiveSmallIntegerField(verbose_name="Итого", default=0)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        verbose_name="Кассир",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='orders_created'
+    )
+    
+    
     def __str__(self):
-        return f"Order {self.order_number}"
+        return f"Заказ #{self.id} --- {self.created_by}"
 
     def save(self, *args, **kwargs):
         if not self.order_number:

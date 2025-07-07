@@ -145,7 +145,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Optional: Show success message
                     alert('Заказ успешно создан!');
                     if (data.order_id && clickedButton?.value === 'send_and_print') {
-                        window.open(`/orders/order_quick/${data.order_id}/pdf/`, '_blank');
+                        window.open(`/orders/order/${data.order_id}/pdf/`, '_blank');
                     }
                 }
             });
