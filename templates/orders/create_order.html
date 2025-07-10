@@ -78,17 +78,32 @@
             <!-- Menu Items -->
             <div>
                 <h4>Меню:</h4>
+                                <!-- Nav tabs -->
+                <ul class="nav nav-tabs" id="menuTabs" role="tablist">
                 {% for category, items in menu_items_by_category.items %}
-                <h5 class="fs-6 fst-normal">{{ category }}:</h5>
-                <div class="row">
-                    {% for item in items %}
-                    <div class="col-lg-2 col-sm-3 text-center ">
-                        <label class="fs-6 fw-light" for="id_item_{{ item.id }}">{{ item.name }} ({{ item.price|floatformat:"0" }} р.)</label>
-                        <input type="number" min="0" name="item_{{ item.id }}" value="0" class="form-control form-control-sm ms-5 item-quantity text-center" data-price="{{ item.price }}" data-item-id="{{ item.id }}" data-item-name="{{ item.name }}">
-                    </div>
-                    {% endfor %}
-                </div>
+                    <li class="nav-item" role="presentation">
+                    <button class="nav-link {% if forloop.first %}active{% endif %}" id="tab-{{ forloop.counter }}" data-bs-toggle="tab" data-bs-target="#content-{{ forloop.counter }}" type="button" role="tab" aria-controls="content-{{ forloop.counter }}" aria-selected="{{ forloop.first|yesno:'true,false' }}">
+                        {{ category }}
+                    </button>
+                    </li>
                 {% endfor %}
+                </ul>
+
+                <!-- Tab content -->
+                <div class="tab-content mt-2" id="menuTabContent">
+                {% for category, items in menu_items_by_category.items %}
+                    <div class="tab-pane fade {% if forloop.first %}show active{% endif %}" id="content-{{ forloop.counter }}" role="tabpanel" aria-labelledby="tab-{{ forloop.counter }}">
+                    <div class="row">
+                        {% for item in items %}
+                        <div class="col-lg-2 col-sm-3 text-center">
+                            <label class="fs-6 fw-light" for="id_item_{{ item.id }}">{{ item.name }} <strong>({{ item.price|floatformat:"0" }} р.)</strong></label>
+                            <input type="number" min="0" name="item_{{ item.id }}" value="0" class="form-control form-control-sm ms-5 item-quantity text-center" data-price="{{ item.price }}" data-item-id="{{ item.id }}" data-item-name="{{ item.name }}">
+                        </div>
+                        {% endfor %}
+                    </div>
+                    </div>
+                {% endfor %}
+                </div>
             </div>
         </form>
     </div>
