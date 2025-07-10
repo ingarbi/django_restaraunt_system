@@ -37,8 +37,8 @@
                 <td>{{ forloop.counter }}</td>
                 <td>{{ item.menu_item.name }}</td>
                 <td>{{ item.quantity }}</td>
-                <td>{{ item.menu_item.price }} ₽</td>
-                <td>{{ item.menu_item.price|mul:item.quantity }} ₽</td>
+                <td>{{ item.menu_item.price }}</td>
+                <td>{{ item.menu_item.price|mul:item.quantity }}</td>
             </tr>
             {% endfor %}
         </tbody>
@@ -46,7 +46,7 @@
 
     <div><strong>Скидка:</strong> {{ order.discount }}%</div>
         <div class="total">
-            Итого к оплате: {{ order.total_sum }} ₽
+            Итого оплачено: {{ order.total_sum }} ₽
         </div>
         
     <div class="footer">
