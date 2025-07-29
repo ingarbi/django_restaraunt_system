@@ -66,3 +66,27 @@
 7) Запустите сервер:
     python manage.py runserver
 8) Откройте в браузере:  <http://127.0.0.1:8000/>
+
+## Какой же браузер мы рекомендуем использовать? 
+
+1) Mozilla Firefox версия 77.0.1, которую можно скачать [Firefox 77.0.1](https://ftp.mozilla.org/pub/firefox/releases/77.0/win64/ru/Firefox%20Setup%2077.0.exe)
+
+2) После установки нужно выполнить несколько дополнительных действий для печати без вспомогательного окна:
+
+    1. Настроить Firefox в настройках:
+        a.  Select the “Menu” Menu Button button in the upper-right corner, then choose “Options“.
+            Select “General” on the left pane.
+            Scroll down to the “Firefox Updates” section.
+            Never check for updates
+        b.
+            From about:config Menu
+            app.update.auto
+            app.update.enabled
+            app.update.service.e­nabled
+            app.update.silent
+        c.  Create this in notepad:
+            {
+            "policies": {
+                "DisableAppUpdate": true
+            }
+            }

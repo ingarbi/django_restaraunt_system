@@ -8,6 +8,11 @@
     <title>Чек #{{ order.order_number|slice:"12:" }}</title>
 </head>
 <body >
+       <meta charset="UTF-8">
+    <link href="{% static 'css/order_pdf.css' %}" rel="stylesheet"/>
+    <title>Чек #{{ order.order_number|slice:"12:" }}</title>
+</head>
+<body >
     <div class="header">
         <div class="restaurant-name">Кафе {{CAFE_NAME}}</div>
         <div>Кассовый чек</div>
@@ -37,17 +42,18 @@
                 <td>{{ forloop.counter }}</td>
                 <td>{{ item.menu_item.name }}</td>
                 <td>{{ item.quantity }}</td>
-                <td>{{ item.menu_item.price }} ₽</td>
-                <td>{{ item.menu_item.price|mul:item.quantity }} ₽</td>
+                <td>{{ item.menu_item.price }}</td>
+                <td>{{ item.menu_item.price|mul:item.quantity }}</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
 
-    <div class="total">
-        Итого к оплате: {{ order.total_sum }} ₽
-    </div>
-
+    <div><strong>Скидка:</strong> {{ order.discount }}%</div>
+        <div class="total">
+            Итого оплачено: {{ order.total_sum }} ₽
+        </div>
+        
     <div class="footer">
         Спасибо за посещение!<br>
         {{ order.created_at|date:"d.m.Y H:i" }}<br>
