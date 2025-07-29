@@ -84,9 +84,9 @@
             app.update.enabled
             app.update.service.e­nabled
             app.update.silent
-        c.  Create this in notepad:
-            {
-            "policies": {
-                "DisableAppUpdate": true
-            }
-            }
+        c.  Press Windows key + R, then type regedit.exe and press Enter.
+            HKEY_LOCAL_MACHINE -> SOFTWARE -> Policies
+            Right-click on "Policies" and create a new key "Mozilla". Select the new created "Mozilla" key and create a new sub-key "Firefox" within it. Then select "Firefox".
+
+            Inside HKEY_LOCAL_MACHINE -> SOFTWARE -> Policies -> Mozilla -> Firefox right click in the right hand side of the window to create a new "DWORD 32bit VALUE" entry. Give this entry the name "DisableAppUpdate" with the value 1. See below screenshot.
+    2. Запустите Firefox. Open Firefox and type ‘about:config‘ in the address bar and press enter. Click to confirm that you will be careful.In the address bar that says “Search preference name, type in ‘print.always_print_silent‘ and hit enter and change the value from false to true.
