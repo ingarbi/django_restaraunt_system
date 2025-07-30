@@ -7,7 +7,7 @@
     <link href="{% static 'css/order_pdf.css' %}" rel="stylesheet"/>
     <title>Чек #{{ order.order_number|slice:"12:" }}</title>
     <style>
-        {% comment %} @media print {
+        @media print {
             @page {
                 size: auto; /* Important for dynamic height */
                 margin: 0; /* Remove browser's default margin */
@@ -20,7 +20,7 @@
                 padding: 5mm; /* Small padding for aesthetics */
 
             }
-        } {% endcomment %}
+        }
     </style>
 </head>
 <body >

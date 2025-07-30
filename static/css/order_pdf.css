@@ -38,17 +38,3 @@ th {
   font-size: 10px;
 }
 
-@media print {
-  @page {
-      size: auto 70mm; /* Important for dynamic height */
-      margin: 0; /* Remove browser's default margin */
-  }
-  
-  body {
-      -webkit-print-color-adjust: exact;
-      print-color-adjust: exact;
-      margin: 0;
-      padding: 5mm; /* Small padding for aesthetics */
-
-  }
-}
