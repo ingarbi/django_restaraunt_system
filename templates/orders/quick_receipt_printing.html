@@ -6,11 +6,22 @@
     <meta charset="UTF-8">
     <link href="{% static 'css/order_pdf.css' %}" rel="stylesheet"/>
     <title>Чек #{{ order.order_number|slice:"12:" }}</title>
-</head>
-<body >
-       <meta charset="UTF-8">
-    <link href="{% static 'css/order_pdf.css' %}" rel="stylesheet"/>
-    <title>Чек #{{ order.order_number|slice:"12:" }}</title>
+    <style>
+        @media print {
+            @page {
+                size: auto; /* Important for dynamic height */
+                margin: 0; /* Remove browser's default margin */
+            }
+            
+            body {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                margin: 0;
+                padding: 5mm; /* Small padding for aesthetics */
+
+            }
+        }
+    </style>
 </head>
 <body >
     <div class="header">
