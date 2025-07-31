@@ -1,23 +1,36 @@
 
+@media print {
+    @page {
+        size: auto; /*set any size you want*/
+    }
+     #header, #footer, #nav { display: none !important; }
+     thead {
+            display: table-row-group !important;
+        } 
+}
+
+
+
 body {
   font-family: Arial, sans-serif;
   font-size: 12px;
+  
 }
 .header {
   text-align: center;
-  margin-bottom: 20px;
+  margin-bottom: 5px;
 }
 .restaurant-name {
   font-size: 18px;
   font-weight: bold;
 }
 .order-info {
-  margin-bottom: 15px;
+  margin-bottom: 5px;
 }
 table {
   width: 100%;
   border-collapse: collapse;
-  margin-bottom: 15px;
+  margin-bottom: 5px;
 }
 th,
 td {
@@ -33,7 +46,7 @@ th {
   font-size: 14px;
 }
 .footer {
-  margin-top: 30px;
+  margin-top: 5px;
   text-align: center;
   font-size: 10px;
 }
