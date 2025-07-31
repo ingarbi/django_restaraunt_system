@@ -57,9 +57,9 @@
       {{ order.created_at|date:"d.m.Y H:i" }}<br />
       Кассир: {{ request.user.get_full_name|default:"Кассир" }}
     </div>
-    <!-- <script type="text/javascript">
+    <script type="text/javascript">
     window.print();
     setTimeout(window.close, 0.5);
-</script> -->
+</script>
   </body>
 </html>
