@@ -41,7 +41,8 @@ def create_order(request):
 
             total_sum = 0
             for item in menu_items:
-                quantity = int(request.POST.get(f"item_{item.id}", 0))
+                
+                quantity = int(request.POST.get(f"item_{item.id}", 0) or 0)
                 if quantity > 0:
                     OrderItem.objects.create(
                         order=order, menu_item=item, quantity=quantity

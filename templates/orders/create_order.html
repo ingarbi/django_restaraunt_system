@@ -4,39 +4,41 @@
 <div class="card">
 <link href="{% static 'css/create_order.css' %}" rel="stylesheet" />    
     <div class="card-header">
-        <h3>Сделать новый заказ</h3>
+        <h3>Новый заказ</h3>
     </div>
     <div class="card-body">
         <form method="post" id="order-form" autocomplete="off">
             {% csrf_token %}
             <!-- Order Type Dropdown -->
-            <div class="d-inline-flex align-items-end">
-                <div class="me-2">
-                    <label for="id_order_type">Тип заказа:</label>
-                </div>
-                <select name="order_type" id="id_order_type" class="form-control-sm w-auto ms-4" required>
-                    <option value="" selected disabled>Выбрать</option>
-                    <option value="dine_in">В зале</option>
-                    <option value="takeaway">На вынос</option>
-                    <option value="delivery">Доставка</option>
-                </select>
+            <div class="d-flex flex-column ">
                 
+                    <label for="id_order_type">Тип заказа:</label>
+
+                    <select name="order_type" id="id_order_type" class="form-control-sm w-auto " required>
+                        <option value="" selected disabled>Не выбран</option>
+                        <option value="dine_in">В зале</option>
+                        <option value="takeaway">На вынос</option>
+                        <option value="delivery">Доставка</option>
+                    </select>
+                    
+
+                    <div id="id_delivery" class="mt-2 " style="display: none;">
+                        <label class="mt-1" for="phone">Тел.:</label>
+                        <input type="tel" id="phone" name="phone" placeholder="79281234567">
+                        <label class="mt-1" for="first_name">Имя:</label>
+                        <input type="text" id="first_name" name="first_name" placeholder="Рома">
+                        <label class="mt-1" for="addres">Адрес:</label>
+                        <input type="text" id="addres" name="addres" placeholder="Назрань, Муталиева 01" size="40">
+                    </div>
+
                 
 
-                <div id="id_delivery" class="ms-1" style="display: none;">
-                    <label class="ms-1" for="phone">Тел.:</label>
-                    <input type="tel" id="phone" name="phone" placeholder="123">
-                    <label class="ms-1" for="first_name">Имя:</label>
-                    <input type="text" id="first_name" name="first_name" placeholder="Рома">
-                    <label class="ms-1" for="addres">Адрес:</label>
-                    <input type="text" id="addres" name="addres" placeholder="Назрань, Муталиева" size="40">
-                </div>
             </div>
 
             <div class="d-flex flex-row bd-highlight mt-1">
                 <label for="id_payment_type" class="me-2 ">Способ оплаты:</label>
             <select name="payment_type" id="id_payment_type" class="form-control-sm w-auto " required>
-                <option value="" selected disabled >Выбрать</option>
+                <option value="" selected disabled >Не выбран</option>
                 <option value="cash"> Наличными</option>
                 <option value="online"> Переводом</option>
                 <option value="free"> Бесплатно</option>
@@ -45,7 +47,7 @@
 
             <div class="d-flex flex-row bd-highlight mt-1">
                 <label for="id_discount" class="me-2">Скидка (%):</label>      
-                <input list="discount-options" id="id_discount" min="0" max="100" name="id_discount" class="form-control-sm w-auto" />
+                <input list="discount-options"  placeholder="отсутствует" id="id_discount" min="0" max="100" name="id_discount" class="form-control-sm w-auto" />
                     <datalist id="discount-options">
                     <option value="5">
                     <option value="10">
@@ -57,7 +59,8 @@
             <!-- Selected Items Section -->
             <div class="mb-1">
                 <span class="fs-5 text-decoration-underline">Выбранные товары:</span>
-                <ul id="selected-items-list" class="list-group list-group-horizontal list-group-numbered list-group-flush">
+                <ul id="selected-items-list" class="selected-items-list d-flex flex-wrap">
+                    <li id="placeholder-item" class="text-muted">Товары ещё не выбраны</li>
                 </ul>
             </div>
 
@@ -95,10 +98,23 @@
                     <div class="tab-pane fade {% if forloop.first %}show active{% endif %}" id="content-{{ forloop.counter }}" role="tabpanel" aria-labelledby="tab-{{ forloop.counter }}">
                     <div class="row">
                         {% for item in items %}
-                        <div class="col-lg-2 col-sm-3 text-center">
-                            <label class="fs-6 fw-light" for="id_item_{{ item.id }}">{{ item.name }} <strong>({{ item.price|floatformat:"0" }} р.)</strong></label>
-                            <input type="number" min="0" name="item_{{ item.id }}" value="0" class="form-control form-control-sm ms-5 item-quantity text-center" data-price="{{ item.price }}" data-item-id="{{ item.id }}" data-item-name="{{ item.name }}">
-                        </div>
+                        <div class="col-lg-2 col-sm-3">
+                            <div class="menu-item text-center">
+                                <label class="fs-6 fw-light d-block" for="id_item_{{ item.id }}" class="menu-item-name" >
+                                {{ item.name }} 
+
+                                </label>
+
+                                <div class="menu-item-price">
+                                    {{ item.price|floatformat:"0" }} руб.
+                                </div>
+                                <input type="number" min="0" name="item_{{ item.id }}" value="" placeholder="0"
+                                    class="form-control form-control-sm item-quantity text-center"
+                                    data-price="{{ item.price }}"
+                                    data-item-id="{{ item.id }}"
+                                    data-item-name="{{ item.name }}">
+                            </div>
+                            </div>
                         {% endfor %}
                     </div>
                     </div>
@@ -181,7 +197,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     selectElement.addEventListener('change', function() {
         if (['delivery', 'takeaway'].includes(this.value)) {
-            targetDiv.style.display = 'inline';
+            targetDiv.style.display = 'block';
             this.style.background = '#007bff';
             this.style.color = '#fff';
         } else {
@@ -194,6 +210,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function updateSelectedItems() {
         selectedItemsList.innerHTML = '';
+
+        if (Object.keys(selectedItems).length === 0) {
+        // show placeholder if no items
+        const placeholder = document.createElement('li');
+        placeholder.id = 'placeholder-item';
+        placeholder.className = 'text-muted';
+        placeholder.textContent = 'Товары ещё не выбраны';
+        selectedItemsList.appendChild(placeholder);
+        return;
+    }
+
         for (const [id, item] of Object.entries(selectedItems)) {
             if (item.quantity > 0) {
                 const li = document.createElement('li');
