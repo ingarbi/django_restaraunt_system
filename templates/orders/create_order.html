@@ -57,26 +57,51 @@
             </div>
             
             <!-- Selected Items Section -->
-            <div class="mb-1">
-                <span class="fs-5 text-decoration-underline">Выбранные товары:</span>
+           <div class="mb-1">
+                <span class="fs-5 ">Выбранные товары:</span>
                 <ul id="selected-items-list" class="selected-items-list d-flex flex-wrap">
                     <li id="placeholder-item" class="text-muted">Товары ещё не выбраны</li>
                 </ul>
             </div>
 
             <!-- Total and Submit -->
-            <div class="d-flex justify-content-between align-items-center ">
-                <div>
-                    <h6 class="mb-0 bg-warning">Итого: <span id="total-sum">0.00</span> рублей.</h6>
-                    <label for="cash-received" class="mt-2">Получено от клиента:</label>
-                    <input type="number" id="cash-received" name="cash_received" placeholder="Введите сумму" min="0" step="0.01" class="form-control form-control-sm d-inline w-auto ms-2">
+           <div class="totals-container">
+            <div class="row align-items-center mb-3">
+                <!-- Total -->
+                <div class="col-md-4">
+                <div class="total-box">
+                    <span class="label">На сумму:</span>
+                    <span id="total-sum">0.00</span> ₽
                 </div>
-                <div>
-                    <h6 class="mb-0">Сдача: <span  id="change-amount">0.00</span> рублей.</h6>
                 </div>
-                <button type="submit" class="btn btn-info btn-sm" name="action" value="send">Отправить на кухню</button>
-                <button type="submit" class="btn btn-success btn-sm" name="action" value="send_and_print">Отправить и распечатать чек</button>
+
+         <!-- Cash input -->
+            <div class="col-md-4">
+            <label for="cash-received" class="form-label small">Получено от клиента:</label>
+            <input type="number" id="cash-received" name="cash_received"
+                    placeholder="Введите сумму" min="0" step="0.01"
+                    class="form-control form-control-sm">
             </div>
+
+            <!-- Change -->
+            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+            <div class="change-box">
+                <span class="label">Итого:</span>
+                <span id="change-amount">0.00</span> ₽
+            </div>
+            </div>
+        </div>
+
+        <!-- Action buttons -->
+        <div class="d-flex justify-content-center gap-3 mt-3">
+            <button type="submit" class="btn action-btn" name="action" value="send">
+            Отправить на кухню
+            </button>
+            <button type="submit" class="btn action-btn" name="action" value="send_and_print">
+            Отправить и распечатать чек
+            </button>
+        </div>
+        </div>
 
             <!-- Menu Items -->
             <div>
@@ -223,12 +248,26 @@ document.addEventListener('DOMContentLoaded', function() {
 
         for (const [id, item] of Object.entries(selectedItems)) {
             if (item.quantity > 0) {
-                const li = document.createElement('li');
-                li.className = 'list-group-item align-items-start';
-                li.innerHTML = `${item.name} x ${item.quantity} = ${item.total.toFixed(2)} руб.`;
-                selectedItemsList.appendChild(li);
-            }
+            const li = document.createElement('li');
+            li.innerHTML = `${item.name} x ${item.quantity} = ${item.total.toFixed(2)} руб. 
+                <span class="remove-btn" data-id="${id}">×</span>`;
+            selectedItemsList.appendChild(li);
         }
+        }
+
+        document.querySelectorAll('.remove-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const itemId = this.getAttribute('data-id');
+            // Reset item quantity input
+            const input = document.querySelector(`[name="item_${itemId}"]`);
+            if (input) input.value = 0;
+            // Remove from selectedItems
+            delete selectedItems[itemId];
+            updateSelectedItems();
+            calculateTotal();
+        });
+    });
+
     }
 
     

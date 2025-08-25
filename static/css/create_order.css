@@ -144,20 +144,53 @@ body {
     margin-top: 1.5rem;
     margin-bottom: 1rem;
 }
-
 .selected-items-list {
-    background-color: var(--accent-color);
-    border-radius: 12px;
-    padding: 1rem;
-    min-height: 60px;
-    margin-bottom: 1.5rem;
+  background-color: var(--accent-color);
+  border-radius: 12px;
+  padding: 0.75rem;
+  min-height: 60px;
+  margin-bottom: 1rem;
+  list-style: none;
 }
 
-.selected-items-list .list-group-item {
-    background-color: transparent;
-    border: none;
-    border-bottom: 1px dashed #ddd;
-    padding: 0.75rem 0;
+.selected-items-list li {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 20px;
+  padding: 0.3rem 0.75rem;
+  margin: 0.3rem;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+
+.remove-btn {
+  margin-left: 0.5rem;
+  cursor: pointer !important;
+  color: #dc3545 !important;
+  font-weight: bold;
+  display: flex;              /* flex container */
+  align-items: center;        /* vertical center */
+  justify-content: center;    /* horizontal center */
+  width: 22px;                /* slightly bigger for breathing space */
+  height: 22px;
+  border-radius: 50%;
+  background: #f8d7da;
+  line-height: 1;             /* prevents extra baseline offset */
+  font-size: 14px;            /* adjust size */
+}
+
+.remove-btn:hover {
+  background: #dc3545 !important;
+  color: #fff !important;
+}
+
+#placeholder-item {
+  background: transparent;
+  border: none;
+  font-style: italic;
 }
 
 .selected-items-list .list-group-item:last-child {
@@ -224,27 +257,48 @@ body {
     }
 }
 
-.selected-items-list {
-  background-color: var(--accent-color);
-  border-radius: 12px;
-  padding: 0.75rem;
-  min-height: 60px;
-  margin-bottom: 1rem;
-  list-style: none; /* remove default bullets */
+.totals-container {
+  padding: 1rem;
+  border-top: 1px solid #eee;
+  margin-top: 1.5rem;
 }
 
-.selected-items-list li {
-  background: white;
+/* Total and Change boxes */
+.total-box, .change-box {
+  background: #f8f9fa;
   border: 1px solid #ddd;
-  border-radius: 20px;
-  padding: 0.3rem 0.75rem;
-  margin: 0.3rem;
-  font-size: 0.9rem;
-  white-space: nowrap;
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  font-weight: 600;
+  display: inline-block;
 }
 
-#placeholder-item {
+.total-box {
+  background: #fff3cd; /* light yellow for total */
+}
+
+.change-box {
+  background: #e2f0d9; /* light green for change */
+}
+
+.total-box .label, .change-box .label {
+  margin-right: 0.5rem;
+  color: var(--primary-color);
+  font-weight: 700;
+}
+
+/* Buttons */
+.action-btn {
+  border: 2px solid var(--primary-color);
+  border-radius: 8px;
+  padding: 0.6rem 1.2rem;
+  font-weight: 600;
   background: transparent;
-  border: none;
-  font-style: italic;
+  color: var(--primary-color);
+  transition: all 0.3s ease;
+}
+
+.action-btn:hover {
+  background: var(--primary-color);
+  color: white;
 }
