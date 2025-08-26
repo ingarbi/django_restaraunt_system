@@ -102,6 +102,6 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 LOGIN_REDIRECT_URL = "/"
 
-SIMPLEUI_LOGO = '/static/logo.png'  # Путь к вашему логотипу
+SIMPLEUI_LOGO = '/static/images/logo.jpeg'  # Путь к вашему логотипу
 SIMPLEUI_HOME_INFO = False  # Скрыть блок "Быстрые ссылки"
 SIMPLEUI_DEFAULT_THEME = 'admin.lte.css'  # Выбор темы
