@@ -23,6 +23,9 @@
 
 6) Activate virtual environment:
     venv\Scripts\activate # Windows
+    source venv/Scripts/activate # Windows / Git Bash
+    .\venv\Scripts\Activate.ps1 # Windows / PowerShell
+    venv\Scripts\activate.bat # Windows / Command Prompt (CMD)
 
 7) Install required packages:
     pip install -r requirements.txt
