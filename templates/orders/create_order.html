@@ -34,27 +34,6 @@
                 
 
             </div>
-
-            <div class="d-flex flex-row bd-highlight mt-1">
-                <label for="id_payment_type" class="me-2 ">Способ оплаты:</label>
-            <select name="payment_type" id="id_payment_type" class="form-control-sm w-auto " required>
-                <option value="" selected disabled >Не выбран</option>
-                <option value="cash"> Наличными</option>
-                <option value="online"> Переводом</option>
-                <option value="free"> Бесплатно</option>
-            </select>
-            </div>
-
-            <div class="d-flex flex-row bd-highlight mt-1">
-                <label for="id_discount" class="me-2">Скидка (%):</label>      
-                <input list="discount-options"  placeholder="отсутствует" id="id_discount" min="0" max="100" name="id_discount" class="form-control-sm w-auto" />
-                    <datalist id="discount-options">
-                    <option value="5">
-                    <option value="10">
-                    <option value="15">
-                    <option value="20">
-                    </datalist>
-            </div>
             
             <!-- Selected Items Section -->
            <div class="mb-1">
@@ -63,6 +42,46 @@
                     <li id="placeholder-item" class="text-muted">Товары ещё не выбраны</li>
                 </ul>
             </div>
+
+             <!-- Payment & Discount -->
+            <div class="payment-section row align-items-center mb-3">
+                <!-- Способ оплаты -->
+                <div class="col-md-4 mb-2 mb-md-0">
+                    <label for="id_payment_type" class="form-label small">Способ оплаты:</label>
+                    <select name="payment_type" id="id_payment_type" class="form-control form-control-sm" required>
+                    <option value="" selected disabled>Не выбран</option>
+                    <option value="cash">Наличными</option>
+                    <option value="online">Переводом</option>
+                    <option value="free">Бесплатно</option>
+                    </select>
+                </div>
+
+                <!-- Скидка -->
+                <div class="col-md-4 mb-2 mb-md-0">
+                    <label for="id_discount" class="form-label small">Скидка (%):</label>
+                    <input list="discount-options" placeholder="отсутствует" id="id_discount" 
+                        min="0" max="100" name="id_discount" 
+                        class="form-control form-control-sm" />
+                    <datalist id="discount-options">
+                    <option value="5">
+                    <option value="10">
+                    <option value="15">
+                    <option value="20">
+                    </datalist>
+                </div>
+
+                <!-- Оплатит позже -->
+                <div class="col-md-4">
+                    <div class="form-check mt-4">
+                    <input type="checkbox" class="form-check-input" id="pay-later">
+                    <label class="form-check-label" for="pay-later">Оплатит позже</label>
+                    </div>
+                </div>
+            </div>
+
+
+
+
 
             <!-- Total and Submit -->
            <div class="totals-container">
@@ -151,7 +170,7 @@
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function() {
     const orderSocket = new WebSocket('ws://' + window.location.host + '/ws/orders/');
 
     let clickedButton = null;
@@ -166,14 +185,21 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('order-form').addEventListener('submit', function(e) {
         
         e.preventDefault();
-        const submitButton = document.querySelector('#order-form button[type="submit"]');
+
+        const paymentType = document.getElementById('id_payment_type').value;
+        const payLater = document.getElementById('pay-later').checked;
         const total = parseFloat(totalSumElement.textContent) || 0;
         const cashReceived = parseFloat(cashReceivedInput.value) || 0;
 
-        if (cashReceived < total) {
-            event.preventDefault(); // Prevent form submission
-            alert('Ошибка: Недостаточно средств для завершения заказа.');
+        // Skip validation for non-cash payments or if paying later
+        if (paymentType === 'cash' && !payLater) {
+            if (cashReceived < total) {
+                alert('Ошибка: Недостаточно средств для завершения заказа.');
+                return;
+            }
         }
+
+
         else{
             const formData = new FormData(this);
             if (clickedButton) {
@@ -218,7 +244,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const cashReceivedInput = document.getElementById('cash-received');
     const changeAmountElement = document.getElementById('change-amount');
     const discountSelect = document.getElementById('id_discount');
+    const paymentTypeSelect = document.getElementById('id_payment_type');
+    const payLaterCheckbox = document.getElementById('pay-later');
     let selectedItems = {};
+
 
     selectElement.addEventListener('change', function() {
         if (['delivery', 'takeaway'].includes(this.value)) {
@@ -291,11 +320,22 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     function calculateChange() {
+        const paymentType = paymentTypeSelect.value;
+        const payLater = payLaterCheckbox.checked;
+        
+        // If not paying with cash, or paying later, show "Не требуется" instead of change
+        if (paymentType !== 'cash' || payLater) {
+            changeAmountElement.textContent = 'Не требуется';
+            changeAmountElement.style.color = '#6c757d';
+            return;
+        }
+        
         const total = parseFloat(totalSumElement.textContent) || 0;
         const cashReceived = parseFloat(cashReceivedInput.value) || 0;
         const change = cashReceived - total;
+        
         changeAmountElement.textContent = change >= 0 ? change.toFixed(2) : 'Недостаточно';
-        changeAmountElement.style.color = change >= 0 ? '#28a745' : '#dc3545'; // Green for positive change, red for negative
+        changeAmountElement.style.color = change >= 0 ? '#28a745' : '#dc3545';
     }
 
     quantityInputs.forEach(input => {
@@ -322,6 +362,34 @@ document.addEventListener('DOMContentLoaded', function() {
             calculateTotal();
         });
     });
+
+        // Handle payment type changes
+    paymentTypeSelect.addEventListener('change', function() {
+        updatePaymentUI();
+        calculateChange();
+    });
+    
+    // Handle pay later checkbox
+    payLaterCheckbox.addEventListener('change', function() {
+        updatePaymentUI();
+        calculateChange();
+    });
+    
+    // Update UI based on payment type and pay later status
+    function updatePaymentUI() {
+        const paymentType = paymentTypeSelect.value;
+        const payLater = payLaterCheckbox.checked;
+        
+        // Disable cash input and change calculation for non-cash payments or pay later
+        const isCashPayment = paymentType === 'cash' && !payLater;
+        
+        cashReceivedInput.disabled = !isCashPayment;
+        
+        // Clear cash input when disabled
+        if (!isCashPayment) {
+            cashReceivedInput.value = '';
+        }
+    }
 
     // Listen for changes in the cash received input
     cashReceivedInput.addEventListener('input', function () {
