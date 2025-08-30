@@ -1,7 +1,8 @@
 {% extends 'main/base.html' %} {% block content %}
 {% load static %}
 <div class="container ms-2">
-  <h2>Все заказы на сегодня</h2>
+  <h2 class="text-center" >Все заказы на сегодня <span id="current_date"></span> </h2>
+  
   <link href="{% static 'css/all_order.css' %}" rel="stylesheet" />
 
   <!-- Container for pending orders -->
@@ -138,5 +139,9 @@
       }, 7000);
     }
   };
+
+document.getElementById("current_date").innerHTML = new Date().toLocaleDateString('ru-RU');
+
+
 </script>
 {% endblock %}

@@ -5,6 +5,19 @@
     --dark-color: #212529;
 }
 
+.card-title {
+        font-size: 1.15rem !important;
+        margin-bottom: 0.75rem !important;
+        display: flex;
+        align-items: center;
+    }
+
+.card-title:hover {
+      background-color: #abbd00;
+      transform: scale(1.03);
+      transition: all 0.3s ease-in-out;
+    }
+
 .order-section {
     background-color: white;
     border-radius: 12px;
