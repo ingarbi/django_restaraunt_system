@@ -5,13 +5,20 @@
                 <div class="card-order border border-secondary d-flex flex-column h-100 rounded-3" id="order-{{ order.id }}">
                     <div class="card-body flex-fill" >
                         <a href="{% url 'order_detail' order.id %}" class="text-decoration-none text-dark">
-                        <h6 class="card-title">Заказ #{{ order.order_number|slice:'12:' }} 
+                       <h6 class="card-title">Заказ #{{ order.order_number|slice:'12:' }} 
                             {% if order.status == 'done' %}
-                                <span class="badge bg-info">{{order.get_status_display}}</span> {{ order.total_sum|floatformat:"-3g" }}₽
+                                <span class="badge bg-info">{{order.get_status_display}}</span>
                             {% else %}
-                                <span class="badge bg-warning text-dark">Готовится...</span> {{ order.total_sum|floatformat:"-3g" }}₽
+                                <span class="badge bg-warning text-dark">Готовится на кухне</span>
+                            {% endif %}
+                            <!-- Add paid status -->
+                            {% if order.paid %}
+                                <span class="badge bg-success ms-1">Оплачен</span>
+                            {% else %}
+                                <span class="badge bg-danger ms-1">Не оплачен</span>
                             {% endif %}
                         </h6>
+                        
                         <span class="card-text text-decoration-underline">{{ order.created_at }}</span>
                         <span >{% if order.order_type == "takeaway" or order.order_type == "delivery" %}{{order.phone_number|default:"Нет номера"}}{% endif %}</span>
                         <ul class="list-unstyled mt-1 mb-1">

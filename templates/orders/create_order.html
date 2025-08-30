@@ -73,15 +73,13 @@
                 <!-- Оплатит позже -->
                 <div class="col-md-4">
                     <div class="form-check mt-4">
-                    <input type="checkbox" class="form-check-input" id="pay-later">
-                    <label class="form-check-label" for="pay-later">Оплатит позже</label>
+                    <input class="form-check-input" type="checkbox" id="pay-later" name="pay_later">
+                        <label class="form-check-label" for="pay-later">
+                            Оплатит позже
+                        </label>
                     </div>
                 </div>
             </div>
-
-
-
-
 
             <!-- Total and Submit -->
            <div class="totals-container">
@@ -192,16 +190,18 @@
         const cashReceived = parseFloat(cashReceivedInput.value) || 0;
 
         // Skip validation for non-cash payments or if paying later
-        if (paymentType === 'cash' && !payLater) {
-            if (cashReceived < total) {
-                alert('Ошибка: Недостаточно средств для завершения заказа.');
-                return;
+        // Skip validation for non-cash payments or if paying later
+            if (paymentType === 'cash' && !payLater) {
+                if (cashReceived < total) {
+                    alert('Ошибка: Недостаточно средств для завершения заказа.');
+                    return;
+                }
             }
-        }
-
-
-        else{
+            
             const formData = new FormData(this);
+            formData.append('payment_type', paymentType);
+            formData.append('pay_later', payLater);
+            
             if (clickedButton) {
                 formData.append('action', clickedButton.value);
             }
@@ -231,7 +231,7 @@
                     }
                 }
             });
-        }
+        
 
     });
 
@@ -246,6 +246,7 @@
     const discountSelect = document.getElementById('id_discount');
     const paymentTypeSelect = document.getElementById('id_payment_type');
     const payLaterCheckbox = document.getElementById('pay-later');
+    
     let selectedItems = {};
 
 

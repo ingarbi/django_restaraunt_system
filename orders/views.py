@@ -1,16 +1,19 @@
+import os
+
 import weasyprint
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from django.conf import settings
+from django.contrib.auth.decorators import login_required
+from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.utils import timezone
-from django.core.exceptions import PermissionDenied
-from django.contrib.auth.decorators import login_required
+
 from .forms import OrderForm
 from .models import MenuItem, Order, OrderItem
-import os
+
 
 @login_required
 def create_order(request):
@@ -33,6 +36,15 @@ def create_order(request):
             phone = request.POST.get("phone", "")
             first_name = request.POST.get("first_name", "")
             address = request.POST.get("addres", "")
+            payment_type = request.POST.get('payment_type')
+            pay_later = request.POST.get('pay_later') == 'on'
+
+            # Set paid status based on payment type and pay later status
+            if payment_type in ['online', 'free'] or (payment_type == 'cash' and not pay_later):
+                order.paid = True
+            else:
+                order.paid = False
+                
             try:
                 discount = int(request.POST.get("id_discount", 0))
             except:
@@ -57,6 +69,7 @@ def create_order(request):
             order.phone_number = phone
             order.name = first_name
             order.address = address
+            order.payment_type = payment_type
             order.created_by = request.user
 
             order.payment_type = payment_type
