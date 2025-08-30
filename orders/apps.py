@@ -4,10 +4,11 @@ from django.apps import AppConfig
 class OrdersConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
     name = 'orders'
-    verbose_name = "Заказы"
+    verbose_name = "Меню/Заказы"
 
     def ready(self, *args, **kwargs):
         from django.db.models.signals import post_save
+
         from orders.signals import new_order
         
         my_model = self.get_model('Order')
