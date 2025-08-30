@@ -41,7 +41,7 @@ class Order(models.Model):
         ("cancelled", "Отменен"),
         ("pending", "В ожидании"),
         ("done", "Готов"),
-        ("delivered", "Доставлен"),
+        ("delivered", "Выполнен"),
     )
     ORDER_TYPE_CHOICES = [
         ("dine_in", "В зале"),
