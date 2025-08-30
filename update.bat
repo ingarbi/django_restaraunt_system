@@ -14,7 +14,7 @@ git pull origin main
 echo ==========================
 echo Installing dependencies...
 echo ==========================
-pip install -r requirements.txt
+pip install -r req.txt
 
 echo ==========================
 echo Running migrations...
