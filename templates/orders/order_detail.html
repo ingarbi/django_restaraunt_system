@@ -2,108 +2,121 @@
 {% load custom_filters %}
 {% load static %}
 {% block content %}
-<link href="{% static 'css/order_detail.css' %}" rel="stylesheet" />
-<div class="container mt-4">
+  <link href="{% static 'css/order_detail.css' %}" rel="stylesheet" />
+  <div class="container mt-4">
     <div class="card">
-        <div class="card-header">
-            <h3>Детали заказа #{{ order.order_number|slice:"12:" }}</h3>
-            <span class="badge {{ order.get_status_color }}">
-                {{ order.get_status_display }}
-            </span>
-        </div>
-        
-        <div class="card-body">
-            <div class="row mb-4">
-                <div class="col-md-6">
-                
-                    <p><strong>Тип:</strong> {{ order.get_order_type_display }}</p>
-                    <p><strong>Дата создания:</strong> {{ order.created_at|date:"d.m.Y H:i" }}</p>
-                    <p><strong>Итого:</strong> {{ order.total_sum }} руб.</p>
-                    <strong>Оплата:</strong> {{ order.get_payment_type_display }}
-                </div>
-                
-                {% if order.order_type == "delivery" or order.order_type == "takeaway" %}
-                <div class="col-md-6">
-                    <h5>Клиент:</h5>
-                    <p><strong>Имя:</strong> {{ order.name|default:"Не указано" }}</p>
-                    <p><strong>Телефон:</strong> {{ order.phone_number|default:"Не указан" }}</p>
-                    {% if order.order_type == "delivery" %}
-                        <p><strong>Адрес:</strong> {{ order.address|default:"Не указан" }}</p>
-                    {% endif %}
-                </div>
-                {% endif %}
-            </div>
+      <div class="card-header">
+        <h3>
+          Детали заказа #{{ order.order_number|slice:'12:' }} {% if order.paid %}
+            <span class="badge bg-success text-light">- оплачен</span>
+          {% else %}
+            <span class="badge bg-danger text-light">- не оплачен</span>
+          {% endif %}
+        </h3>
+        <span class="badge {{ order.get_status_color }}">{{ order.get_status_display }}</span>
+      </div>
 
-    
-            <table class="table table-bordered">
-                <thead class="table-light">
-                    <tr>
-                        <th>№</th>
-                        <th>Наименование</th>
-                        <th>Количество</th>
-                        <th>Цена</th>
-                        <th>Сумма</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for item in order.items.all %}
-                    <tr>
-                        <td>{{ forloop.counter }}</td>
-                        <td>{{ item.menu_item.name }}</td>
-                        <td>{{ item.quantity }}</td>
-                        <td>{{ item.menu_item.price }} руб.</td>
-                        <td>{{ item.menu_item.price|mul:item.quantity }} руб.</td>
-                    </tr>
-                    {% endfor %}
-                    <tr class="table-secondary">
-                         <div><strong>Скидка:</strong> {{ order.discount }}%</div>
-                        <td colspan="4" class="text-end"><strong>Итого:</strong></td>
-                        <td><strong>{{ order.total_sum }} руб.</strong></td>
-                    </tr>
-                </tbody>
-            </table>
-            
-            <div class="d-flex justify-content-between mt-4">
-                <a href="{{request.META.HTTP_REFERER}}" class="btn btn-secondary">
-                    ← Вернуться к списку заказов
-                </a>
-                
-                <a href="{% url 'quick_receipt_printing' order.id %}" class="btn btn-primary" target="_blank">
-                    <i class="bi bi-file-earmark-pdf"></i> Печать чека
-                </a>
+      <div class="card-body">
+        <div class="row mb-4">
+          <div class="col-md-6">
+            <p>
+              <strong>Тип:</strong> {{ order.get_order_type_display }}
+            </p>
+            <p>
+              <strong>Дата создания:</strong> {{ order.created_at|date:'d.m.Y H:i' }}
+            </p>
+            <p>
+              <strong>Итого:</strong> {{ order.total_sum }} руб.
+            </p>
+            <strong>Оплата:</strong> {{ order.get_payment_type_display }}
+          </div>
 
-                {% if order.status == 'done' %}
-                <button class="btn btn-success" 
-                        onclick="markAsDelivered({{ order.id }})">
-                    Отметить как выданный
-                </button>
-                {% endif %}
+          {% if order.order_type == 'delivery' or order.order_type == 'takeaway' %}
+            <div class="col-md-6">
+              <h5>Клиент:</h5>
+              <p>
+                <strong>Имя:</strong> {{ order.name|default:'Не указано' }}
+              </p>
+              <p>
+                <strong>Телефон:</strong> {{ order.phone_number|default:'Не указан' }}
+              </p>
+              {% if order.order_type == 'delivery' %}
+                <p>
+                  <strong>Адрес:</strong> {{ order.address|default:'Не указан' }}
+                </p>
+              {% endif %}
             </div>
+          {% endif %}
         </div>
+
+        <table class="table table-bordered">
+          <thead class="table-light">
+            <tr>
+              <th>№</th>
+              <th>Наименование</th>
+              <th>Количество</th>
+              <th>Цена</th>
+              <th>Сумма</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in order.items.all %}
+              <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ item.menu_item.name }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>{{ item.menu_item.price }} руб.</td>
+                <td>{{ item.menu_item.price|mul:item.quantity }} руб.</td>
+              </tr>
+            {% endfor %}
+            <tr class="table-secondary">
+              <div>
+                <strong>Скидка:</strong> {{ order.discount }}%
+              </div>
+              <td colspan="4" class="text-end">
+                <strong>Итого:</strong>
+              </td>
+              <td>
+                <strong>{{ order.total_sum }} руб.</strong>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="d-flex justify-content-between mt-4">
+          <a href="{{ request.META.HTTP_REFERER }}" class="btn btn-secondary">← Вернуться к списку заказов</a>
+
+          <a href="{% url 'quick_receipt_printing' order.id %}" class="btn btn-primary" target="_blank"><i class="bi bi-file-earmark-pdf"></i> Печать чека</a>
+
+          {% if order.status == 'done' %}
+            <button class="btn btn-success" onclick="markAsDelivered({{ order.id }})">Отметить как выданный</button>
+          {% endif %}
+        </div>
+      </div>
     </div>
-</div>
+  </div>
 
-<script>
-function markAsDelivered(orderId) {
-    fetch(`/orders/delivere/${orderId}/`, {
+  <script>
+    function markAsDelivered(orderId) {
+      fetch(`/orders/delivere/${orderId}/`, {
         method: 'GET',
         headers: {
-            'X-Requested-With': 'XMLHttpRequest',
-            'X-CSRFToken': '{{ csrf_token }}',
+          'X-Requested-With': 'XMLHttpRequest',
+          'X-CSRFToken': '{{ csrf_token }}'
         }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            window.location.reload();
-        } else {
-            alert('Ошибка: ' + (data.message || 'Неизвестная ошибка'));
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('Произошла ошибка при обновлении статуса');
-    });
-}
-</script>
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.success) {
+            window.location.reload()
+          } else {
+            alert('Ошибка: ' + (data.message || 'Неизвестная ошибка'))
+          }
+        })
+        .catch((error) => {
+          console.error('Error:', error)
+          alert('Произошла ошибка при обновлении статуса')
+        })
+    }
+  </script>
 {% endblock %}

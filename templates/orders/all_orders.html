@@ -20,8 +20,8 @@
             <div class="card border-2 shadow-sm h-100 rounded-4 overflow-hidden">
               
               <!-- Header -->
-              <div class="card-header bg-light d-flex justify-content-between align-items-center py-2">
-                <h6 class="mb-0 fw-bold text-secondary">
+              <div class="card-header bg-dark d-flex justify-content-between align-items-center py-2">
+                <h6 class="mb-0 fw-bold text-light">
                   Заказ №{{ order.get_human_readable_order_number }}
                 </h6>
                 <small class="text-muted">
@@ -78,7 +78,7 @@
                     </p>
                   {% endif %}
 
-                  <!-- Items -->
+                  {% comment %} <!-- Items -->
                   <ul class="list-unstyled small mb-0">
                     {% for item in order.items.all|slice:":3" %}
                       <li>• {{ item.menu_item.name }} <span class="text-muted">x{{ item.quantity }}</span></li>
@@ -86,7 +86,7 @@
                     {% if order.items.all|length > 3 %}
                       <li class="text-muted fst-italic">+ ещё...</li>
                     {% endif %}
-                  </ul>
+                  </ul> {% endcomment %}
                 </a>
               </div>
 
