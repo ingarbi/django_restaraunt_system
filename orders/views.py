@@ -39,11 +39,6 @@ def create_order(request):
             payment_type = request.POST.get('payment_type')
             pay_later = request.POST.get('pay_later') == 'on'
 
-            # Set paid status based on payment type and pay later status
-            if payment_type in ['online', 'free'] or (payment_type == 'cash' and not pay_later):
-                order.paid = True
-            else:
-                order.paid = False
                 
             try:
                 discount = int(request.POST.get("id_discount", 0))
@@ -72,7 +67,15 @@ def create_order(request):
             order.payment_type = payment_type
             order.created_by = request.user
 
-            order.payment_type = payment_type
+            # 🔑 Payment status logic
+            if pay_later:
+                order.paid = False
+            elif payment_type in ["online", "free"]:
+                order.paid = True
+            elif payment_type == "cash" and not pay_later:
+                order.paid = True
+            else:
+                order.paid = False
 
             order.save()
 
@@ -87,6 +90,7 @@ def create_order(request):
                         "id": order.id,
                         "order_number": order.order_number,
                         "status": order.status,
+                        "paid": order.paid,
                         "created_at": order.created_at.strftime("%Y-%m-%d %H:%M:%S"),
                         "items": [
                             {"name": item.menu_item.name, "quantity": item.quantity}
@@ -119,6 +123,7 @@ def mark_order_completed(request, order_id):
             "action": "status_change",
             "order_id": order.id,
             "status": order.status,
+            "paid": order.paid,
         },
     )
 
@@ -139,6 +144,7 @@ def mark_order_delivered(request, order_id):
             "action": "status_change",
             "order_id": order.id,
             "status": order.status,
+            "paid": order.paid,
         },
     )
 
@@ -159,6 +165,7 @@ def mark_order_cancelled(request, order_id):
             "action": "status_change",
             "order_id": order.id,
             "status": order.status,
+            "paid": order.paid,
         },
     )
 

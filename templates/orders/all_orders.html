@@ -9,29 +9,95 @@
   <div id="orders-container">{% include 'orders/order_list.html' %}</div>
 
   <!-- Display delivered and cancelled orders as a list in a grid -->
-  <div class="row" id="completed-orders">
-    <div class="col-12">
-      <h3>Доставленные и отмененные заказы</h3>
-      <div class="row">
-        {% for order in orders %} {% if order.status == 'delivered' or order.status == 'cancelled' %}
-        <div class="col-md-2 col-sm-4 col-6 mb-4">
-          <div class="list-group-item">
-            <a href="{% url 'order_detail' order.id %}" class="text-decoration-none text-dark">
-            <h6 class="mb-1">
-              Заказ #{{ order.order_number|slice:'12:' }} {% if order.status == 'cancelled' %}
-              <span class="badge bg-danger">{{ order.get_status_display }}</span>
-              {% elif order.status == 'delivered' %}
-              <span class="badge bg-success">{{ order.get_status_display }}</span>
-              {% endif %}
-            </h6>
-            <p class="mb-1">{{ order.created_at }}</p>
-            </a>
+<!-- Completed orders -->
+<div class="row mt-4" id="completed-orders">
+  <div class="col-12">
+    <h3 class="mb-3">Выполненные или отмененные заказы</h3>
+    <div class="row g-3">
+      {% for order in orders %}
+        {% if order.status == 'delivered' or order.status == 'cancelled' %}
+          <div class="col-lg-3 col-md-4 col-sm-6">
+            <div class="card border-2 shadow-sm h-100 rounded-4 overflow-hidden">
+              
+              <!-- Header -->
+              <div class="card-header bg-light d-flex justify-content-between align-items-center py-2">
+                <h6 class="mb-0 fw-bold text-secondary">
+                  Заказ №{{ order.get_human_readable_order_number }}
+                </h6>
+                <small class="text-muted">
+                  <i class="bi bi-clock me-1"></i>{{ order.created_at|date:"H:i" }}
+                </small>
+              </div>
+
+              <!-- Body -->
+              <div class="card-body py-3">
+                <a href="{% url 'order_detail' order.id %}" class="text-decoration-none text-dark">
+                  
+                  <!-- Status -->
+                  <div class="mb-2">
+                    {% if order.status == 'delivered' %}
+                      <span class="badge bg-success-subtle text-success">
+                        Выполнен
+                      </span>
+                    {% elif order.status == 'cancelled' %}
+                      <span class="badge bg-danger-subtle text-danger">
+                        Отменён
+                      </span>
+                    {% endif %}
+                  </div>
+
+                  <!-- Order type + Payment + Total -->
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div class="d-flex align-items-center gap-2">
+                      {% if order.order_type == "dine_in" %}
+                        <span class="badge bg-primary"><i class="bi bi-shop me-1"></i>В зале</span>
+                      {% elif order.order_type == "takeaway" %}
+                        <span class="badge bg-warning text-dark"><i class="bi bi-bag-check me-1"></i>На вынос</span>
+                      {% elif order.order_type == "delivery" %}
+                        <span class="badge bg-success"><i class="bi bi-truck me-1"></i>Доставка</span>
+                      {% endif %}
+
+                      {% if order.payment_type == "cash" %}
+                        <i class="bi bi-cash-coin fs-5 text-success" title="Наличные"></i>
+                      {% elif order.payment_type == "online" %}
+                        <i class="bi bi-phone-fill fs-5 text-primary" title="Перевод"></i>
+                      {% elif order.payment_type == "free" %}
+                        <i class="bi bi-gift-fill fs-5 text-info" title="Бесплатно"></i>
+                      {% endif %}
+                    </div>
+
+                    <div class="fw-bold">
+                      {{ order.total_sum|floatformat:"-3g" }} ₽
+                    </div>
+                  </div>
+
+                  <!-- Contact -->
+                  {% if order.order_type == "takeaway" or order.order_type == "delivery" %}
+                    <p class="small text-muted mb-2">
+                      📞 {{ order.phone_number|default:"Нет номера" }}
+                    </p>
+                  {% endif %}
+
+                  <!-- Items -->
+                  <ul class="list-unstyled small mb-0">
+                    {% for item in order.items.all|slice:":3" %}
+                      <li>• {{ item.menu_item.name }} <span class="text-muted">x{{ item.quantity }}</span></li>
+                    {% endfor %}
+                    {% if order.items.all|length > 3 %}
+                      <li class="text-muted fst-italic">+ ещё...</li>
+                    {% endif %}
+                  </ul>
+                </a>
+              </div>
+
+            </div>
           </div>
-        </div>
-        {% endif %} {% endfor %}
-      </div>
+        {% endif %}
+      {% endfor %}
     </div>
   </div>
+</div>
+
 </div>
 
 <script>

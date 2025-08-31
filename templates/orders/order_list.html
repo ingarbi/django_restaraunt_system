@@ -1,82 +1,137 @@
-<div class="row" id="pending-orders">
+<div class="row g-3" id="pending-orders">
     {% for order in orders %}
         {% if order.status != 'delivered' and order.status != 'cancelled' %}
-            <div class="col-md-3 col-sm-4 col-6 mb-1">
-                <div class="card-order border border-secondary d-flex flex-column h-100 rounded-3" id="order-{{ order.id }}">
-                    <div class="card-body flex-fill" >
-                        <a href="{% url 'order_detail' order.id %}" class="text-decoration-none text-dark">
-                        <h6 class="card-title text-secondary justify-content-center ">Заказ №{% if order.order_number|slice:'12:'|length >= 99 %}{{ order.order_number|slice:'11:' }}{% else %}{{ order.order_number|slice:'12:' }}{% endif %} <i class="bi bi-clock ms-2"> </i> <span class="text-muted small"> {{ order.created_at|date:"H:i" }}</span> </h6>
-                            {% if order.status == 'done' %}
-                                <span class="badge bg-info">{{order.get_status_display}}</span> {{ order.total_sum|floatformat:"-3g" }}₽
-                            {% else %}
-                                <span class="badge bg-warning text-dark">Готовится...</span> {{ order.total_sum|floatformat:"-3g" }}₽
-                            {% endif %}
+            <div class="col-lg-3 col-md-4 col-sm-6">
+                <div class="card border-2 shadow-sm h-100 rounded-4 overflow-hidden card-order" id="order-{{ order.id }}">
+                    
+                    <!-- Header -->
+                    <div class="card-header bg-light d-flex justify-content-between align-items-center py-2">
+                        <h6 class="mb-0 fw-bold text-secondary">
+                            Заказ №{{ order.get_human_readable_order_number }}
                         </h6>
-                        
-                        <span >{% if order.order_type == "takeaway" or order.order_type == "delivery" %}{{order.phone_number|default:"Нет номера"}}{% endif %}</span>
-                        <ul class="list-unstyled mt-1 mb-1">
-                        {% for item in order.items.all|slice:":3" %}
-                            <li>{{ item.menu_item.name }} x {{ item.quantity }}</li>
-                        {% endfor %}
-                        {% if order.items.all|length > 3 %}
-                            <li>Еще...</li> <!-- Show dots if there are more than 3 items -->
-                        {% endif %}
-                        </ul>   
-                    </a>
+                        <small class="text-muted">
+                            <i class="bi bi-clock me-1"></i>{{ order.created_at|date:"H:i" }}
+                        </small>
                     </div>
-                    <div class="d-flex flex-row text-center justify-content-evenly mb-1">
+
+                    <!-- Body -->
+                   <div class="card-body py-3">
+                        <a href="{% url 'order_detail' order.id %}" class="text-decoration-none text-dark">
+                            
+                            <!-- Status + Paid -->
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                {% if order.status == 'done' %}
+                                    <span class="badge bg-success-subtle text-success">
+                                        {{ order.get_status_display }}
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-warning-subtle text-dark">
+                                        Готовится...
+                                    </span>
+                                {% endif %}
+
+                                {% if order.paid %}
+                                    <span class="badge bg-success text-light">Оплачен</span>
+                                {% else %}
+                                    <span class="badge bg-danger text-light">Не оплачен</span>
+                                {% endif %}
+                            </div>
+
+                            <!-- Order type + Payment type + Total -->
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <div class="d-flex align-items-center gap-2">
+                                    <!-- Order type -->
+                                    {% if order.order_type == "dine_in" %}
+                                        <span class="badge bg-primary"><i class="bi bi-shop me-1"></i>В зале</span>
+                                    {% elif order.order_type == "takeaway" %}
+                                        <span class="badge bg-warning text-dark"><i class="bi bi-bag-check me-1"></i>На вынос</span>
+                                    {% elif order.order_type == "delivery" %}
+                                        <span class="badge bg-success"><i class="bi bi-truck me-1"></i>Доставка</span>
+                                    {% endif %}
+
+                                    <!-- Payment type (icons only) -->
+                                    {% if order.payment_type == "cash" %}
+                                        <i class="bi bi-cash-coin fs-5 text-success" title="Наличные"></i>
+                                    {% elif order.payment_type == "online" %}
+                                        <i class="bi bi-globe2 fs-5 text-primary" title="Перевод"></i>
+                                    {% elif order.payment_type == "free" %}
+                                        <i class="bi bi-gift-fill fs-5 text-info" title="Бесплатно"></i>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Total -->
+                                <div class="fw-bold">
+                                    {{ order.total_sum|floatformat:"-3g" }} ₽
+                                </div>
+                            </div>
+
+                            <!-- Contact info -->
+                            {% if order.order_type == "takeaway" or order.order_type == "delivery" %}
+                                <p class="small text-muted mb-2">
+                                    📞 {{ order.phone_number|default:"Нет номера" }}
+                                </p>
+                            {% endif %}
+
+                            <!-- Items -->
+                            <ul class="list-unstyled small mb-0">
+                                {% for item in order.items.all|slice:":3" %}
+                                    <li>• {{ item.menu_item.name }} <span class="text-muted">x{{ item.quantity }}</span></li>
+                                {% endfor %}
+                                {% if order.items.all|length > 3 %}
+                                    <li class="text-muted fst-italic">+ еще...</li>
+                                {% endif %}
+                            </ul>
+                        </a>
+                    </div>
+
+
+                    <!-- Footer actions -->
+                    <div class="card-footer bg-white d-flex justify-content-around py-2">
+                        <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#cancelModal{{ order.id }}">
+                            <i class="bi bi-x-circle me-1"></i> Отменить
+                        </button>
                         {% if order.status == 'done' %}
-                            <!-- Cancel Order Button -->
-                            <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#cancelModal{{ order.id }}">
-                                Отменить заказ
-                            </button>
-                            <!-- Deliver Order Button -->
-                            <button type="button" class="btn btn-info btn-sm fw-bold text-light" data-bs-toggle="modal" data-bs-target="#deliverModal{{ order.id }}">
-                                Вручить заказ
-                            </button>
-                        {% else %}
-                            <!-- Cancel Order Button -->
-                            <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#cancelModal{{ order.id }}">
-                                Отменить заказ
+                            <button type="button" class="btn btn-outline-success btn-sm" data-bs-toggle="modal" data-bs-target="#deliverModal{{ order.id }}">
+                                <i class="bi bi-check2-circle me-1"></i> Вручить
                             </button>
                         {% endif %}
                     </div>
                 </div>
             </div>
 
-            <!-- Cancel Order Modal -->
-            <div class="modal fade" id="cancelModal{{ order.id }}" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="cancelModalLabel{{ order.id }}" aria-hidden="true">
-                <div class="modal-dialog">
-                    <div class="modal-content">
+            <!-- Cancel Modal -->
+            <div class="modal fade" id="cancelModal{{ order.id }}" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content rounded-4 shadow">
                         <div class="modal-header">
-                            <h5 class="modal-title" id="cancelModalLabel{{ order.id }}">Вы уверены, что хотите отменить заказ?</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            <h5 class="modal-title">Отмена заказа</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                         </div>
                         <div class="modal-body">
-                            Заказ #{{ order.order_number|slice:'12:' }} будет отменен.
+                            Вы уверены, что хотите отменить заказ <b>#{{ order.get_human_readable_order_number }}</b>?
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-                            <a href="{% url 'mark_order_cancelled' order.id %}" class="btn btn-danger">Подтвердить отмену</a>
+                            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Назад</button>
+                            <a href="{% url 'mark_order_cancelled' order.id %}" class="btn btn-danger">Подтвердить</a>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Deliver Order Modal -->
-            <div class="modal fade" id="deliverModal{{ order.id }}" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="deliverModalLabel{{ order.id }}" aria-hidden="true">
-                <div class="modal-dialog">
-                    <div class="modal-content">
+            <!-- Deliver Modal -->
+            <div class="modal fade" id="deliverModal{{ order.id }}" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content rounded-4 shadow">
                         <div class="modal-header">
-                            <h5 class="modal-title" id="deliverModalLabel{{ order.id }}">Вы уверены, что хотите вручить заказ?</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            <h5 class="modal-title">Вручение заказа</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                         </div>
                         <div class="modal-body">
-                            Заказ #{{ order.order_number|slice:'11:' }} будет отмечен как врученный.
+                            Заказ <b>#{{ order.get_human_readable_order_number }}</b> будет отмечен как врученный.
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-                            <a href="{% url 'mark_order_delivered' order.id %}" class="btn btn-info text-light">Подтвердить вручение</a>
+                            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Назад</button>
+                            <a href="{% url 'mark_order_delivered' order.id %}" class="btn btn-success">Подтвердить</a>
                         </div>
                     </div>
                 </div>
