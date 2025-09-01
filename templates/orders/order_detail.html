@@ -5,9 +5,10 @@
   <link href="{% static 'css/order_detail.css' %}" rel="stylesheet" />
   <div class="container mt-4">
     <div class="card">
-      <div class="card-header">
+      <div class="card-header d-flex justify-content-between align-items-center">
         <h3>
-          Детали заказа #{{ order.order_number|slice:'12:' }} {% if order.paid %}
+          Детали заказа #{{ order.order_number|slice:'12:' }}
+          {% if order.paid %}
             <span class="badge bg-success text-light">- оплачен</span>
           {% else %}
             <span class="badge bg-danger text-light">- не оплачен</span>
@@ -28,7 +29,6 @@
             <p>
               <strong>Итого:</strong> {{ order.total_sum }} руб.
             </p>
-            <strong>Оплата:</strong> {{ order.get_payment_type_display }}
           </div>
 
           {% if order.order_type == 'delivery' or order.order_type == 'takeaway' %}
@@ -70,9 +70,6 @@
               </tr>
             {% endfor %}
             <tr class="table-secondary">
-              <div>
-                <strong>Скидка:</strong> {{ order.discount }}%
-              </div>
               <td colspan="4" class="text-end">
                 <strong>Итого:</strong>
               </td>
@@ -83,40 +80,183 @@
           </tbody>
         </table>
 
+        <!-- Payment Update Section - Only show if order was created with "pay_later" -->
+        {% if not order.paid %}
+          <div class="payment-update-section mt-4 p-3 bg-light rounded">
+            <h5 class="mb-3">Добавить информацию об оплате</h5>
+
+            <div class="row g-3">
+              <div class="col-md-4">
+                <label for="update_payment_type" class="form-label">Способ оплаты:</label>
+                <select name="payment_type" id="update_payment_type" class="form-control" required>
+                  <option value="" selected disabled>Выбрать</option>
+                  <option value="cash">Наличными</option>
+                  <option value="online">Переводом</option>
+                  <option value="free">Бесплатно</option>
+                </select>
+              </div>
+
+              <div class="col-md-4">
+                <label for="update_cash_received" class="form-label">Получено от клиента:</label>
+                <input type="number" id="update_cash_received" name="cash_received" placeholder="Введите сумму" min="0" step="1" class="form-control" />
+              </div>
+
+              <div class="col-md-4 d-flex align-items-end">
+                <div class="w-100">
+                  <label class="form-label">Сдача:</label>
+                  <div class="input-group">
+                    <input type="text" id="update_change_amount" class="form-control" readonly />
+                    <span class="input-group-text" id="change-status"></span>
+                    <button class="btn btn-primary" id="update-payment-btn">Подтвердить оплату</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        {% endif %}
+
         <div class="d-flex justify-content-between mt-4">
           <a href="{{ request.META.HTTP_REFERER }}" class="btn btn-secondary">← Вернуться к списку заказов</a>
 
-          <a href="{% url 'quick_receipt_printing' order.id %}" class="btn btn-primary" target="_blank"><i class="bi bi-file-earmark-pdf"></i> Печать чека</a>
+          {% if order.paid %}
+            <a href="{% url 'quick_receipt_printing' order.id %}" class="btn btn-primary" target="_blank"><i class="bi bi-file-earmark-pdf"></i> Печать чека</a>
+          {% elif order.pay_later %}
+            <button class="btn btn-primary" id="print-order-btn" style="display: none;"><i class="bi bi-file-earmark-pdf"></i> Печать чека</button>
+          {% endif %}
 
           {% if order.status == 'done' %}
-            <button class="btn btn-success" onclick="markAsDelivered({{ order.id }})">Отметить как выданный</button>
+            <button class="btn btn-success" onclick="markAsDelivered({{ order.id }})">Заказ Выполнен</button>
           {% endif %}
         </div>
       </div>
     </div>
   </div>
-
   <script>
-    function markAsDelivered(orderId) {
-      fetch(`/orders/delivere/${orderId}/`, {
-        method: 'GET',
-        headers: {
-          'X-Requested-With': 'XMLHttpRequest',
-          'X-CSRFToken': '{{ csrf_token }}'
-        }
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          if (data.success) {
-            window.location.reload()
-          } else {
-            alert('Ошибка: ' + (data.message || 'Неизвестная ошибка'))
-          }
-        })
-        .catch((error) => {
-          console.error('Error:', error)
-          alert('Произошла ошибка при обновлении статуса')
-        })
+function markAsDelivered(orderId) {
+  fetch(`/orders/delivere/${orderId}/`, {
+    method: 'POST',
+    headers: {
+      'X-Requested-With': 'XMLHttpRequest',
+      'X-CSRFToken': '{{ csrf_token }}',
+      'Content-Type': 'application/json'
     }
-  </script>
+  })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+         alert('Заказ выполнен');
+        window.location.reload();
+      } else {
+        alert('Ошибка: ' + (data.message || 'Неизвестная ошибка'));
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      alert('Произошла ошибка при обновлении статуса');
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const paymentTypeSelect = document.getElementById('update_payment_type');
+    const cashReceivedInput = document.getElementById('update_cash_received');
+    const changeAmountElement = document.getElementById('update_change_amount');
+    const updatePaymentBtn = document.getElementById('update-payment-btn');
+    const changeStatus = document.getElementById('change-status');
+    const orderTotal = {{ order.total_sum }};
+    const orderId = {{ order.id }};
+
+    function calculateChange() {
+        if (!paymentTypeSelect || !cashReceivedInput || !changeAmountElement) return;
+        const paymentType = paymentTypeSelect.value;
+        const cashReceived = parseInt(cashReceivedInput.value) || 0;
+
+        if (paymentType !== 'cash') {
+            changeAmountElement.value = 'Не требуется';
+            changeStatus.innerHTML = '';
+            return;
+        }
+
+        const change = cashReceived - orderTotal;
+        if (change >= 0) {
+            changeAmountElement.value = change.toFixed(0);
+            changeStatus.innerHTML = '<span class="text-success">✔</span>';
+        } else {
+            changeAmountElement.value = 'Недостаточно';
+            changeStatus.innerHTML = '<span class="text-danger">✘</span>';
+        }
+    }
+
+    function toggleCashFields() {
+        if (!paymentTypeSelect) return;
+        if (paymentTypeSelect.value === 'cash') {
+            cashReceivedInput.disabled = false;
+            calculateChange();
+        } else {
+            cashReceivedInput.disabled = true;
+            cashReceivedInput.value = '';
+            changeAmountElement.value = 'Не требуется';
+            changeStatus.innerHTML = '';
+        }
+    }
+
+    if (paymentTypeSelect) {
+        paymentTypeSelect.addEventListener('change', () => {
+            toggleCashFields();
+            calculateChange();
+        });
+    }
+
+    if (cashReceivedInput) {
+        cashReceivedInput.addEventListener('input', calculateChange);
+    }
+
+    if (updatePaymentBtn) {
+        updatePaymentBtn.addEventListener('click', function() {
+            if (!paymentTypeSelect) return;
+            const paymentType = paymentTypeSelect.value;
+            const cashReceived = parseInt(cashReceivedInput.value) || 0;
+
+            if (!paymentType) {
+                alert('Ошибка: Необходимо выбрать способ оплаты.');
+                return;
+            }
+
+            if (paymentType === 'cash' && cashReceived < orderTotal) {
+                alert('Ошибка: Недостаточно средств для завершения заказа.');
+                return;
+            }
+
+            fetch(`/orders/order/${orderId}/update-payment/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({
+                    payment_type: paymentType,
+                    cash_received: cashReceived,
+                    total: orderTotal
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Оплата успешно добавлена!');
+                    location.reload();
+                } else {
+                    alert('Ошибка: ' + (data.message || 'Неизвестная ошибка'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Произошла ошибка при обновлении информации об оплате');
+            });
+        });
+    }
+
+    toggleCashFields();
+});
+</script>
+
 {% endblock %}

@@ -1,44 +1,147 @@
-<div class="row">
-    {% for order in orders %}
-        <div class="col-md-3 col-sm-4 col-6 mb-4">
-            <div class="card-order border border-secondary d-flex flex-column h-100 rounded-3" id="order-{{ order.id }}">
-                <div class="card-body flex-fill">
-                    <a href="{% url 'order_detail' order.id %}" class="text-decoration-none text-dark">
-                    <h5 class="card-title">Заказ #{% if order.order_number|slice:'12:'|length >= 99 %}{{ order.order_number|slice:'11:' }}{% else %}{{ order.order_number|slice:'12:' }}{% endif %} </h5>
-                    <p class="card-text mb-1">{{ order.created_at }}</p>
-                    <ol>
-                        {% for item in order.items.all %}
-                            <li>{{ item.menu_item.name }} x {{ item.quantity }}</li>
-                        {% endfor %}
-                    </ol>
-                    </a>
-                </div>
-                <div class="card-footer text-center mb-1">
-                    <!--  Order Ready Button -->
-                    <button type="button" class="btn btn-info btn-sm fw-bold text-light" data-bs-toggle="modal" data-bs-target="#deliverModal{{ order.id }}">
-                        Заказ готов
-                    </button>
-                </div>
-            </div>
+<div class="row g-4">
+  {% for order in orders %}
+    <div class="col-lg-3 col-md-4 col-sm-6">
+      <div class="card-order border border-3 shadow-lg rounded-4 h-100 d-flex flex-column overflow-hidden" id="order-{{ order.id }}">
+        <!-- Header with dynamic background based on order type -->
+        <div class="px-3 py-2 d-flex justify-content-between align-items-center  
+                {% if order.order_type == 'dine_in' %}
+            
+                    bg-primary text-white
+
+          {% elif order.order_type == 'takeaway' %}
+            
+                    bg-warning text-dark
+
+          {% elif order.order_type == 'delivery' %}
+            
+                    bg-success text-white
+
+          {% elif order.order_type == 'free' %}
+            
+                    bg-secondary text-white
+
+          {% else %}
+            
+                    bg-dark text-white
+
+          {% endif %}
+                ">
+          <h5 class="mb-0 fw-bold">Заказ #{{ order.order_number|slice:'12:' }}</h5>
+          <small class="fw-semibold">{{ order.created_at|date:'H:i' }}</small>
         </div>
 
-        <!-- Order Ready Modal -->
-        <div class="modal fade" id="deliverModal{{ order.id }}" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="deliverModalLabel{{ order.id }}" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="deliverModalLabel{{ order.id }}">Вы уверены, что хотите подтвердить готовность заказа?</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        Заказ #{{ order.order_number|slice:'11:' }} будет отмечен как готовый.
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-                        <a href="{% url 'mark_order_completed' order.id %}" class="btn btn-info text-light">Подтвердить</a>
-                    </div>
-                </div>
-            </div>
+        <!-- Body -->
+        <div class="card-body flex-fill bg-light">
+          {% comment %} <a href="{% url 'order_detail' order.id %}" class="text-decoration-none text-dark">
+            {% endcomment %}
+
+            <!-- Order Type Badge -->
+            <p class="mb-2">
+              <span class="badge rounded-pill 
+                    {% if order.order_type == 'dine_in' %}
+                  
+                    bg-primary
+
+                {% elif order.order_type == 'takeaway' %}
+                  
+                    bg-warning text-dark
+
+                {% elif order.order_type == 'delivery' %}
+                  
+                    bg-success
+
+                {% elif order.order_type == 'free' %}
+                  
+                    bg-secondary
+
+                {% else %}
+                  
+                    bg-dark
+
+                {% endif %}
+                ">
+                {% if order.order_type == 'dine_in' %}
+                  В зале
+                {% elif order.order_type == 'takeaway' %}
+                  На вынос
+                {% elif order.order_type == 'delivery' %}
+                  Доставка
+                {% elif order.order_type == 'free' %}
+                  Бесплатно
+                {% else %}
+                  Неизвестно
+                {% endif %}
+              </span>
+
+              <!-- Payment Type Icon -->
+              {% if order.payment_type == 'cash' %}
+                💵
+              {% elif order.payment_type == 'online' %}
+                💳
+              {% elif order.payment_type == 'free' %}
+                🎁
+              {% endif %}
+            </p>
+            <!-- Order Items -->
+            <ol class="mb-0 ps-3">
+              {% for item in order.items.all %}
+                <li class="mb-2 fs-6">
+                  {{ item.menu_item.name }}
+                  <span class="fw-bold text-primary">×{{ item.quantity }}</span>
+                </li>
+              {% endfor %}
+            </ol>
+          </a>
         </div>
-    {% endfor %}
+
+        <!-- Footer -->
+        <div class="bg-white text-center p-3 border-top border-2 mt-auto">
+         <button 
+                type="button" 
+                class="btn btn-sm fw-bold text-light order-ready-btn {{ order.order_type }}" 
+                data-bs-toggle="modal" 
+                data-bs-target="#deliverModal{{ order.id }}"
+            >
+                Заказ готов
+            </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="deliverModal{{ order.id }}" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="deliverModalLabel{{ order.id }}" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content rounded-4 shadow-lg border border-2">
+          <div class="modal-header 
+            {% if order.order_type == 'dine_in' %}
+               bg-primary text-white
+
+            {% elif order.order_type == 'takeaway' %}
+               bg-warning text-dark
+
+            {% elif order.order_type == 'delivery' %}
+               bg-success text-white
+
+            {% elif order.order_type == 'free' %}
+               bg-secondary text-white
+
+            {% else %}
+               bg-dark text-white
+
+            {% endif %} 
+            rounded-top-4">
+            <h5 class="modal-title" id="deliverModalLabel{{ order.id }}">Подтвердить готовность</h5>
+            <button type="button" class="btn-close {% if order.order_type != 'takeaway' %}btn-close-white{% endif %}" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+          </div>
+          <div class="modal-body fs-5">
+            Заказ <strong>#{{ order.order_number|slice:'12:' }}</strong> будет отмечен как <span class="text-success fw-bold">готовый</span>.
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">Отмена</button>
+            <a href="{% url 'mark_order_completed' order.id %}" class="btn btn-success fw-bold px-4">✅ Подтвердить</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endfor %}
 </div>

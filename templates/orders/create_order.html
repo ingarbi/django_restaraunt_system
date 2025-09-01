@@ -189,14 +189,22 @@
         const total = parseFloat(totalSumElement.textContent) || 0;
         const cashReceived = parseFloat(cashReceivedInput.value) || 0;
 
-        // Skip validation for non-cash payments or if paying later
-        // Skip validation for non-cash payments or if paying later
-            if (paymentType === 'cash' && !payLater) {
-                if (cashReceived < total) {
-                    alert('Ошибка: Недостаточно средств для завершения заказа.');
+        // Only validate payment if not paying later
+            if (!payLater) {
+                if (!paymentType) {
+                    alert('Ошибка: Необходимо выбрать способ оплаты.');
                     return;
                 }
+                
+                // Only validate cash amount if paying with cash
+                if (paymentType === 'cash') {
+                    if (cashReceived < total) {
+                        alert('Ошибка: Недостаточно средств для завершения заказа.');
+                        return;
+                    }
+                }
             }
+    
             
             const formData = new FormData(this);
             formData.append('payment_type', paymentType);
@@ -373,7 +381,10 @@
     // Handle pay later checkbox
     payLaterCheckbox.addEventListener('change', function() {
         updatePaymentUI();
-        calculateChange();
+       // If "Оплатит позже" is checked, clear payment type
+        if (this.checked) {
+            paymentTypeSelect.value = '';
+        }
     });
     
     // Update UI based on payment type and pay later status
@@ -382,8 +393,10 @@
         const payLater = payLaterCheckbox.checked;
         
         // Disable cash input and change calculation for non-cash payments or pay later
-        const isCashPayment = paymentType === 'cash' && !payLater;
+        paymentTypeSelect.disabled = payLater;
         
+        // Disable cash input for non-cash payments or when paying later
+        const isCashPayment = paymentType === 'cash' && !payLater;
         cashReceivedInput.disabled = !isCashPayment;
         
         // Clear cash input when disabled

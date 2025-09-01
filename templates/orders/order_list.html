@@ -90,7 +90,7 @@
                         <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#cancelModal{{ order.id }}">
                             <i class="bi bi-x-circle me-1"></i> Отменить
                         </button>
-                        {% if order.status == 'done' %}
+                        {% if order.status == 'done' or request.user.profile.role == 'supervisor' %}
                             <button type="button" class="btn btn-outline-success btn-sm" data-bs-toggle="modal" data-bs-target="#deliverModal{{ order.id }}">
                                 <i class="bi bi-check2-circle me-1"></i> Вручить
                             </button>

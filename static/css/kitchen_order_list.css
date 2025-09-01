@@ -15,6 +15,24 @@
 .modal-content {
     border-radius: 12px;
 }
+/* Default button background based on order type can be set dynamically via class or inline style */
+.order-ready-btn {
+    background-color: #17a2b8; /* default info color */
+    border: 2px solid #138496;
+    transition: transform 0.2s, background-color 0.2s;
+}
+
+.order-ready-btn:hover {
+    background-color: #138496; /* slightly darker shade */
+    transform: scale(1.05); /* subtle zoom on hover */
+    cursor: pointer;
+}
+
+/* Optional: different colors for different order types */
+.order-ready-btn.dine_in { background-color: #007bff; border-color: #0056b3; }
+.order-ready-btn.takeaway { background-color: #ffc107; border-color: #e0a800; color: #212529; }
+.order-ready-btn.delivery { background-color: #28a745; border-color: #1e7e34; }
+.order-ready-btn.free { background-color: #6c757d; border-color: #5a6268; }
 
 @media (max-width: 768px) {
     .card-order {

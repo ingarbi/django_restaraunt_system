@@ -1,7 +1,7 @@
 {% extends 'main/base.html' %}
 {% block content %}
 <div class="container">
-  <h1>Заказы кухни</h1>
+   <h2 class="text-center" >Все заказы на Кухне </h2>
 
   <!-- Container for pending orders -->
   <div id="orders-container">
@@ -80,4 +80,9 @@
     }
   };
 </script>
+<style>
+  .ready-button :hover{
+    background-color: blueviolet;
+}
+</style>
 {% endblock %}

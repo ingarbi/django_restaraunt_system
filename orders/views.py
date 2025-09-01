@@ -1,4 +1,5 @@
 import os
+import json
 
 import weasyprint
 from asgiref.sync import async_to_sync
@@ -70,7 +71,7 @@ def create_order(request):
             # 🔑 Payment status logic
             if pay_later:
                 order.paid = False
-            elif payment_type in ["online", "free"]:
+            elif payment_type == "free":
                 order.paid = True
             elif payment_type == "cash" and not pay_later:
                 order.paid = True
@@ -148,8 +149,10 @@ def mark_order_delivered(request, order_id):
         },
     )
 
-    return redirect("all_orders")
-
+    if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        return JsonResponse({"success": True, "status": order.status})
+    else:
+        return redirect("all_orders")
 
 def mark_order_cancelled(request, order_id):
     order = Order.objects.get(id=order_id)
@@ -247,3 +250,41 @@ def quick_receipt_printing(request, order_id):
         Order.objects.prefetch_related("items__menu_item"), id=order_id
     )
     return render(request, "orders/quick_receipt_printing.html", {"order": order})
+
+def update_order_payment(request, order_id):
+    if request.method == 'POST' and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        try:
+            order = Order.objects.get(id=order_id)
+            
+            # Get payment data from request
+            data = json.loads(request.body)
+            payment_type = data.get('payment_type')
+            cash_received = float(data.get('cash_received', 0))
+            total = float(data.get('total', 0))
+            
+            # Validate payment data
+            if not payment_type:
+                return JsonResponse({'success': False, 'message': 'Необходимо выбрать способ оплаты'})
+            
+            if payment_type == 'cash' and cash_received < total:
+                return JsonResponse({'success': False, 'message': 'Недостаточно средств'})
+            
+            # Update order payment details
+            order.payment_type = payment_type
+        
+            order.paid = True
+            
+            # For cash payments, calculate change
+            if payment_type == 'cash':
+                order.cash_received = cash_received
+                order.change = cash_received - total
+            
+            order.save()
+            
+            return JsonResponse({'success': True})
+        except Order.DoesNotExist:
+            return JsonResponse({'success': False, 'message': 'Заказ не найден'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': str(e)})
+    
+    return JsonResponse({'success': False, 'message': 'Недопустимый запрос'})
