@@ -169,6 +169,23 @@
 .bg-warning { background-color: #f59e0b; }
 .bg-danger { background-color: #ef4444; }
 
+
+.nav-link.active {
+  font-weight: bold;
+  color: #dc3545 !important;  /* Bootstrap blue */
+  border-bottom: 2px solid #dc3545;
+}
+
+.admin-out-btn:hover{
+  background-color: darkmagenta;
+  color: #f8fafc;
+  border-radius: 30%;
+}
+
+.more-btn:hover{
+  color: #dc3545
+}
+
 @media (max-width: 768px) {
   .dashboard-header h1 {
     font-size: 2rem;

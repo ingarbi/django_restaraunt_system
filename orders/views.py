@@ -71,7 +71,7 @@ def create_order(request):
             # 🔑 Payment status logic
             if pay_later:
                 order.paid = False
-            elif payment_type == "free":
+            elif payment_type in  ["online", "free"]:
                 order.paid = True
             elif payment_type == "cash" and not pay_later:
                 order.paid = True
@@ -204,7 +204,7 @@ def kitchen_orders(request):
         return JsonResponse({"html": html})
     return render(request, "orders/kitchen_orders.html", {"orders": orders})
 
-
+@login_required
 def order_detail(request, order_id):
     order = get_object_or_404(
         Order.objects.prefetch_related("items__menu_item"), id=order_id

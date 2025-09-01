@@ -75,10 +75,10 @@
                             <!-- Items -->
                             <ul class="list-unstyled small mb-0">
                                 {% for item in order.items.all|slice:":3" %}
-                                    <li>• {{ item.menu_item.name }} <span class="text-muted">x{{ item.quantity }}</span></li>
+                                    <li>• {{ item.menu_item.name }} <span class="fw-bold text-primary">x{{ item.quantity }}</span></li>
                                 {% endfor %}
                                 {% if order.items.all|length > 3 %}
-                                    <li class="text-muted fst-italic">+ еще...</li>
+                                    <li class="fst-italic more-btn">+ еще...</li>
                                 {% endif %}
                             </ul>
                         </a>
