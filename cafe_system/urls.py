@@ -10,7 +10,7 @@ urlpatterns = [
     path('orders/', include('orders.urls')),
     path("", include('main.urls')),
     path("auth/", include('custom_auth.urls')),
-     path('login/', loginView, name='login'),
+    path('login/', loginView, name='login'),
     path('logout/', logoutView, name='logout'),
     path('register/', registerView, name='register'),
 ]

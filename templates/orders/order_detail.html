@@ -116,7 +116,7 @@
         {% endif %}
 
         <div class="d-flex justify-content-between mt-4">
-          <a href="{{ request.META.HTTP_REFERER }}" class="btn btn-secondary">← Вернуться к списку заказов</a>
+          <a href="{% url 'all_orders' %}" class="btn btn-secondary">← Вернуться к списку заказов</a>
 
           {% if order.paid %}
             <a href="{% url 'quick_receipt_printing' order.id %}" class="btn btn-primary" target="_blank"><i class="bi bi-file-earmark-pdf"></i> Печать чека</a>
