@@ -124,11 +124,16 @@
 
           {% if order.status == 'done' %}
             <button class="btn btn-success" onclick="markAsDelivered({{ order.id }})">Заказ Выполнен</button>
+
+          {% elif order.status == 'pending' and request.user.profile.role == 'supervisor' and not order.paid%}
+            <button class="btn btn-success" onclick="markAsDelivered({{ order.id }})">Заказ Выполнен <span class="badge bg-danger">!неоплачен</span></button>
+          
+          {% elif order.status == 'pending' and request.user.profile.role == 'supervisor' %}
+            <button class="btn btn-success" onclick="markAsDelivered({{ order.id }})">Заказ Выполнен</button>
+          
           {% endif %}
 
-          {% if order.status == 'pending' and request.user.profile.role == 'supervisor' and not order.paid %}
-            <button class="btn btn-success" onclick="markAsDelivered({{ order.id }})">Заказ Выполнен <span class="badge bg-danger">!неоплачен</span></button>
-          {% endif %}
+        
         </div>
       </div>
     </div>
