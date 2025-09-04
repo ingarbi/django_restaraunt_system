@@ -41,7 +41,7 @@ class OrderAdmin(ModelAdminTotals):
         "order_number",
     ]
     search_fields = ["order_number"]
-    list_filter = ["status", "order_type", "created_at", 'created_by',]
+    list_filter = ["status", "order_type", "created_at", 'created_by', "payment_type"]
 
     def save_model(self, request, obj, form, change):
         if not obj.pk:
