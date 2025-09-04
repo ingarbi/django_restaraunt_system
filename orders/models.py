@@ -94,6 +94,7 @@ class Order(models.Model):
         related_name="orders_created",
     )
     paid = models.BooleanField(verbose_name="Оплачен", default=False)
+    table_number = models.PositiveSmallIntegerField(null=True, blank=True)
 
     def __str__(self):
         return f"Заказ #{self.id} --- {self.created_by}"

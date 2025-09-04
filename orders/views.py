@@ -39,6 +39,7 @@ def create_order(request):
             address = request.POST.get("addres", "")
             payment_type = request.POST.get('payment_type')
             pay_later = request.POST.get('pay_later') == 'on'
+            
 
                 
             try:
@@ -68,6 +69,9 @@ def create_order(request):
             order.payment_type = payment_type
             order.created_by = request.user
 
+            table_number = request.POST.get("table_number") or None
+            if order.order_type == "dine_in":
+                order.table_number = table_number
             # 🔑 Payment status logic
             if pay_later:
                 order.paid = False

@@ -23,6 +23,12 @@
             <p>
               <strong>Тип:</strong> {{ order.get_order_type_display }}
             </p>
+
+            <p>
+              {% if order.order_type == 'dine_in' and order.table_number %}
+                <strong>Стол:{{ order.table_number }}</strong>
+              {% endif %}
+            </p>
             <p>
               <strong>Дата создания:</strong> {{ order.created_at|date:'d.m.Y H:i' }}
             </p>
@@ -124,16 +130,11 @@
 
           {% if order.status == 'done' %}
             <button class="btn btn-success" onclick="markAsDelivered({{ order.id }})">Заказ Выполнен</button>
-
-          {% elif order.status == 'pending' and request.user.profile.role == 'supervisor' and not order.paid%}
+          {% elif order.status == 'pending' and request.user.profile.role == 'supervisor' and not order.paid %}
             <button class="btn btn-success" onclick="markAsDelivered({{ order.id }})">Заказ Выполнен <span class="badge bg-danger">!неоплачен</span></button>
-          
           {% elif order.status == 'pending' and request.user.profile.role == 'supervisor' %}
             <button class="btn btn-success" onclick="markAsDelivered({{ order.id }})">Заказ Выполнен</button>
-          
           {% endif %}
-
-        
         </div>
       </div>
     </div>
@@ -265,5 +266,4 @@ document.addEventListener('DOMContentLoaded', function() {
     toggleCashFields();
 });
 </script>
-
 {% endblock %}

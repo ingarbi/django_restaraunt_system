@@ -22,6 +22,22 @@
                     </select>
                     
 
+                    <div class="mb-3" id="table-selection" style="display:none;">
+                        <label for="id_table_number" class="form-label">Номер стола:</label>
+                        <select id="id_table_number" name="table_number" class="form-control">
+                            <option value="1">Стол 1</option>
+                            <option value="2">Стол 2</option>
+                            <option value="3">Стол 3</option>
+                            <option value="4">Стол 4</option>
+                            <option value="5">Стол 5</option>
+                            <option value="6">Стол 6</option>
+                            <option value="7">Стол 7</option>
+                            <option value="8">Стол 8</option>
+                            <option value="9">Стол 9</option>
+                            <option value="10">Стол 10</option>
+                            </select>
+                    </div>
+
                     <div id="id_delivery" class="mt-2 " style="display: none;">
                         <label class="mt-1" for="phone">Тел.:</label>
                         <input type="tel" id="phone" name="phone" placeholder="79281234567">
@@ -245,6 +261,7 @@
 
     // Existing quantity input handlers
     const selectElement = document.getElementById('id_order_type');
+    const tableSelection = document.getElementById("table-selection")
     const targetDiv = document.getElementById('id_delivery');
     const quantityInputs = document.querySelectorAll('.item-quantity');
     const selectedItemsList = document.getElementById('selected-items-list');
@@ -270,6 +287,18 @@
         }
     });
     selectElement.dispatchEvent(new Event('change'));
+
+    function toggleTableField() {
+    if (selectElement.value === "dine_in") {
+      tableSelection.style.display = "block";
+    } else {
+      tableSelection.style.display = "none";
+      document.getElementById("id_table_number").value = "";
+    }
+  }
+
+    selectElement.addEventListener("change", toggleTableField);
+    toggleTableField();
 
     function updateSelectedItems() {
         selectedItemsList.innerHTML = '';

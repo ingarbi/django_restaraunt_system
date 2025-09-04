@@ -5,7 +5,7 @@ from .models import Order, OrderItem, MenuItem
 class OrderForm(forms.ModelForm):
     class Meta:
         model = Order
-        fields = ['order_type']
+        fields = ['order_type', "table_number",]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

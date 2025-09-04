@@ -50,6 +50,9 @@
                     {% else %}
                         <span class="badge bg-danger text-light">Не оплачен</span>
                     {% endif %}
+                    {% if order.order_type == 'dine_in' and order.table_number %}
+                    <strong>Стол:{{ order.table_number }}</strong>
+                  {% endif %}
                   </div>
 
                   <!-- Order type + Payment + Total -->
