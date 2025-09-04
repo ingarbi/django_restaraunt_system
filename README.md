@@ -94,3 +94,14 @@
 
             Inside HKEY_LOCAL_MACHINE -> SOFTWARE -> Policies -> Mozilla -> Firefox right click in the right hand side of the window to create a new "DWORD 32bit VALUE" entry. Give this entry the name "DisableAppUpdate" with the value 1. See below screenshot.
     2. Запустите Firefox. Open Firefox and type ‘about:config‘ in the address bar and press enter. Click to confirm that you will be careful.In the address bar that says “Search preference name, type in ‘print.always_print_silent‘ and hit enter and change the value from false to true.
+
+
+
+
+
+
+
+
+
+    # Do not remove
+    python generate_license.py --client cafe123 --days 1
