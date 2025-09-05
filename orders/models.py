@@ -58,6 +58,7 @@ class Order(models.Model):
         verbose_name="№ Заказа", max_length=10, unique=True, editable=False
     )
     created_at = models.DateTimeField(verbose_name="Дата", auto_now_add=True)
+    completed_at = models.DateTimeField(verbose_name="Время завершения", null=True, blank=True)
     status = models.CharField(
         verbose_name="Статус", max_length=10, choices=STATUS_CHOICES, default="pending"
     )

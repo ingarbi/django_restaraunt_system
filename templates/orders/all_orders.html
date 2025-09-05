@@ -53,6 +53,13 @@
                     {% if order.order_type == 'dine_in' and order.table_number %}
                     <strong>Стол:{{ order.table_number }}</strong>
                   {% endif %}
+                  <p>Время приготовления: 
+                    {% if order.completed_at %}
+                        {{ order.completed_at|timeuntil:order.created_at }}
+                    {% else %}
+                        Еще готовится
+                    {% endif %}
+                </p>
                   </div>
 
                   <!-- Order type + Payment + Total -->

@@ -117,6 +117,7 @@ def create_order(request):
 def mark_order_completed(request, order_id):
     order = Order.objects.get(id=order_id)
     order.status = "done"
+    order.completed_at = timezone.now()
     order.save()
 
     # Notify all clients about the status change
@@ -138,6 +139,7 @@ def mark_order_completed(request, order_id):
 def mark_order_delivered(request, order_id):
     order = Order.objects.get(id=order_id)
     order.status = "delivered"
+    order.completed_at = timezone.now()
     order.save()
 
     # Notify all clients about the status change
