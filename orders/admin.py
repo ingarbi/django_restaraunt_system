@@ -26,6 +26,7 @@ class OrderAdmin(ModelAdminTotals):
         "order_number",
         "status",
         "created_at",
+        "completion_time",
         "order_type",
         "discount",
         "total_sum",
@@ -42,6 +43,25 @@ class OrderAdmin(ModelAdminTotals):
     ]
     search_fields = ["order_number"]
     list_filter = ["status", "order_type", "created_at", 'created_by', "payment_type"]
+
+    def completion_time(self, obj):
+        """Время выполнения заказа"""
+        if obj.completed_at and obj.created_at:
+            # Рассчитываем разницу во времени
+            time_diff = obj.completed_at - obj.created_at
+            total_seconds = time_diff.total_seconds()
+            
+            # Форматируем в читаемый вид
+            hours = int(total_seconds // 3600)
+            minutes = int((total_seconds % 3600) // 60)
+            
+            if hours > 0:
+                return f"{hours} ч {minutes} м"
+            else:
+                return f"{minutes} м"
+        return "Не завершен"
+    
+    completion_time.short_description = "Время приготовления"
 
     def save_model(self, request, obj, form, change):
         if not obj.pk:
@@ -60,12 +80,32 @@ class OrderItemAdmin(admin.ModelAdmin):
         "quantity",
         "order_link",
         "created_date",
+        "completion_time",
         "sales_report_link",
     )
     list_filter = (
         ("order__created_at", DateFieldListFilter),
+        ("order__completed_at", DateFieldListFilter),
         "menu_item",
     )
+
+    def completion_time(self, obj):
+        """Время выполнения заказа"""
+        if obj.order.completed_at and obj.order.created_at:
+            time_diff = obj.order.completed_at - obj.order.created_at
+            total_seconds = time_diff.total_seconds()
+            
+            hours = int(total_seconds // 3600)
+            minutes = int((total_seconds % 3600) // 60)
+            
+            if hours > 0:
+                return f"{hours} ч {minutes} м"
+            else:
+                return f"{minutes} м"
+        return "Не завершен"
+    
+    completion_time.short_description = "Время приготовления"
+    completion_time.admin_order_field = "order__completed_at"
 
     def changelist_view(self, request, extra_context=None):
         response = super().changelist_view(request, extra_context)
