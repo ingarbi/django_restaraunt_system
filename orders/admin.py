@@ -26,14 +26,13 @@ class OrderAdmin(ModelAdminTotals):
         "order_number",
         "status",
         "created_at",
-        "completion_time",
         "order_type",
         "discount",
         "total_sum",
         "payment_type",
         'created_by',
     )
-    readonly_fields = ('created_by',)
+    readonly_fields = ('created_by',  "completion_time",)
     list_totals = [
         ("total_sum", lambda field: Coalesce(Sum(field), 0)),
     ]
