@@ -115,6 +115,7 @@ class Order(models.Model):
                 self.order_number = f"{date_prefix}-{last_number + 1:03d}"  # Increment and format as 001, 002, etc.
             else:
                 self.order_number = f"{date_prefix}-001"  # First order of the day
+
         super().save(*args, **kwargs)
 
     def get_human_readable_order_number(self):

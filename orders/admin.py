@@ -29,9 +29,20 @@ class OrderAdmin(ModelAdminTotals):
         "order_type",
         "discount",
         "total_sum",
-        "payment_type",
+        "payment_type_display",
         'created_by',
     )
+
+
+    def payment_type_display(self, obj):
+        """Кастомное отображение типа оплаты с текстом для пустых значений"""
+        if not obj.payment_type:
+            return "Тип оплаты не выбран"
+        # Получаем человекочитаемое значение из choices
+        return dict(Order.PAYMENT_TYPE_CHOICES).get(obj.payment_type, obj.payment_type)
+    
+    payment_type_display.short_description = "Оплата"
+    payment_type_display.admin_order_field = "payment_type"
     readonly_fields = ('created_by',  "completion_time",)
     list_totals = [
         ("total_sum", lambda field: Coalesce(Sum(field), 0)),
