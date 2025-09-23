@@ -166,11 +166,33 @@
                                 <div class="menu-item-price">
                                     {{ item.price|floatformat:"0" }} руб.
                                 </div>
-                                <input type="number" min="0" name="item_{{ item.id }}" value="" placeholder="0"
-                                    class="form-control form-control-sm item-quantity text-center"
-                                    data-price="{{ item.price }}"
-                                    data-item-id="{{ item.id }}"
-                                    data-item-name="{{ item.name }}">
+                              
+                                <!-- Quantity control -->
+                                    <div class="input-group input-group-sm justify-content-center">
+                                    <button type="button" 
+                                            class="btn btn-outline-secondary btn-sm quantity-btn" 
+                                            data-action="decrease" 
+                                            data-item-id="{{ item.id }}">
+                                        −
+                                    </button>
+                                    <input type="number" 
+                                            min="0" 
+                                            name="item_{{ item.id }}" 
+                                            value="0" 
+                                            class="form-control form-control-sm item-quantity text-center mx-1"
+                                            data-price="{{ item.price }}"
+                                            data-item-id="{{ item.id }}"
+                                            data-item-name="{{ item.name }}"
+                                            style="max-width: 60px;">
+                                    <button type="button" 
+                                            class="btn btn-outline-secondary btn-sm quantity-btn" 
+                                            data-action="increase" 
+                                            data-item-id="{{ item.id }}">
+                                        +
+                                    </button>
+                                    </div>
+
+
                             </div>
                             </div>
                         {% endfor %}
@@ -336,6 +358,24 @@
     });
 
     }
+
+
+    document.querySelectorAll('.quantity-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const itemId = this.dataset.itemId;
+            const action = this.dataset.action;
+            const input = document.querySelector(`input[name="item_${itemId}"]`);
+
+            let currentValue = parseInt(input.value) || 0;
+            if (action === "increase") {
+            currentValue++;
+            } else if (action === "decrease" && currentValue > 0) {
+            currentValue--;
+            }
+            input.value = currentValue;
+            input.dispatchEvent(new Event('input')); // trigger your existing logic
+        });
+        });
 
     
     function calculateTotal() {
