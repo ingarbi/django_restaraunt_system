@@ -18,6 +18,10 @@
       transition: all 0.3s ease-in-out;
     }
 
+.card:hover{
+    background-color: #ffebab;
+}
+
 .order-section {
     background-color: white;
     border-radius: 12px;
@@ -37,6 +41,7 @@
 .order-card:hover {
     transform: translateY(-5px);
     box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    background-color: #0d58a2
 }
 
 .order-card-header {

@@ -124,17 +124,25 @@
         <div class="d-flex justify-content-between mt-4">
           <a href="{% url 'all_orders' %}" class="btn btn-secondary">← Вернуться к списку заказов</a>
 
-          {% if order.paid %}
+         
             <a href="{% url 'quick_receipt_printing' order.id %}" class="btn btn-primary" target="_blank"><i class="bi bi-file-earmark-pdf"></i> Печать чека</a>
-          {% endif %}
+       
 
-          {% if order.status == 'done' %}
-            <button class="btn btn-success" onclick="markAsDelivered({{ order.id }})">Заказ Выполнен</button>
-          {% elif order.status == 'pending' and request.user.profile.role == 'supervisor' and not order.paid %}
-            <button class="btn btn-success" onclick="markAsDelivered({{ order.id }})">Заказ Выполнен <span class="badge bg-danger">!неоплачен</span></button>
-          {% elif order.status == 'pending' and request.user.profile.role == 'supervisor' %}
-            <button class="btn btn-success" onclick="markAsDelivered({{ order.id }})">Заказ Выполнен</button>
-          {% endif %}
+         {% if order.status == 'done' %}
+          <button class="btn btn-success" onclick="markAsDelivered({{ order.id }})">
+            Заказ выполнен
+          </button>
+
+        {% elif order.status == 'pending' and request.user.profile.role == 'supervisor' %}
+          <button class="btn btn-success" onclick="markAsDelivered({{ order.id }})">
+            Заказ выполнен
+            {% if not order.paid %}
+              <span class="badge bg-danger">!неоплачен</span>
+            {% endif %}
+          </button>
+        {% endif %}
+
+          
         </div>
       </div>
     </div>
