@@ -1,107 +1,74 @@
-# Скоро обновим ридми - это убрать
-# 🧾 Проект ресторана
+# ***A&I Resto*** - программа для автоматизации процессов вашего заведения
 
-    Веб-приложение на Django, позволяющее ресторанам и кафе управлять заказами
-    В данной версии название кафе "{{CAFE_NAME}}", вам придется поменять под свой d /main/cafe_name.txt.
+## Пошаговое руководство для установки программы
 
-## Требования
-
-1) Install Python
-    Python version is 3.12.2
-    url for download [text](https://www.python.org/ftp/python/3.12.2/python-3.12.2-amd64.exe)
-2) Install Git (optional, but good if you send project over Git)
-    [https://www.filepuma.com/download/git_for_windows_64bit_2.46.0-40344/download/](https://github.com/git-for-windows/git/releases/download/v2.50.0.windows.1/Git-2.50.0-64-bit.exe)
-    or <https://git-scm.com/>
-
-3) Clone repository:
-    [https://github.com/ingarbi/django_restaraunt_system.git](https://github.com/ingarbi/django_restaraunt_system.git)
-
-4) Install GTK from cloned repository
-
-5) Create virtual environment:
-    python -m venv venv
-
-6) Activate virtual environment:
-    venv\Scripts\activate # Windows
-    source venv/Scripts/activate # Windows / Git Bash
-    .\venv\Scripts\Activate.ps1 # Windows / PowerShell
-    venv\Scripts\activate.bat # Windows / Command Prompt (CMD)
-
-7) Install required packages:
-    pip install -r requirements.txt
-
-8) Apply migrations:
-    python manage.py makemigrations
-    python manage.py migrate
-
-9) Create superuser:
-    python manage.py createsuperuser
-
-10) Create usual user in admin panel
-
-11) Run server:
-    python manage.py runserver 0.0.0.0:8000
-
-12) Run the server by double-clicking your start.bat / running start.sh.
-
-## 📦 Установка
-
-1) Клонируйте этот репозиторий:
-    git clone <https://github.com/ingarbi/django_restaraunt_system.git>
-2) Перейдите в папку проекта:
-    cd django_restaraunt_system
-3) Создайте виртуальное окружение: python -m venv venv
-
-   ### На Linux
-
-    - source venv/bin/activate
-
-   ### На Windows
-
-    - source venv/Scripts/activate
-    - cd Scripts
-    - activate
-4) Установите зависимости:
-    pip install -r requirements.txt
-5) Примените миграции:
-    python manage.py migrate
-6) Создайте суперпользователя:
-    python manage.py createsuperuser
-7) Запустите сервер:
-    python manage.py runserver
-8) Откройте в браузере:  <http://127.0.0.1:8000/>
-
-## Какой же браузер мы рекомендуем использовать? 
-
-1) Mozilla Firefox версия 77.0.1, которую можно скачать [Firefox 77.0.1](https://ftp.mozilla.org/pub/firefox/releases/77.0/win64/ru/Firefox%20Setup%2077.0.exe)
-
-2) После установки нужно выполнить несколько дополнительных действий для печати без вспомогательного окна:
-
-    1. Настроить Firefox в настройках:
-        a.  Select the “Menu” Menu Button button in the upper-right corner, then choose “Options“.
-            Select “General” on the left pane.
-            Scroll down to the “Firefox Updates” section.
-            Never check for updates
-        b.
-            From about:config Menu
-            app.update.auto
-            app.update.enabled
-            app.update.service.e­nabled
-            app.update.silent
-        c.  Press Windows key + R, then type regedit.exe and press Enter.
-            HKEY_LOCAL_MACHINE -> SOFTWARE -> Policies
-            Right-click on "Policies" and create a new key "Mozilla". Select the new created "Mozilla" key and create a new sub-key "Firefox" within it. Then select "Firefox".
-
-            Inside HKEY_LOCAL_MACHINE -> SOFTWARE -> Policies -> Mozilla -> Firefox right click in the right hand side of the window to create a new "DWORD 32bit VALUE" entry. Give this entry the name "DisableAppUpdate" with the value 1. See below screenshot.
-    2. Запустите Firefox. Open Firefox and type ‘about:config‘ in the address bar and press enter. Click to confirm that you will be careful.In the address bar that says “Search preference name, type in ‘print.always_print_silent‘ and hit enter and change the value from false to true.
+> ### Часть первая. Установка необходимых библиотек
 
 
+1) Скачать и установить Python 3.12.2 по
+    [ссылке](https://www.python.org/ftp/python/3.12.2/python-3.12.2-amd64.exe)
 
+2) Скачать и установить Git по
+    [ссылке](https://github.com/git-for-windows/git/releases/download/v2.50.0.windows.1/Git-2.50.0-64-bit.exe)
 
+3) Клонировать этот репозиторий
+    `git clone https://github.com/ingarbi/django_restaraunt_system.git` 
 
+4) Установить уже из заклонированного репо GTK (файл с названием gtk3-win64.exe)
 
+5) В папке где клон репо на компьютере нужно открыть командную строку и выполнить следующие команды:
+     > 1. `python -m venv venv`
+     > 2. `.\venv\Scripts\Activate.ps1` или `.\venv\Scripts\activate.bat`
+     > 3. `pip install -r req.txt` 
+     > 4. `python manage.py makemigrations` 
+     > 5. `python manage.py migrate` 
+     > 6. `python manage.py createsuperuser` 
+     > 7. `python manage.py runserver 0.0.0.0:8000` 
 
+6) Открыть ссылку http://127.0.0.1:8000/ в любом браузере, перейти в админку и создать профиль для текущего аккаунта.
 
+>### Часть вторая. Установка браузера Mozilla Firefox
 
-    # Do not remove
+1) Скачать и установить Mozilla Firefox версия 77.0.1, по  [ссылке](https://ftp.mozilla.org/pub/firefox/releases/77.0/win64/ru/Firefox%20Setup%2077.0.exe)
+
+2) После установки нужно выполнить следующие действия для печати без вспомогательного окна:
+
+    1) Настроить Firefox в настройках:
+        
+            Нажмите кнопку меню «Меню» в правом верхнем углу, затем выберите «Параметры».
+            На левой панели выберите «Основные».
+            Прокрутите вниз до раздела «Обновления Firefox».
+            [x] и выбрать "Никогда не проверять наличие обновлений".
+     
+    2) Дальше нужно в адресной строке браузера поставить в значении False и True:<br>
+
+            about:config #False
+            app.update.auto #False
+            app.update.enabled #False
+            app.update.service.e­nabled #False
+            app.update.silent #False
+            print.always_print_silent #True
+            
+        > В этой части также нужно добавть размер чека в см, при открытии всегда сервер и установить как приложение......(будет сделано позже)
+
+    3) Сверните браузер, затем
+
+            Нажмите Win + R, введите regedit.exe и нажмите Enter.
+            Перейдите в HKEY_LOCAL_MACHINE -> SOFTWARE -> Policies
+            Кликните правой кнопкой мыши по "Policies" и создайте новый раздел с именем "Mozilla".
+            Выделите созданный раздел "Mozilla" и внутри него создайте подраздел "Firefox". Затем выберите "Firefox".
+
+            В разделе HKEY_LOCAL_MACHINE -> SOFTWARE -> Policies -> Mozilla -> Firefox кликните правой кнопкой мыши по правой части окна и выберите "Создать" -> "Параметр DWORD (32 бита)". 
+            Назовите параметр "DisableAppUpdate" и установите значение 1.
+    
+
+> ### Часть третья. Ярлыки и название
+
+1) Название вашего заведения.
+
+        1) Чтобы поменять стандартное название, открой текстовый файл /main/cafe_name.txt и поменяйте на соответсвующий.
+
+2) Файлы start.bat и update.bat отвечают за запуск и обновление сервера соответсвенно. Отправьте в качестве ярлыков их на рабочий стол
+
+###### P.S.
     python generate_license.py --client cafe123 --days 1
