@@ -73,3 +73,6 @@
         margin-bottom: 1.5rem;
     }
 }
+body.dark-mode .card:hover{
+    background-color: #745a04;
+}

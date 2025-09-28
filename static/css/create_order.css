@@ -8,12 +8,11 @@
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f5f5f5;
     color: #333;
 }
 
 .navbar {
-    background-color: var(--primary-color);
+    background-color: var(--light-color);
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
 
@@ -302,3 +301,12 @@ body {
   background: var(--primary-color);
   color: white;
 }
+
+body.dark-mode .action-btn  {
+  color: #e1ce00;
+}
+
+body.dark-mode .action-btn:hover  {
+  color: #44c1ff;
+}
+

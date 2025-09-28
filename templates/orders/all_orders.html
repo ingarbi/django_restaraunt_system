@@ -53,7 +53,7 @@
                     {% if order.order_type == 'dine_in' and order.table_number %}
                     <strong>Стол:{{ order.table_number }}</strong>
                   {% endif %}
-                  <p>Время приготовления: 
+                  <p class="welcome-name">Время приготовления: 
                     {% if order.completed_at %}
                         {{ order.completed_at|timeuntil:order.created_at }}
                     {% else %}
@@ -82,14 +82,14 @@
                       {% endif %}
                     </div>
 
-                    <div class="fw-bold">
+                    <div class="fw-bold welcome-name">
                       {{ order.total_sum|floatformat:"-3g" }} ₽
                     </div>
                   </div>
 
                   <!-- Contact -->
                   {% if order.order_type == "takeaway" or order.order_type == "delivery" %}
-                    <p class="small text-muted mb-2">
+                    <p class="small welcome-name mb-2">
                       📞 {{ order.phone_number|default:"Нет номера" }}
                     </p>
                   {% endif %}

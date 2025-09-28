@@ -4,7 +4,7 @@
 <div class="card">
 <link href="{% static 'css/create_order.css' %}" rel="stylesheet" />    
     <div class="card-header">
-        <h3>Новый заказ</h3>
+        <h3  class="welcome-name">Новый заказ</h3>
     </div>
     <div class="card-body">
         <form method="post" id="order-form" autocomplete="off">
@@ -12,9 +12,9 @@
             <!-- Order Type Dropdown -->
             <div class="d-flex flex-column ">
                 
-                    <label for="id_order_type">Тип заказа:</label>
+                    <label for="id_order_type" class="welcome-name">Тип заказа:</label>
 
-                    <select name="order_type" id="id_order_type" class="form-control-sm w-auto " required>
+                    <select name="order_type" id="id_order_type" class="form-control-sm w-auto" required>
                         <option value="" selected disabled>Не выбран</option>
                         <option value="dine_in">В зале</option>
                         <option value="takeaway">На вынос</option>
@@ -23,9 +23,9 @@
                     
 
                     <div class="mb-3" id="table-selection" style="display:none;">
-                        <label for="id_table_number" class="form-label">Номер стола:</label>
+                        <label for="id_table_number" class="form-label welcome-name">Номер стола:</label>
                         <select id="id_table_number" name="table_number" class="form-control">
-                            <option value="1">Стол 1</option>
+                            <option value="1" >Стол 1</option>
                             <option value="2">Стол 2</option>
                             <option value="3">Стол 3</option>
                             <option value="4">Стол 4</option>
@@ -39,11 +39,11 @@
                     </div>
 
                     <div id="id_delivery" class="mt-2 " style="display: none;">
-                        <label class="mt-1" for="phone">Тел.:</label>
+                        <label class="mt-1 welcome-name" for="phone">Тел.:</label>
                         <input type="tel" id="phone" name="phone" placeholder="79281234567">
-                        <label class="mt-1" for="first_name">Имя:</label>
+                        <label class="mt-1 welcome-name" for="first_name">Имя:</label>
                         <input type="text" id="first_name" name="first_name" placeholder="Рома">
-                        <label class="mt-1" for="addres">Адрес:</label>
+                        <label class="mt-1 welcome-name" for="addres">Адрес:</label>
                         <input type="text" id="addres" name="addres" placeholder="Назрань, Муталиева 01" size="40">
                     </div>
 
@@ -53,7 +53,7 @@
             
             <!-- Selected Items Section -->
            <div class="mb-1">
-                <span class="fs-5 ">Выбранные товары:</span>
+                <span class="fs-5 welcome-name">Выбранные товары:</span>
                 <ul id="selected-items-list" class="selected-items-list d-flex flex-wrap">
                     <li id="placeholder-item" class="text-muted">Товары ещё не выбраны</li>
                 </ul>
@@ -63,7 +63,7 @@
             <div class="payment-section row align-items-center mb-3">
                 <!-- Способ оплаты -->
                 <div class="col-md-4 mb-2 mb-md-0">
-                    <label for="id_payment_type" class="form-label small">Способ оплаты:</label>
+                    <label for="id_payment_type" class="form-label small welcome-name">Способ оплаты:</label>
                     <select name="payment_type" id="id_payment_type" class="form-control form-control-sm" required>
                     <option value="" selected disabled>Не выбран</option>
                     <option value="cash">Наличными</option>
@@ -74,7 +74,7 @@
 
                 <!-- Скидка -->
                 <div class="col-md-4 mb-2 mb-md-0">
-                    <label for="id_discount" class="form-label small">Скидка (%):</label>
+                    <label for="id_discount" class="form-label small welcome-name">Скидка (%):</label>
                     <input list="discount-options" placeholder="отсутствует" id="id_discount" 
                         min="0" max="100" name="id_discount" 
                         class="form-control form-control-sm" />
@@ -90,7 +90,7 @@
                 <div class="col-md-4">
                     <div class="form-check mt-4">
                     <input class="form-check-input" type="checkbox" id="pay-later" name="pay_later">
-                        <label class="form-check-label" for="pay-later">
+                        <label class="form-check-label welcome-name" for="pay-later">
                             Оплатит позже
                         </label>
                     </div>
@@ -110,7 +110,7 @@
 
          <!-- Cash input -->
             <div class="col-md-4">
-            <label for="cash-received" class="form-label small">Получено от клиента:</label>
+            <label for="cash-received" class="form-label small welcome-name">Получено от клиента:</label>
             <input type="number" id="cash-received" name="cash_received"
                     placeholder="Введите сумму" min="0" step="0.01"
                     class="form-control form-control-sm">
@@ -138,7 +138,7 @@
 
             <!-- Menu Items -->
             <div>
-                <h4>Меню:</h4>
+                <h4 class="welcome-name">Меню:</h4>
                                 <!-- Nav tabs -->
                 <ul class="nav nav-tabs" id="menuTabs" role="tablist">
                 {% for category, items in menu_items_by_category.items %}
@@ -313,6 +313,8 @@
     function toggleTableField() {
     if (selectElement.value === "dine_in") {
       tableSelection.style.display = "block";
+      document.getElementById("id_table_number").selectedIndex = 0;
+      
     } else {
       tableSelection.style.display = "none";
       document.getElementById("id_table_number").value = "";

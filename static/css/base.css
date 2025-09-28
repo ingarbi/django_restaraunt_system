@@ -176,6 +176,10 @@
   border-bottom: 2px solid #dc3545;
 }
 
+.admin-out-btn{
+  color: #1f2937;
+}
+
 .admin-out-btn:hover{
   background-color: darkmagenta;
   color: #f8fafc;
@@ -194,4 +198,33 @@
   .welcome-header h1 {
     font-size: 1.5rem;
   }
+}
+
+.navbar{
+  background-color: #f8f9fa;
+}
+.account-button{
+color: #212529;
+}
+
+body.dark-mode .navbar-bg  {
+  background-color: #121212; 
+}
+
+body.dark-mode .account-button,
+body.dark-mode .admin-out-btn, 
+body.dark-mode .welcome-name {
+  color: #f7f7f7; 
+}
+
+#theme-toggle {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+#theme-toggle:hover {
+  transform: scale(1.1);
+}
+
+.link-button:hover {
+  background-color: #f06d7a;
 }

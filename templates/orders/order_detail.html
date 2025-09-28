@@ -6,7 +6,7 @@
   <div class="container mt-4">
     <div class="card">
       <div class="card-header d-flex justify-content-between align-items-center">
-        <h3>
+        <h3 class="welcome-name">
           Детали заказа #{{ order.order_number|slice:'12:' }}
           {% if order.paid %}
             <span class="badge bg-success text-light">- оплачен</span>
@@ -20,7 +20,7 @@
       <div class="card-body">
         <div class="row mb-4">
           <div class="col-md-6">
-            <p>
+            <p class="welcome-name">
               <strong>Тип:</strong> {{ order.get_order_type_display }}
             </p>
 
@@ -29,25 +29,25 @@
                 <strong>Стол:{{ order.table_number }}</strong>
               {% endif %}
             </p>
-            <p>
+            <p class="welcome-name">
               <strong>Дата создания:</strong> {{ order.created_at|date:'d.m.Y H:i' }}
             </p>
-            <p>
+            <p class="welcome-name">
               <strong>Итого:</strong> {{ order.total_sum }} руб.
             </p>
           </div>
 
           {% if order.order_type == 'delivery' or order.order_type == 'takeaway' %}
             <div class="col-md-6">
-              <h5>Клиент:</h5>
-              <p>
+              <h5 class="welcome-name">Клиент:</h5>
+              <p class="welcome-name">
                 <strong>Имя:</strong> {{ order.name|default:'Не указано' }}
               </p>
-              <p>
+              <p class="welcome-name">
                 <strong>Телефон:</strong> {{ order.phone_number|default:'Не указан' }}
               </p>
               {% if order.order_type == 'delivery' %}
-                <p>
+                <p class="welcome-name">
                   <strong>Адрес:</strong> {{ order.address|default:'Не указан' }}
                 </p>
               {% endif %}

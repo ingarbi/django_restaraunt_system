@@ -4,7 +4,7 @@
   
     <div class="admin-dashboard">
       <div class="dashboard-header">
-        <h1>Добро пожаловать в систему {{CAFE_NAME}}!</h1>
+        <h1 class="welcome-name" >Добро пожаловать в систему {{CAFE_NAME}}!</h1>
         <p class="dashboard-subtitle">Выберите нужный раздел:</p>
       </div>
       
@@ -14,7 +14,7 @@
             <i class="ri-shopping-cart-line"></i>
           </div>
           <div class="card-content">
-            <h3>Создать заказ</h3>
+            <h3  class="welcome-name" >Создать заказ</h3>
             <a href="{% url 'create_order' %}" class="btn btn-primary">
               <i class="ri-add-line"></i> Перейти
             </a>
@@ -26,7 +26,7 @@
             <i class="ri-list-check"></i>
           </div>
           <div class="card-content">
-            <h3>Все заказы</h3>
+            <h3 class="welcome-name">Все заказы</h3>
             <a href="{% url 'all_orders' %}" class="btn btn-success">
               <i class="ri-eye-line"></i> Просмотреть
             </a>
@@ -38,7 +38,7 @@
             <i class="ri-knife-line"></i>
           </div>
           <div class="card-content">
-            <h3>Заказы на кухне</h3>
+            <h3  class="welcome-name">Заказы на кухне</h3>
             <a href="{% url 'kitchen_orders' %}" class="btn btn-warning">
               <i class="ri-cooking-line"></i> Открыть
             </a>
@@ -50,7 +50,7 @@
             <i class="ri-settings-line"></i>
           </div>
           <div class="card-content">
-            <h3>Админ-панель</h3>
+            <h3  class="welcome-name">Админ-панель</h3>
             <a href="{% url 'admin:index' %}" class="btn btn-danger">
               <i class="ri-admin-line"></i> Войти
             </a>

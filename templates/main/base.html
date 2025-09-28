@@ -7,17 +7,18 @@
     <title>Кафе</title>
     <link rel="stylesheet" href="{% static 'bootstrap/css/bootstrap.min.css' %}" type="text/css" />
     <link rel="stylesheet" href="{% static 'css/base.css' %}" type="text/css" />
+    <link rel="stylesheet" href="{% static 'css/theme.css' %}" type="text/css" />
     <link rel="stylesheet" href="{% static 'css/kitchen_order_list.css' %}" type="text/css" />
     <link rel="stylesheet" href="{% static 'bootstrap/bootstrap-icons/bootstrap-icons.css' %}" type="text/css" />
   </head>
   <body>
-    <nav class="navbar navbar-expand-md navbar-light bg-light">
+    <nav class="navbar navbar-expand-md navbar-bg">
       <div class="container">
 
         <h6 class="mt-0 p-0 icon-link">
           {% if user.is_authenticated %}
-            <a class="nav-link disabled text-danger"><span class="text-dark">Аккаунт: </span>{{ request.user.get_full_name|default:request.user.username }}</a> <span> | </span>
-            <a class="nav-link admin-out-btn" href="{% url 'logout' %}">Выйти</a>
+            <a class="nav-link disabled text-danger"><span class="account-button">Аккаунт: </span>{{ request.user.get_full_name|default:request.user.username }}</a> <span> | </span>
+            <a class="nav-link admin-out-btn " href="{% url 'logout' %}">Выйти</a>
           {% else %}
             <a class="nav-link {% if request.path == '/login/' %}active{% endif %}" href="{% url 'login' %}">Залогиниться</a>
           {% endif %}
@@ -26,17 +27,31 @@
         <button id="enable-sound-btn" class="btn" ><span class="btn bi bi-sign-stop-fill text-danger"></span>Звуковые уведомления временно отключены</button>
         <div class="navbar-nav pe-5">
           {% if request.user.profile.role == 'supervisor' %}
-            <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="{% url 'index' %}">Центр управления</a>
-            <a class="nav-link {% if request.path == '/orders/create/' %}active{% endif %}" href="{% url 'create_order' %}">Новый заказ</a>
-            <a class="nav-link {% if request.path == '/orders/orders/' %}active{% endif %}" href="{% url 'all_orders' %}">Все заказы</a>
-            <a class="nav-link {% if request.path == '/orders/kitchen/' %}active{% endif %}" href="{% url 'kitchen_orders' %}">Кухня</a>
+          <a class="nav-link account-button {% if request.path == '/' %}active {% else %}link-button {% endif %}" href="{% url 'index' %} ">Центр управления</a>
+          <a class="nav-link account-button  {% if request.path == '/orders/create/' %}active {% else %}link-button {% endif %}" href="{% url 'create_order' %}">Новый заказ</a>
+            <a class="nav-link account-button  {% if request.path == '/orders/orders/' %}active {% else %}link-button {% endif %}" href="{% url 'all_orders' %}">Все заказы</a>
+            <a class="nav-link account-button  {% if request.path == '/orders/kitchen/' %}active {% else %}link-button {% endif %}" href="{% url 'kitchen_orders' %}">Кухня</a>
           {% elif request.user.profile.role == 'cashier' %}
-            <a class="nav-link {% if request.path == '/orders/create/' %}active{% endif %}" href="{% url 'create_order' %}">Новый заказ</a>
-            <a class="nav-link {% if request.path == '/orders/orders/' %}active{% endif %}" href="{% url 'all_orders' %}">Все заказы</a>
+            <a class="nav-link account-button  {% if request.path == '/orders/create/' %}active {% else %}link-button {% endif %}" href="{% url 'create_order' %}">Новый заказ</a>
+            <a class="nav-link account-button  {% if request.path == '/orders/orders/' %}active {% else %}link-button {% endif %}" href="{% url 'all_orders' %}">Все заказы</a>
           {% elif request.user.profile.role == 'cook' %}
-            <a class="nav-link {% if request.path == '/orders/kitchen/' %}active{% endif %}" href="{% url 'kitchen_orders' %}">Кухня</a>
+            <a class="nav-link account-button  {% if request.path == '/orders/kitchen/' %}active {% else %}link-button {% endif %}" href="{% url 'kitchen_orders' %}">Кухня</a>
           {% endif %}
         </div>
+
+        {% comment %} <button id="theme-toggle" aria-label="Toggle theme" class="btn rounded-circle">
+          <span id="theme-icon">🌙</span>
+        </button> {% endcomment %}
+
+        <li class="nav-item align-items-center d-flex" >
+        <i class="fas fa-sun"></i>
+        <!-- Default switch -->
+        <div class="ms-2 form-check form-switch">
+          <input class="form-check-input" type="checkbox" role="switch" id="theme-toggle" />
+        </div>
+        <i class="fas fa-moon"></i>
+      </li>
+
       </div>
     </nav>
     <audio id="order-notification" src="{% static 'audio/new-order.mp3' %}" preload="auto"></audio>
@@ -49,6 +64,33 @@
     <script src="{% static 'bootstrap/js/bootstrap.bundle.min.js' %}"></script>
 
     <script>
+
+    document.addEventListener("DOMContentLoaded", () => {
+        const body = document.body;
+        const themeToggle = document.getElementById("theme-toggle");
+
+        // Apply saved theme
+        const savedTheme = localStorage.getItem("theme");
+        if (savedTheme === "dark") {
+          body.classList.add("dark-mode");
+          themeToggle.checked = true; // sync switch position
+        } else {
+          body.classList.remove("dark-mode");
+          themeToggle.checked = false;
+        }
+
+        // Listen for toggle
+        themeToggle.addEventListener("change", () => {
+          if (themeToggle.checked) {
+            body.classList.add("dark-mode");
+            localStorage.setItem("theme", "dark");
+          } else {
+            body.classList.remove("dark-mode");
+            localStorage.setItem("theme", "light");
+          }
+        });
+      });
+
       {% comment %} let isSoundEnabled = false
       const notificationSound = document.getElementById('order-notification')
       const notificationStatusSound = document.getElementById('order-status-change-notification')

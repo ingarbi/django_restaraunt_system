@@ -63,20 +63,20 @@
                                 </div>
 
                                 <!-- Total -->
-                                <div class="fw-bold">
+                                <div class="fw-bold  welcome-name">
                                     {{ order.total_sum|floatformat:"-3g" }} ₽
                                 </div>
                             </div>
 
                             <!-- Contact info -->
                             {% if order.order_type == "takeaway" or order.order_type == "delivery" %}
-                                <p class="small text-muted mb-2">
+                                <p class="small mb-2 welcome-name">
                                     📞 {{ order.phone_number|default:"Нет номера" }}
                                 </p>
                             {% endif %}
 
                             <!-- Items -->
-                            <ul class="list-unstyled small mb-0">
+                            <ul class="list-unstyled small mb-0 welcome-name">
                                 {% for item in order.items.all|slice:":3" %}
                                     <li>• {{ item.menu_item.name }} <span class="fw-bold text-primary">x{{ item.quantity }}</span></li>
                                 {% endfor %}
