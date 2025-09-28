@@ -1,12 +1,15 @@
 {% extends 'main/base.html' %}
 {% load static %}
 {% block content %}
+<!-- Global Alert Container -->
+  <div id="alert-container" class="position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 1080; width: 100%; max-width: 600px;"></div>
+
 <div class="card">
 <link href="{% static 'css/create_order.css' %}" rel="stylesheet" />    
     <div class="card-header">
         <h3  class="welcome-name">Новый заказ</h3>
     </div>
-    <div id="alert-container" class="position-absolute top-50 start-50 translate-middle"></div>
+    
     <div class="card-body">
         <form method="post" id="order-form" autocomplete="off">
             {% csrf_token %}
@@ -227,7 +230,7 @@
         const container = document.getElementById("alert-container");
         const alert = document.createElement("div");
 
-        alert.className = `alert alert-${type} alert-dismissible fade show mt-2`;
+        alert.className = `alert alert-${type} alert-dismissible fade show shadow`;
         alert.role = "alert";
         alert.innerHTML = `
             ${message}
