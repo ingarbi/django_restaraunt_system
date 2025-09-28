@@ -181,8 +181,7 @@
 }
 
 .admin-out-btn:hover{
-  background-color: darkmagenta;
-  color: #f8fafc;
+  color: #f06d7a;
   border-radius: 30%;
 }
 
@@ -226,5 +225,5 @@ body.dark-mode .welcome-name {
 }
 
 .link-button:hover {
-  background-color: #f06d7a;
+  color: #f06d7a;
 }

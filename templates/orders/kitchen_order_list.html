@@ -1,7 +1,7 @@
 <div class="row g-4">
   {% for order in orders %}
     <div class="col-lg-3 col-md-4 col-sm-6">
-      <div class="card-order border border-3 shadow-lg rounded-4 h-100 d-flex flex-column overflow-hidden" id="order-{{ order.id }}">
+      <div class="card-order border border-2 border border-secondary-subtle shadow-lg rounded-4 h-100 d-flex flex-column overflow-hidden" id="order-{{ order.id }}">
         <!-- Header with dynamic background based on order type -->
         <div class="px-3 py-2 d-flex justify-content-between align-items-center  
                 {% if order.order_type == 'dine_in' %}
@@ -31,7 +31,7 @@
         </div>
 
         <!-- Body -->
-        <div class="card-body flex-fill">
+        <div class="card-body flex-fill ">
           {% comment %} <a href="{% url 'order_detail' order.id %}" class="text-decoration-none text-dark">
             {% endcomment %}
 
