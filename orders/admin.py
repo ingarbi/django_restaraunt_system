@@ -1,4 +1,5 @@
-from datetime import date
+from django.utils import timezone
+from datetime import date, datetime, timedelta
 
 from admin_totals.admin import ModelAdminTotals
 from django.contrib import admin
@@ -18,6 +19,66 @@ class OrderItemInline(admin.TabularInline):
     model = OrderItem
     extra = 0
 
+
+class DateTimeFilter(admin.SimpleListFilter):
+    title = 'Дата и время создания'
+    parameter_name = 'created_at'
+
+    def lookups(self, request, model_admin):
+        lookups_list = [
+            ('today', 'Сегодня'),
+            ('yesterday', 'Вчера'),
+            ('this_week', 'Эта неделя'),
+            ('this_month', 'Этот месяц'),
+            ('last_24_hours', 'Последние 24 часа'),
+            ('last_7_days', 'Последние 7 дней'),
+        ]
+    
+    # Добавляем часы через цикл
+        for hours in range(1, 24):
+            if hours == 1:
+                label = f'Последний 1 час'
+            elif 2 <= hours <= 4:
+                label = f'Последние {hours} часа'
+            else:
+                label = f'Последние {hours} часов'
+            lookups_list.append((f'last_{hours}_hour', label))
+        return lookups_list
+
+
+    def queryset(self, request, queryset):
+    # Существующие условия...
+        if self.value() == 'today':
+            today = timezone.now().date()
+            return queryset.filter(created_at__date=today)
+        if self.value() == 'yesterday':
+            yesterday = timezone.now().date() - timedelta(days=1)
+            return queryset.filter(created_at__date=yesterday)
+        if self.value() == 'this_week':
+            today = timezone.now().date()
+            start_of_week = today - timedelta(days=today.weekday())
+            return queryset.filter(created_at__date__gte=start_of_week)
+        if self.value() == 'this_month':
+            today = timezone.now().date()
+            start_of_month = today.replace(day=1)
+            return queryset.filter(created_at__date__gte=start_of_month)
+        if self.value() == 'last_24_hours':
+            twenty_four_hours_ago = timezone.now() - timedelta(hours=24)
+            return queryset.filter(created_at__gte=twenty_four_hours_ago)
+        if self.value() == 'last_7_days':
+            seven_days_ago = timezone.now() - timedelta(days=7)
+            return queryset.filter(created_at__gte=seven_days_ago)
+    
+    # Обработка часовых фильтров
+        if self.value() and self.value().startswith('last_') and self.value().endswith('_hour'):
+            try:
+                hours = int(self.value().split('_')[1])
+                hours_ago = timezone.now() - timedelta(hours=hours)
+                return queryset.filter(created_at__gte=hours_ago)
+            except (ValueError, IndexError):
+                pass
+        
+        return queryset
 
 @admin.register(Order)
 class OrderAdmin(ModelAdminTotals):
@@ -43,6 +104,8 @@ class OrderAdmin(ModelAdminTotals):
     
     payment_type_display.short_description = "Оплата"
     payment_type_display.admin_order_field = "payment_type"
+
+    
     readonly_fields = ('created_by',  "completion_time",)
     list_totals = [
         ("total_sum", lambda field: Coalesce(Sum(field), 0)),
@@ -52,7 +115,7 @@ class OrderAdmin(ModelAdminTotals):
         "order_number",
     ]
     search_fields = ["order_number"]
-    list_filter = ["status", "order_type", "created_at", 'created_by', "payment_type"]
+    list_filter = ["status", "order_type", DateTimeFilter, 'created_by', "payment_type"]
 
     def completion_time(self, obj):
         """Время выполнения заказа"""
@@ -93,8 +156,8 @@ class OrderItemAdmin(admin.ModelAdmin):
         "sales_report_link",
     )
     list_filter = (
-        ("order__created_at", DateFieldListFilter),
-        ("order__completed_at", DateFieldListFilter),
+        DateTimeFilter,
+        "order__completed_at",
         "menu_item",
     )
 

@@ -18,7 +18,7 @@
 
 5) В папке где клон репо на компьютере нужно открыть командную строку и выполнить следующие команды:
      > 1. `python -m venv venv`
-     > 2. `.\venv\Scripts\Activate.ps1` или `.\venv\Scripts\activate.bat`
+     > 2. `.\venv\Scripts\Activate.ps1` или `.\venv\Scripts\activate.bat` or  source venv/Scripts/activate
      > 3. `pip install -r req.txt` 
      > 4. `python manage.py makemigrations` 
      > 5. `python manage.py migrate` 
