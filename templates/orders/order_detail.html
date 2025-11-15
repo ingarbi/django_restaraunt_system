@@ -36,7 +36,6 @@
               <strong>Итого:</strong> {{ order.total_sum }} руб.
             </p>
 
-
             <!-- КОММЕНТАРИЙ К ЗАКАЗУ -->
             {% if order.comment %}
             <div class="mt-3 p-3 bg-light rounded">
@@ -107,13 +106,21 @@
                   <option value="" selected disabled>Выбрать</option>
                   <option value="cash">Наличными</option>
                   <option value="online">Переводом</option>
+                  <option value="mixed">Смешанная</option>
                   <option value="free">Бесплатно</option>
                 </select>
               </div>
 
-              <div class="col-md-4">
-                <label for="update_cash_received" class="form-label">Получено от клиента:</label>
+              <!-- Поля для наличной оплаты -->
+              <div class="col-md-4 cash-fields" style="display: none;">
+                <label for="update_cash_received" class="form-label">Получено наличными:</label>
                 <input type="number" id="update_cash_received" name="cash_received" placeholder="Введите сумму" min="0" step="1" class="form-control" />
+              </div>
+
+              <!-- Поля для онлайн оплаты -->
+              <div class="col-md-4 online-fields" style="display: none;">
+                <label for="update_online_received" class="form-label">Оплачено переводом:</label>
+                <input type="number" id="update_online_received" name="online_received" placeholder="Введите сумму" min="0" step="1" class="form-control" />
               </div>
 
               <div class="col-md-4 d-flex align-items-end">
@@ -124,6 +131,19 @@
                     <span class="input-group-text" id="change-status"></span>
                     <button class="btn btn-primary" id="update-payment-btn">Подтвердить оплату</button>
                   </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Суммы оплаты для смешанного типа -->
+            <div class="row g-3 mt-2 mixed-fields" style="display: none;">
+              <div class="col-md-6">
+                <label class="form-label">Итоги оплаты:</label>
+                <div class="p-2 bg-white rounded border">
+                  <p class="mb-1">Наличными: <span id="update_cash_amount_display"></span> руб.</p>
+                  <p class="mb-1">Переводом: <span id="update_online_amount_display"></span> руб.</p>
+                  <p class="mb-0 fw-bold">Всего оплачено: <span id="update_total_paid_display">0</span> руб.</p>
+                  <p class="mb-0">Осталось оплатить: <span id="update_remaining_display">{{ order.total_sum }}</span> руб.</p>
                 </div>
               </div>
             </div>
@@ -184,72 +204,127 @@ function markAsDelivered(orderId) {
 document.addEventListener('DOMContentLoaded', function() {
     const paymentTypeSelect = document.getElementById('update_payment_type');
     const cashReceivedInput = document.getElementById('update_cash_received');
+    const onlineReceivedInput = document.getElementById('update_online_received');
     const changeAmountElement = document.getElementById('update_change_amount');
     const updatePaymentBtn = document.getElementById('update-payment-btn');
     const changeStatus = document.getElementById('change-status');
+    
+    // Элементы для отображения сумм
+    const cashAmountDisplay = document.getElementById('update_cash_amount_display');
+    const onlineAmountDisplay = document.getElementById('update_online_amount_display');
+    const totalPaidDisplay = document.getElementById('update_total_paid_display');
+    const remainingDisplay = document.getElementById('update_remaining_display');
+    
     const orderTotal = {{ order.total_sum }};
     const orderId = {{ order.id }};
 
-    function calculateChange() {
-        if (!paymentTypeSelect || !cashReceivedInput || !changeAmountElement) return;
+    // Показ/скрытие полей в зависимости от типа оплаты
+    function togglePaymentFields() {
         const paymentType = paymentTypeSelect.value;
-        const cashReceived = parseInt(cashReceivedInput.value) || 0;
-
-        if (paymentType !== 'cash') {
-            changeAmountElement.value = 'Не требуется';
-            changeStatus.innerHTML = '';
-            return;
-        }
-
-        const change = cashReceived - orderTotal;
-        if (change >= 0) {
-            changeAmountElement.value = change.toFixed(0);
-            changeStatus.innerHTML = '<span class="text-success">✔</span>';
-        } else {
-            changeAmountElement.value = 'Недостаточно';
-            changeStatus.innerHTML = '<span class="text-danger">✘</span>';
-        }
-    }
-
-    function toggleCashFields() {
-        if (!paymentTypeSelect) return;
-        if (paymentTypeSelect.value === 'cash') {
-            cashReceivedInput.disabled = false;
-            calculateChange();
-        } else {
-            cashReceivedInput.disabled = true;
-            cashReceivedInput.value = '';
-            changeAmountElement.value = 'Не требуется';
-            changeStatus.innerHTML = '';
-        }
-    }
-
-    if (paymentTypeSelect) {
-        paymentTypeSelect.addEventListener('change', () => {
-            toggleCashFields();
-            calculateChange();
+        
+        // Скрываем все поля
+        document.querySelectorAll('.cash-fields, .online-fields, .mixed-fields').forEach(field => {
+            field.style.display = 'none';
         });
+        
+        // Очищаем поля
+        cashReceivedInput.value = '';
+        onlineReceivedInput.value = '';
+        changeAmountElement.value = '';
+        changeStatus.innerHTML = '';
+        
+        // Показываем нужные поля
+        if (paymentType === 'cash') {
+            document.querySelector('.cash-fields').style.display = 'block';
+        } else if (paymentType === 'online') {
+            document.querySelector('.online-fields').style.display = 'block';
+        } else if (paymentType === 'mixed') {
+            document.querySelector('.cash-fields').style.display = 'block';
+            document.querySelector('.online-fields').style.display = 'block';
+            document.querySelector('.mixed-fields').style.display = 'block';
+        }
+        
+        updatePaymentSummary();
+    }
+
+    // Обновление сводки оплаты
+    function updatePaymentSummary() {
+        const cashAmount = parseInt(cashReceivedInput.value) || 0;
+        const onlineAmount = parseInt(onlineReceivedInput.value) || 0;
+        const totalPaid = cashAmount + onlineAmount;
+        
+        // Обновляем отображение
+        cashAmountDisplay.textContent = cashAmount;
+        onlineAmountDisplay.textContent = onlineAmount;
+        totalPaidDisplay.textContent = totalPaid;
+        remainingDisplay.textContent = Math.max(0, orderTotal - totalPaid);
+        
+        // Расчет сдачи только для наличных
+        if (paymentTypeSelect.value === 'cash') {
+            const change = cashAmount - orderTotal;
+            if (change >= 0) {
+                changeAmountElement.value = change.toFixed(0);
+                changeStatus.innerHTML = '<span class="text-success">✔</span>';
+            } else {
+                changeAmountElement.value = 'Недостаточно';
+                changeStatus.innerHTML = '<span class="text-danger">✘</span>';
+            }
+        } else {
+            changeAmountElement.value = 'Не требуется';
+            changeStatus.innerHTML = '';
+        }
+    }
+
+    // Валидация перед отправкой
+    function validatePayment() {
+        const paymentType = paymentTypeSelect.value;
+        const cashAmount = parseInt(cashReceivedInput.value) || 0;
+        const onlineAmount = parseInt(onlineReceivedInput.value) || 0;
+        const totalPaid = cashAmount + onlineAmount;
+
+        if (!paymentType) {
+            alert('Ошибка: Необходимо выбрать способ оплаты.');
+            return false;
+        }
+
+        if (paymentType === 'cash' && cashAmount < orderTotal) {
+            alert('Ошибка: Недостаточно наличных средств для завершения заказа.');
+            return false;
+        }
+
+        if (paymentType === 'online' && onlineAmount < orderTotal) {
+            alert('Ошибка: Недостаточно средств по переводу для завершения заказа.');
+            return false;
+        }
+
+        if (paymentType === 'mixed' && totalPaid < orderTotal) {
+            alert('Ошибка: Общая сумма оплаты недостаточна для завершения заказа.');
+            return false;
+        }
+
+        return true;
+    }
+
+    // Обработчики событий
+    if (paymentTypeSelect) {
+        paymentTypeSelect.addEventListener('change', togglePaymentFields);
     }
 
     if (cashReceivedInput) {
-        cashReceivedInput.addEventListener('input', calculateChange);
+        cashReceivedInput.addEventListener('input', updatePaymentSummary);
+    }
+
+    if (onlineReceivedInput) {
+        onlineReceivedInput.addEventListener('input', updatePaymentSummary);
     }
 
     if (updatePaymentBtn) {
         updatePaymentBtn.addEventListener('click', function() {
-            if (!paymentTypeSelect) return;
+            if (!validatePayment()) return;
+
             const paymentType = paymentTypeSelect.value;
-            const cashReceived = parseInt(cashReceivedInput.value) || 0;
-
-            if (!paymentType) {
-                alert('Ошибка: Необходимо выбрать способ оплаты.');
-                return;
-            }
-
-            if (paymentType === 'cash' && cashReceived < orderTotal) {
-                alert('Ошибка: Недостаточно средств для завершения заказа.');
-                return;
-            }
+            const cashAmount = parseInt(cashReceivedInput.value) || 0;
+            const onlineAmount = parseInt(onlineReceivedInput.value) || 0;
 
             fetch(`/orders/order/${orderId}/update-payment/`, {
                 method: 'POST',
@@ -260,7 +335,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 },
                 body: JSON.stringify({
                     payment_type: paymentType,
-                    cash_received: cashReceived,
+                    cash_received: cashAmount,
+                    online_received: onlineAmount,
                     total: orderTotal
                 })
             })
@@ -280,7 +356,8 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    toggleCashFields();
+    // Инициализация
+    togglePaymentFields();
 });
 </script>
 {% endblock %}

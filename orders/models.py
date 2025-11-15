@@ -51,8 +51,11 @@ class Order(models.Model):
     PAYMENT_TYPE_CHOICES = (
         ("cash", "Наличный"),
         ("online", "Перевод"),
+        ("mixed", "Смешанный"),
         ("free", "Бесплатно"),
     )
+
+
     discount = models.PositiveSmallIntegerField(default=0, verbose_name="Скидка (%)")
     order_number = models.CharField(
         verbose_name="№ Заказа", max_length=10, unique=True, editable=False
@@ -102,6 +105,25 @@ class Order(models.Model):
         null=True, 
         blank=True,
         help_text="Дополнительная информация к заказу"
+    )
+
+
+     # Поля для смешанной оплаты
+    cash_amount = models.DecimalField(
+        verbose_name="Сумма наличными", 
+        max_digits=10, 
+        decimal_places=2, 
+        default='',
+        null=True,
+        blank=True
+    )
+    online_amount = models.DecimalField(
+        verbose_name="Сумма переводом", 
+        max_digits=10, 
+        decimal_places=2, 
+        default='',
+        null=True,
+        blank=True
     )
 
     def __str__(self):

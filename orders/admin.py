@@ -82,34 +82,82 @@ class DateTimeFilter(admin.SimpleListFilter):
 
 @admin.register(Order)
 class OrderAdmin(ModelAdminTotals):
-    list_display = (
+    
+    def get_list_display(self, request):
+        """Динамическое отображение колонок в зависимости от фильтра"""
+        base_list_display = (
+            "order_number",
+            "status",
+            "created_at",
+            "order_type",
+            "discount",
+            "total_sum",
+            "payment_type_display",
+            'created_by',
+            'paid',
+        )
+        
+        # Проверяем, применен ли фильтр по смешанной оплате
+        if request.GET.get('payment_type__exact') == 'mixed':
+            return base_list_display + ('cash_amount_display', 'online_amount_display')
+        
+        return base_list_display
 
-        "order_number",
-        "status",
-        "created_at",
-        "order_type",
-        "discount",
-        "total_sum",
-        "payment_type_display",
-        'created_by',
-    )
-
+    def get_list_totals(self, request):
+        """Динамическое отображение итогов в зависимости от фильтра"""
+        base_totals = [
+            ("total_sum", lambda field: Coalesce(Sum(field), 0)),
+        ]
+        
+        # Добавляем итоги для наличных и перевода только при фильтре mixed
+        if request.GET.get('payment_type__exact') == 'mixed':
+            base_totals.extend([
+                ("cash_amount", lambda field: Coalesce(Sum(field), 0)),
+                ("online_amount", lambda field: Coalesce(Sum(field), 0)),
+            ])
+        
+        return base_totals
 
     def payment_type_display(self, obj):
         """Кастомное отображение типа оплаты с текстом для пустых значений"""
         if not obj.payment_type:
             return "Тип оплаты не выбран"
-        # Получаем человекочитаемое значение из choices
         return dict(Order.PAYMENT_TYPE_CHOICES).get(obj.payment_type, obj.payment_type)
     
     payment_type_display.short_description = "Оплата"
     payment_type_display.admin_order_field = "payment_type"
 
+    def cash_amount_display(self, obj):
+        """Отображение суммы наличной оплаты"""
+        return f"{obj.cash_amount or 0} руб."
     
-    readonly_fields = ('created_by',  "completion_time",)
-    list_totals = [
-        ("total_sum", lambda field: Coalesce(Sum(field), 0)),
-    ]
+    cash_amount_display.short_description = "Наличные"
+    cash_amount_display.admin_order_field = "cash_amount"
+
+    def online_amount_display(self, obj):
+        """Отображение суммы онлайн оплаты"""
+        return f"{obj.online_amount or 0} руб."
+    
+    online_amount_display.short_description = "Перевод"
+    online_amount_display.admin_order_field = "online_amount"
+    
+    readonly_fields = ('created_by',  "completion_time", 'cash_amount', 'online_amount')
+
+    fieldsets = (
+        (None, {
+            'fields': ('order_number', 'status', 'created_at', 'order_type', 'payment_type')
+        }),
+        ('Информация о клиенте', {
+            'fields': ('phone_number', 'name', 'address', 'table_number', 'comment')
+        }),
+        ('Финансы', {
+            'fields': ('total_sum', 'discount', 'paid', 'cash_amount', 'online_amount')
+        }),
+        ('Дополнительно', {
+            'fields': ('created_by', 'completion_time')
+        }),
+    )
+    
     inlines = [OrderItemInline]
     list_display_links = [
         "order_number",

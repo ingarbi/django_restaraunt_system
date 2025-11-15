@@ -20,6 +20,7 @@ from .models import MenuItem, Order, OrderItem
 def create_order(request):
     if request.user.profile.role != 'cashier' and request.user.profile.role != 'supervisor':
         raise PermissionDenied("У вас нет доступа к этой странице.")
+    
     menu_items = MenuItem.objects.all().select_related("category")
     menu_items_by_category = {}
     for item in menu_items:
@@ -30,10 +31,10 @@ def create_order(request):
     if request.method == "POST":
         form = OrderForm(request.POST)
         if form.is_valid():
-            # Save order items
-            order = form.save()
+            # Сначала создаем заказ без сохранения
+            order = form.save(commit=False)
 
-            # Get order phone, name, adress
+            # Получаем данные из формы
             phone = request.POST.get("phone", "")
             first_name = request.POST.get("first_name", "")
             address = request.POST.get("addres", "")
@@ -41,29 +42,31 @@ def create_order(request):
             payment_type = request.POST.get('payment_type')
             pay_later = request.POST.get('pay_later') == 'on'
             
-
-                
             try:
                 discount = int(request.POST.get("id_discount", 0))
             except:
                 discount = 0
-            payment_type = request.POST.get("payment_type", "")
 
+            # Получаем суммы для смешанной оплаты
+            cash_amount = request.POST.get("cash_amount", 0)
+            online_amount = request.POST.get("online_amount", 0)
+            
+            # Рассчитываем общую сумму заказа
             total_sum = 0
+            order_items_data = []  # Сохраняем данные о товарах временно
+            
             for item in menu_items:
-                
                 quantity = int(request.POST.get(f"item_{item.id}", 0) or 0)
                 if quantity > 0:
-                    OrderItem.objects.create(
-                        order=order, menu_item=item, quantity=quantity
-                    )
                     total_sum += item.price * quantity
+                    order_items_data.append({
+                        'menu_item': item,
+                        'quantity': quantity
+                    })
 
+            # Устанавливаем основные данные заказа
             order.discount = discount
-            # Update the total sum of the order
             order.total_sum = total_sum - (total_sum * discount / 100)
-
-            # Update order details
             order.phone_number = phone
             order.name = first_name
             order.address = address
@@ -71,20 +74,49 @@ def create_order(request):
             order.payment_type = payment_type
             order.created_by = request.user
 
+            # Сохраняем суммы смешанной оплаты
+            if payment_type == "mixed":
+                try:
+                    order.cash_amount = float(cash_amount) if cash_amount else 0
+                    order.online_amount = float(online_amount) if online_amount else 0
+                except (ValueError, TypeError):
+                    order.cash_amount = 0
+                    order.online_amount = 0
+            else:
+                order.cash_amount = 0
+                order.online_amount = 0
+
             table_number = request.POST.get("table_number") or None
             if order.order_type == "dine_in":
                 order.table_number = table_number
+            
             # 🔑 Payment status logic
             if pay_later:
                 order.paid = False
-            elif payment_type in  ["online", "free"]:
+            elif payment_type in ["online", "free"]:
                 order.paid = True
             elif payment_type == "cash" and not pay_later:
                 order.paid = True
+            elif payment_type == "mixed":
+                # Для смешанной оплаты проверяем, покрывает ли сумма заказ
+                mixed_total = order.cash_amount + order.online_amount
+                if mixed_total >= order.total_sum:
+                    order.paid = True
+                else:
+                    order.paid = False
             else:
                 order.paid = False
 
+            # СОХРАНЯЕМ ЗАКАЗ ПЕРВЫМ!
             order.save()
+
+            # Теперь создаем OrderItem после сохранения заказа
+            for item_data in order_items_data:
+                OrderItem.objects.create(
+                    order=order, 
+                    menu_item=item_data['menu_item'], 
+                    quantity=item_data['quantity']
+                )
 
             # Notify the kitchen about the new order
             channel_layer = get_channel_layer()
@@ -107,9 +139,14 @@ def create_order(request):
                     },
                 },
             )
+            
             if request.headers.get("X-Requested-With") == "XMLHttpRequest":
                 return JsonResponse({"success": True, "order_id": order.id})
             return redirect("create_order")
+        else:
+            # Если форма невалидна, возвращаем ошибку
+            if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+                return JsonResponse({"success": False, "errors": form.errors})
     else:
         context = {
             "menu_items_by_category": menu_items_by_category,

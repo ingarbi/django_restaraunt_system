@@ -2,77 +2,56 @@
 {% load static %}
 {% block content %}
 <!-- Global Alert Container -->
-  <div id="alert-container" class="position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 1080; width: 100%; max-width: 600px;"></div>
+<div id="alert-container" class="position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 1080; width: 100%; max-width: 600px;"></div>
 
 <div class="card">
-<link href="{% static 'css/create_order.css' %}" rel="stylesheet" />    
+    <link href="{% static 'css/create_order.css' %}" rel="stylesheet" />    
     <div class="card-header">
-        <h3  class="welcome-name">Новый заказ</h3>
+        <h3 class="welcome-name">Новый заказ</h3>
     </div>
     
     <div class="card-body">
         <form method="post" id="order-form" autocomplete="off">
             {% csrf_token %}
             <!-- Order Type Dropdown -->
-            <div class="d-flex flex-column ">
-                
-                    <label for="id_order_type" class="welcome-name">Тип заказа:</label>
+            <div class="d-flex flex-column">
+                <label for="id_order_type" class="welcome-name">Тип заказа:</label>
+                <select name="order_type" id="id_order_type" class="form-control-sm w-auto" required>
+                    <option value="" selected disabled>Не выбран</option>
+                    <option value="dine_in">В зале</option>
+                    <option value="takeaway">На вынос</option>
+                    <option value="delivery">Доставка</option>
+                </select>
 
-                    <select name="order_type" id="id_order_type" class="form-control-sm w-auto" required>
-                        <option value="" selected disabled>Не выбран</option>
-                        <option value="dine_in">В зале</option>
-                        <option value="takeaway">На вынос</option>
-                        <option value="delivery">Доставка</option>
-                    </select>
-                    
-
-                    {% comment %} <div class="mb-3" id="table-selection" style="display:none;">
-                        <label for="id_table_number" class="form-label welcome-name">Номер стола:</label>
-                        <select id="id_table_number" name="table_number" class="form-control">
-                            <option value="1" >Стол 1</option>
-                            <option value="2">Стол 2</option>
-                            <option value="3">Стол 3</option>
-                            <option value="4">Стол 4</option>
-                            <option value="5">Стол 5</option>
-                            <option value="6">Стол 6</option>
-                            <option value="7">Стол 7</option>
-                            <option value="8">Стол 8</option>
-                            <option value="9">Стол 9</option>
-                            <option value="10">Стол 10</option>
-                            </select>
-                    </div> {% endcomment %}
-
-                    <div id="id_delivery" class="mt-2 " style="display: none;">
-                        <label class="mt-1 welcome-name" for="phone">Тел.:</label>
-                        <input type="tel" id="phone" name="phone" placeholder="79281234567">
-                        <label class="mt-1 welcome-name" for="first_name">Имя:</label>
-                        <input type="text" id="first_name" name="first_name" placeholder="Рома">
-                        <label class="mt-1 welcome-name" for="addres">Адрес:</label>
-                        <input type="text" id="addres" name="addres" placeholder="Назрань, Муталиева 01" size="40">
-                    </div>
-
-                
-
+                <div id="id_delivery" class="mt-2" style="display: none;">
+                    <label class="mt-1 welcome-name" for="phone">Тел.:</label>
+                    <input type="tel" id="phone" name="phone" placeholder="79281234567">
+                    <label class="mt-1 welcome-name" for="first_name">Имя:</label>
+                    <input type="text" id="first_name" name="first_name" placeholder="Рома">
+                    <label class="mt-1 welcome-name" for="addres">Адрес:</label>
+                    <input type="text" id="addres" name="addres" placeholder="Назрань, Муталиева 01" size="40">
+                </div>
             </div>
             
             <!-- Selected Items Section -->
-           <div class="mb-1">
+            <div class="mb-1">
                 <span class="fs-5 welcome-name">Выбранные товары:</span>
                 <ul id="selected-items-list" class="selected-items-list d-flex flex-wrap">
                     <li id="placeholder-item" class="text-muted">Товары ещё не выбраны</li>
                 </ul>
             </div>
 
-             <!-- Payment & Discount -->
+            <!-- Payment & Discount -->
             <div class="payment-section row align-items-center mb-3">
                 <!-- Способ оплаты -->
                 <div class="col-md-4 mb-2 mb-md-0">
                     <label for="id_payment_type" class="form-label small welcome-name">Способ оплаты:</label>
                     <select name="payment_type" id="id_payment_type" class="form-control form-control-sm" required>
-                    <option value="" selected disabled>Не выбран</option>
-                    <option value="cash">Наличными</option>
-                    <option value="online">Переводом</option>
-                    <option value="free">Бесплатно</option>
+                        <option value="" selected disabled>Не выбран</option>
+                        <option value="cash">Наличными</option>
+                        <option value="online">Переводом</option>
+                        <option value="mixed">Смешанная</option>
+                        <option value="free">Бесплатно</option>
                     </select>
                 </div>
 
@@ -83,20 +62,40 @@
                         min="0" max="100" name="id_discount" 
                         class="form-control form-control-sm" />
                     <datalist id="discount-options">
-                    <option value="5">
-                    <option value="10">
-                    <option value="15">
-                    <option value="20">
+                        <option value="5">
+                        <option value="10">
+                        <option value="15">
+                        <option value="20">
                     </datalist>
                 </div>
 
                 <!-- Оплатит позже -->
                 <div class="col-md-4">
                     <div class="form-check mt-4">
-                    <input class="form-check-input" type="checkbox" id="pay-later" name="pay_later">
+                        <input class="form-check-input" type="checkbox" id="pay-later" name="pay_later">
                         <label class="form-check-label welcome-name" for="pay-later">
                             Оплатит позже
                         </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Блок для смешанной оплаты -->
+            <div id="mixed_payment_section" class="row mb-3" style="display: none;">
+                <div class="col-md-6">
+                    <label for="cash_amount" class="form-label welcome-name">Сумма наличными:</label>
+                    <input type="number" name="cash_amount" id="cash_amount" 
+                           class="form-control" min="0" step="1" value="">
+                </div>
+                <div class="col-md-6">
+                    <label for="online_amount" class="form-label welcome-name">Сумма переводом:</label>
+                    <input type="number" name="online_amount" id="online_amount" 
+                           class="form-control" min="0" step="1" value="">
+                </div>
+                <div class="col-12 mt-2">
+                    <div id="mixed_payment_total" class="alert alert-info py-2">
+                        <strong>Итого смешанной оплаты:</strong> <span id="mixed_total">0</span> руб.
+                        <span id="mixed_validation" class="ms-2"></span>
                     </div>
                 </div>
             </div>
@@ -110,111 +109,104 @@
             </div>
 
             <!-- Total and Submit -->
-           <div class="totals-container">
-            <div class="row align-items-center mb-3">
-                <!-- Total -->
-                <div class="col-md-4">
-                <div class="total-box">
-                    <span class="label">На сумму:</span>
-                    <span id="total-sum">0.00</span> ₽
+            <div class="totals-container">
+                <div class="row align-items-center mb-3">
+                    <!-- Total -->
+                    <div class="col-md-4">
+                        <div class="total-box">
+                            <span class="label">На сумму:</span>
+                            <span id="total-sum">0.00</span> ₽
+                        </div>
+                    </div>
+
+                    <!-- Cash input -->
+                    <div class="col-md-4" id="cash_received_section">
+                        <label for="cash-received" class="form-label small welcome-name">Получено от клиента:</label>
+                        <input type="number" id="cash-received" name="cash_received"
+                                placeholder="Введите сумму" min="0" step="1"
+                                class="form-control form-control-sm">
+                    </div>
+
+                    <!-- Change -->
+                    <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                        <div class="change-box">
+                            <span class="label">Итого:</span>
+                            <span id="change-amount">0.00</span> ₽
+                        </div>
+                    </div>
                 </div>
+
+                <!-- Action buttons -->
+                <div class="d-flex justify-content-center gap-3 mt-3">
+                    <button type="submit" class="btn action-btn" name="action" value="send">
+                        Отправить на кухню
+                    </button>
+                    <button type="submit" class="btn action-btn" name="action" value="send_and_print">
+                        Отправить и распечатать чек
+                    </button>
                 </div>
-
-                
-
-         <!-- Cash input -->
-            <div class="col-md-4">
-            <label for="cash-received" class="form-label small welcome-name">Получено от клиента:</label>
-            <input type="number" id="cash-received" name="cash_received"
-                    placeholder="Введите сумму" min="0" step="0.01"
-                    class="form-control form-control-sm">
             </div>
-
-            <!-- Change -->
-            <div class="col-md-4 text-md-end mt-3 mt-md-0">
-            <div class="change-box">
-                <span class="label">Итого:</span>
-                <span id="change-amount">0.00</span> ₽
-            </div>
-            </div>
-        </div>
-
-        
-
-        <!-- Action buttons -->
-        <div class="d-flex justify-content-center gap-3 mt-3">
-            <button type="submit" class="btn action-btn" name="action" value="send">
-            Отправить на кухню
-            </button>
-            <button type="submit" class="btn action-btn" name="action" value="send_and_print">
-            Отправить и распечатать чек
-            </button>
-        </div>
-        </div>
 
             <!-- Menu Items -->
             <div>
                 <h4 class="welcome-name">Меню:</h4>
-                                <!-- Nav tabs -->
+                <!-- Nav tabs -->
                 <ul class="nav nav-tabs" id="menuTabs" role="tablist">
-                {% for category, items in menu_items_by_category.items %}
-                    <li class="nav-item" role="presentation">
-                    <button class="nav-link {% if forloop.first %}active{% endif %}" id="tab-{{ forloop.counter }}" data-bs-toggle="tab" data-bs-target="#content-{{ forloop.counter }}" type="button" role="tab" aria-controls="content-{{ forloop.counter }}" aria-selected="{{ forloop.first|yesno:'true,false' }}">
-                        {{ category }}
-                    </button>
-                    </li>
-                {% endfor %}
+                    {% for category, items in menu_items_by_category.items %}
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link {% if forloop.first %}active{% endif %}" id="tab-{{ forloop.counter }}" data-bs-toggle="tab" data-bs-target="#content-{{ forloop.counter }}" type="button" role="tab" aria-controls="content-{{ forloop.counter }}" aria-selected="{{ forloop.first|yesno:'true,false' }}">
+                                {{ category }}
+                            </button>
+                        </li>
+                    {% endfor %}
                 </ul>
 
                 <!-- Tab content -->
                 <div class="tab-content mt-2" id="menuTabContent">
-                {% for category, items in menu_items_by_category.items %}
-                    <div class="tab-pane fade {% if forloop.first %}show active{% endif %}" id="content-{{ forloop.counter }}" role="tabpanel" aria-labelledby="tab-{{ forloop.counter }}">
-                    <div class="row">
-                        {% for item in items %}
-                        <div class="col-lg-2 col-sm-3">
-                            <div class="menu-item text-center">
-                                <label class="fs-6 fw-light d-block" for="id_item_{{ item.id }}" class="menu-item-name" >
-                                {{ item.name }} 
+                    {% for category, items in menu_items_by_category.items %}
+                        <div class="tab-pane fade {% if forloop.first %}show active{% endif %}" id="content-{{ forloop.counter }}" role="tabpanel" aria-labelledby="tab-{{ forloop.counter }}">
+                            <div class="row">
+                                {% for item in items %}
+                                    <div class="col-lg-2 col-sm-3">
+                                        <div class="menu-item text-center">
+                                            <label class="fs-6 fw-light d-block menu-item-name">
+                                                {{ item.name }}
+                                            </label>
 
-                                </label>
-
-                                <div class="menu-item-price">
-                                    {{ item.price|floatformat:"0" }} руб.
-                                </div>
-                              
-                                <!-- Quantity control -->
-                                    <div class="input-group input-group-sm justify-content-center">
-                                    <button type="button" 
-                                            class="btn btn-outline-secondary btn-sm quantity-btn" 
-                                            data-action="decrease" 
-                                            data-item-id="{{ item.id }}">
-                                        −
-                                    </button>
-                                    <input type="number" 
-                                            min="0" 
-                                            name="item_{{ item.id }}" 
-                                            value="0" 
-                                            class="form-control form-control-sm item-quantity text-center mx-1"
-                                            data-price="{{ item.price }}"
-                                            data-item-id="{{ item.id }}"
-                                            data-item-name="{{ item.name }}"
-                                            style="max-width: 60px;">
-                                    <button type="button" 
-                                            class="btn btn-outline-secondary btn-sm quantity-btn" 
-                                            data-action="increase" 
-                                            data-item-id="{{ item.id }}">
-                                        +
-                                    </button>
+                                            <div class="menu-item-price">
+                                                {{ item.price|floatformat:"0" }} руб.
+                                            </div>
+                                          
+                                            <!-- Quantity control -->
+                                            <div class="input-group input-group-sm justify-content-center">
+                                                <button type="button" 
+                                                        class="btn btn-outline-secondary btn-sm quantity-btn" 
+                                                        data-action="decrease" 
+                                                        data-item-id="{{ item.id }}">
+                                                    −
+                                                </button>
+                                                <input type="number" 
+                                                        min="0" 
+                                                        name="item_{{ item.id }}" 
+                                                        value="0" 
+                                                        class="form-control form-control-sm item-quantity text-center mx-1"
+                                                        data-price="{{ item.price }}"
+                                                        data-item-id="{{ item.id }}"
+                                                        data-item-name="{{ item.name }}"
+                                                        style="max-width: 60px;">
+                                                <button type="button" 
+                                                        class="btn btn-outline-secondary btn-sm quantity-btn" 
+                                                        data-action="increase" 
+                                                        data-item-id="{{ item.id }}">
+                                                    +
+                                                </button>
+                                            </div>
+                                        </div>
                                     </div>
-
-
+                                {% endfor %}
                             </div>
-                            </div>
-                        {% endfor %}
-                    </div>
-                    </div>
-                {% endfor %}
+                        </div>
+                    {% endfor %}
                 </div>
             </div>
         </form>
@@ -223,64 +215,128 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-    const orderSocket = new WebSocket('ws://' + window.location.host + '/ws/orders/');
+        const orderSocket = new WebSocket('ws://' + window.location.host + '/ws/orders/');
 
-    let clickedButton = null;
+        let clickedButton = null;
 
-    document.querySelectorAll('#order-form button[type="submit"]').forEach(btn => {
-        btn.addEventListener('click', function() {
-            clickedButton = this;
+        document.querySelectorAll('#order-form button[type="submit"]').forEach(btn => {
+            btn.addEventListener('click', function() {
+                clickedButton = this;
+            });
         });
-    });
-    
+        
+        function showAlert(message, type = "danger") {
+            const container = document.getElementById("alert-container");
+            const alert = document.createElement("div");
 
-    function showAlert(message, type = "danger") {
-        const container = document.getElementById("alert-container");
-        const alert = document.createElement("div");
+            alert.className = `alert alert-${type} alert-dismissible fade show shadow`;
+            alert.role = "alert";
+            alert.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            `;
 
-        alert.className = `alert alert-${type} alert-dismissible fade show shadow`;
-        alert.role = "alert";
-        alert.innerHTML = `
-            ${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        `;
+            container.appendChild(alert);
 
-        container.appendChild(alert);
-
-        // auto dismiss after 5s
-        setTimeout(() => {
-            alert.classList.remove("show");
-            setTimeout(() => alert.remove(), 150);
-        }, 5000);
+            // auto dismiss after 5s
+            setTimeout(() => {
+                alert.classList.remove("show");
+                setTimeout(() => alert.remove(), 150);
+            }, 5000);
         }
 
+        // Обработка смешанной оплаты
+        const paymentTypeSelect = document.getElementById('id_payment_type');
+        const mixedPaymentSection = document.getElementById('mixed_payment_section');
+        const cashReceivedSection = document.getElementById('cash_received_section');
+        const cashAmountInput = document.getElementById('cash_amount');
+        const onlineAmountInput = document.getElementById('online_amount');
+        const mixedTotalSpan = document.getElementById('mixed_total');
+        const mixedValidationSpan = document.getElementById('mixed_validation');
 
-    // Handle form submission via AJAX
-    document.getElementById('order-form').addEventListener('submit', function(e) {
-        
-        e.preventDefault();
+        function updatePaymentSections() {
+            const paymentType = paymentTypeSelect.value;
+            
+            if (paymentType === 'mixed') {
+                mixedPaymentSection.style.display = 'flex';
+                cashReceivedSection.style.display = 'none';
+                calculateMixedTotal();
+            } else {
+                mixedPaymentSection.style.display = 'none';
+                cashReceivedSection.style.display = 'block';
+            }
+        }
 
-        const paymentType = document.getElementById('id_payment_type').value;
-        const payLater = document.getElementById('pay-later').checked;
-        const total = parseFloat(totalSumElement.textContent) || 0;
-        const cashReceived = parseFloat(cashReceivedInput.value) || 0;
+        function calculateMixedTotal() {
+            const cashAmount = parseFloat(cashAmountInput.value) || 0;
+            const onlineAmount = parseFloat(onlineAmountInput.value) || 0;
+            const mixedTotal = cashAmount + onlineAmount;
+            const totalSum = parseFloat(document.getElementById('total-sum').textContent) || 0;
+            
+            mixedTotalSpan.textContent = mixedTotal.toFixed(0);
+            
+            // Рассчитываем недостающую сумму
+            const remainingAmount = totalSum - mixedTotal;
+            
+            if (mixedTotal < totalSum) {
+                mixedValidationSpan.innerHTML = `<span class="text-danger">❌ Недостаточно: ${remainingAmount.toFixed(0)} руб. нужно доплатить переводом</span>`;
+            } else if (mixedTotal > totalSum) {
+                const overpayment = mixedTotal - totalSum;
+                mixedValidationSpan.innerHTML = `<span class="text-warning">⚠️ Переплата: ${overpayment.toFixed(0)} руб.</span>`;
+            } else {
+                mixedValidationSpan.innerHTML = '<span class="text-success">✅ Оплата полностью покрыта</span>';
+            }
+        }
 
-        // Only validate payment if not paying later
+        // Handle form submission via AJAX
+        document.getElementById('order-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const paymentType = document.getElementById('id_payment_type').value;
+            const payLater = document.getElementById('pay-later').checked;
+            const total = parseFloat(totalSumElement.textContent) || 0;
+            const cashReceived = parseFloat(cashReceivedInput.value) || 0;
+
+            // Only validate payment if not paying later
             if (!payLater) {
                 if (!paymentType) {
                     showAlert('Ошибка: Необходимо выбрать способ оплаты.', 'danger');
                     return;
                 }
                 
-                // Only validate cash amount if paying with cash
+                // Validate cash amount if paying with cash
                 if (paymentType === 'cash') {
                     if (cashReceived < total) {
                         showAlert('Ошибка: Недостаточно средств для завершения заказа.', 'danger');
                         return;
                     }
                 }
+                
+                // Validate mixed payment
+                if (paymentType === 'mixed') {
+                    const cashAmount = parseFloat(cashAmountInput.value) || 0;
+                    const onlineAmount = parseFloat(onlineAmountInput.value) || 0;
+                    const mixedTotal = cashAmount + onlineAmount;
+                    
+                    if (mixedTotal < total) {
+                        const remaining = total - mixedTotal;
+                        showAlert(`Ошибка: Недостаточно средств. Нужно доплатить еще ${remaining.toFixed(0)} руб.`, 'danger');
+                        return;
+                    }
+                    
+                    // Проверяем, что хотя бы одна сумма указана
+                    if (cashAmount === 0 && onlineAmount === 0) {
+                        showAlert('Ошибка: Для смешанной оплаты укажите суммы наличными и/или переводом.', 'danger');
+                        return;
+                    }
+                }
             }
-    
+
+            // Проверяем, что выбран хотя бы один товар
+            if (Object.keys(selectedItems).length === 0) {
+                showAlert('Ошибка: Не выбрано ни одного товара.', 'danger');
+                return;
+            }
             
             const formData = new FormData(this);
             formData.append('payment_type', paymentType);
@@ -308,231 +364,300 @@
                     updateSelectedItems();
                     calculateTotal();
                     
+                    // Сбрасываем поля смешанной оплаты
+                    if (cashAmountInput) cashAmountInput.value = 0;
+                    if (onlineAmountInput) onlineAmountInput.value = 0;
+                    
                     // Optional: Show success message
                     showAlert('Заказ успешно создан!', 'success');
                     if (data.order_id && clickedButton?.value === 'send_and_print') {
                         window.open(`/orders/order_quick/${data.order_id}/pdf/`, '_blank');
                     }
+                    
+                    // Автоматическое обновление через 3 секунды
+                    setTimeout(function() {
+                        window.location.reload();
+                    }, 3000);
+                } else {
+                    // Показываем ошибки валидации
+                    if (data.errors) {
+                        let errorMessages = [];
+                        for (const field in data.errors) {
+                            errorMessages.push(data.errors[field].join(', '));
+                        }
+                        showAlert('Ошибки в форме: ' + errorMessages.join('; '), 'danger');
+                    } else {
+                        showAlert('Ошибка при создании заказа: ' + (data.message || 'Неизвестная ошибка'), 'danger');
+                    }
                 }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showAlert('Ошибка при отправке заказа.', 'danger');
             });
-        
-
-    });
-
-    // Existing quantity input handlers
-    const selectElement = document.getElementById('id_order_type');
-    {% comment %} const tableSelection = document.getElementById("table-selection") {% endcomment %}
-    const targetDiv = document.getElementById('id_delivery');
-    const quantityInputs = document.querySelectorAll('.item-quantity');
-    const selectedItemsList = document.getElementById('selected-items-list');
-    const totalSumElement = document.getElementById('total-sum');
-    const cashReceivedInput = document.getElementById('cash-received');
-    const changeAmountElement = document.getElementById('change-amount');
-    const discountSelect = document.getElementById('id_discount');
-    const paymentTypeSelect = document.getElementById('id_payment_type');
-    const payLaterCheckbox = document.getElementById('pay-later');
-    
-    let selectedItems = {};
-
-
-    selectElement.addEventListener('change', function() {
-        if (['delivery', 'takeaway'].includes(this.value)) {
-            targetDiv.style.display = 'block';
-            this.style.background = '#007bff';
-            this.style.color = '#fff';
-        } else {
-            targetDiv.style.display = 'none';
-            this.style.background = '';
-            this.style.color = '#000';
-        }
-    });
-    selectElement.dispatchEvent(new Event('change'));
-
-    {% comment %} function toggleTableField() {
-    if (selectElement.value === "dine_in") {
-      tableSelection.style.display = "block";
-      document.getElementById("id_table_number").selectedIndex = 0;
-      
-    } else {
-      tableSelection.style.display = "none";
-      document.getElementById("id_table_number").value = "";
-    }
-  }
-
-    selectElement.addEventListener("change", toggleTableField);
-    toggleTableField(); {% endcomment %}
-
-    function updateSelectedItems() {
-        selectedItemsList.innerHTML = '';
-
-        if (Object.keys(selectedItems).length === 0) {
-        // show placeholder if no items
-        const placeholder = document.createElement('li');
-        placeholder.id = 'placeholder-item';
-        placeholder.className = 'text-muted';
-        placeholder.textContent = 'Товары ещё не выбраны';
-        selectedItemsList.appendChild(placeholder);
-        return;
-    }
-
-        for (const [id, item] of Object.entries(selectedItems)) {
-            if (item.quantity > 0) {
-            const li = document.createElement('li');
-            li.innerHTML = `${item.name} x ${item.quantity} = ${item.total.toFixed(2)} руб. 
-                <span class="remove-btn" data-id="${id}">×</span>`;
-            selectedItemsList.appendChild(li);
-        }
-        }
-
-        document.querySelectorAll('.remove-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const itemId = this.getAttribute('data-id');
-            // Reset item quantity input
-            const input = document.querySelector(`[name="item_${itemId}"]`);
-            if (input) input.value = 0;
-            // Remove from selectedItems
-            delete selectedItems[itemId];
-            updateSelectedItems();
-            calculateTotal();
-        });
-    });
-
-    }
-
-
-    document.querySelectorAll('.quantity-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const itemId = this.dataset.itemId;
-            const action = this.dataset.action;
-            const input = document.querySelector(`input[name="item_${itemId}"]`);
-
-            let currentValue = parseInt(input.value) || 0;
-            if (action === "increase") {
-            currentValue++;
-            } else if (action === "decrease" && currentValue > 0) {
-            currentValue--;
-            }
-            input.value = currentValue;
-            input.dispatchEvent(new Event('input')); // trigger your existing logic
-        });
         });
 
-    
-    function calculateTotal() {
-        let total = 0;
-        for (const item of Object.values(selectedItems)) {
-            total += item.price * item.quantity;
-        }
+        // Existing quantity input handlers
+        const selectElement = document.getElementById('id_order_type');
+        const targetDiv = document.getElementById('id_delivery');
+        const quantityInputs = document.querySelectorAll('.item-quantity');
+        const selectedItemsList = document.getElementById('selected-items-list');
+        const totalSumElement = document.getElementById('total-sum');
+        const cashReceivedInput = document.getElementById('cash-received');
+        const changeAmountElement = document.getElementById('change-amount');
+        const discountSelect = document.getElementById('id_discount');
+        const payLaterCheckbox = document.getElementById('pay-later');
         
-        const discount = discountSelect.value || 0;
-        const discountedTotal = total * (discount / 100);
-        const totalAfterDiscount = total - discountedTotal;
-   
-        totalSumElement.textContent = totalAfterDiscount.toFixed(2);
-        calculateChange();
-    }
+        let selectedItems = {};
 
-    // Listen for discount changes
-    discountSelect.addEventListener('change', () => {
-        calculateTotal();
-    });
-
-    function calculateChange() {
-        const paymentType = paymentTypeSelect.value;
-        const payLater = payLaterCheckbox.checked;
-        
-        // If not paying with cash, or paying later, show "Не требуется" instead of change
-        if (paymentType !== 'cash' || payLater) {
-            changeAmountElement.textContent = 'Не требуется';
-            changeAmountElement.style.color = '#6c757d';
-            return;
-        }
-        
-        const total = parseFloat(totalSumElement.textContent) || 0;
-        const cashReceived = parseFloat(cashReceivedInput.value) || 0;
-        const change = cashReceived - total;
-        
-        changeAmountElement.textContent = change >= 0 ? change.toFixed(2) : 'Недостаточно';
-        changeAmountElement.style.color = change >= 0 ? '#28a745' : '#dc3545';
-    }
-
-    quantityInputs.forEach(input => {
-        input.addEventListener('input', function() {
-            const itemId = this.dataset.itemId;
-            const itemPrice = parseFloat(this.dataset.price);
-            const itemName = this.dataset.itemName;
-            const quantity = parseInt(this.value) || 0;
-
-            if (quantity > 0) {
-                selectedItems[itemId] = {
-                    name: itemName,
-                    price: itemPrice,
-                    quantity: quantity,
-                    total: itemPrice * quantity
-                };
-                this.classList.add('highlight');
+        selectElement.addEventListener('change', function() {
+            if (['delivery', 'takeaway'].includes(this.value)) {
+                targetDiv.style.display = 'block';
+                this.style.background = '#007bff';
+                this.style.color = '#fff';
             } else {
-                delete selectedItems[itemId];
-                this.classList.remove('highlight');
+                targetDiv.style.display = 'none';
+                this.style.background = '';
+                this.style.color = '#000';
+            }
+        });
+        selectElement.dispatchEvent(new Event('change'));
+
+        function updateSelectedItems() {
+            selectedItemsList.innerHTML = '';
+
+            if (Object.keys(selectedItems).length === 0) {
+                // show placeholder if no items
+                const placeholder = document.createElement('li');
+                placeholder.id = 'placeholder-item';
+                placeholder.className = 'text-muted';
+                placeholder.textContent = 'Товары ещё не выбраны';
+                selectedItemsList.appendChild(placeholder);
+                return;
             }
 
-            updateSelectedItems();
+            for (const [id, item] of Object.entries(selectedItems)) {
+                if (item.quantity > 0) {
+                    const li = document.createElement('li');
+                    li.innerHTML = `${item.name} x ${item.quantity} = ${item.total.toFixed(2)} руб. 
+                        <span class="remove-btn" data-id="${id}">×</span>`;
+                    selectedItemsList.appendChild(li);
+                }
+            }
+
+            document.querySelectorAll('.remove-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const itemId = this.getAttribute('data-id');
+                    // Reset item quantity input
+                    const input = document.querySelector(`[name="item_${itemId}"]`);
+                    if (input) input.value = 0;
+                    // Remove from selectedItems
+                    delete selectedItems[itemId];
+                    updateSelectedItems();
+                    calculateTotal();
+                });
+            });
+        }
+
+        document.querySelectorAll('.quantity-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const itemId = this.dataset.itemId;
+                const action = this.dataset.action;
+                const input = document.querySelector(`input[name="item_${itemId}"]`);
+
+                let currentValue = parseInt(input.value) || 0;
+                if (action === "increase") {
+                    currentValue++;
+                } else if (action === "decrease" && currentValue > 0) {
+                    currentValue--;
+                }
+                input.value = currentValue;
+                input.dispatchEvent(new Event('input')); // trigger your existing logic
+            });
+        });
+
+        function calculateTotal() {
+            let total = 0;
+            for (const item of Object.values(selectedItems)) {
+                total += item.price * item.quantity;
+            }
+            
+            const discount = discountSelect.value || 0;
+            const discountedTotal = total * (discount / 100);
+            const totalAfterDiscount = total - discountedTotal;
+       
+            totalSumElement.textContent = totalAfterDiscount.toFixed(2);
+            calculateChange();
+            if (paymentTypeSelect.value === 'mixed') {
+                calculateMixedTotal();
+            }
+        }
+
+        // Listen for discount changes
+        discountSelect.addEventListener('change', () => {
             calculateTotal();
         });
-    });
+
+        function calculateChange() {
+            const paymentType = paymentTypeSelect.value;
+            const payLater = payLaterCheckbox.checked;
+            
+            // Если оплата наличными и не "оплатит позже", показываем расчет сдачи
+            if (paymentType === 'cash' && !payLater) {
+                const total = parseFloat(totalSumElement.textContent) || 0;
+                const cashReceived = parseFloat(cashReceivedInput.value) || 0;
+                const change = cashReceived - total;
+                
+                if (cashReceived > 0) {
+                    if (change >= 0) {
+                        changeAmountElement.textContent = change.toFixed(2) + ' руб.';
+                        changeAmountElement.style.color = '#28a745';
+                        changeAmountElement.style.fontWeight = 'bold';
+                    } else {
+                        changeAmountElement.textContent = 'Недостаточно: ' + Math.abs(change).toFixed(2) + ' руб.';
+                        changeAmountElement.style.color = '#dc3545';
+                        changeAmountElement.style.fontWeight = 'bold';
+                    }
+                } else {
+                    changeAmountElement.textContent = '0.00 руб.';
+                    changeAmountElement.style.color = '#6c757d';
+                    changeAmountElement.style.fontWeight = 'normal';
+                }
+            } 
+            // Для смешанной оплаты показываем общую информацию
+            else if (paymentType === 'mixed' && !payLater) {
+                const total = parseFloat(totalSumElement.textContent) || 0;
+                const cashAmount = parseFloat(cashAmountInput.value) || 0;
+                const onlineAmount = parseFloat(onlineAmountInput.value) || 0;
+                const mixedTotal = cashAmount + onlineAmount;
+                const remaining = total - mixedTotal;
+                
+                if (remaining > 0) {
+                    changeAmountElement.textContent = `Нужно доплатить: ${remaining.toFixed(0)} руб.`;
+                    changeAmountElement.style.color = '#dc3545';
+                    changeAmountElement.style.fontWeight = 'bold';
+                } else if (remaining < 0) {
+                    changeAmountElement.textContent = `Переплата: ${Math.abs(remaining).toFixed(0)} руб.`;
+                    changeAmountElement.style.color = '#ffc107';
+                    changeAmountElement.style.fontWeight = 'bold';
+                } else {
+                    changeAmountElement.textContent = 'Оплата полностью покрыта';
+                    changeAmountElement.style.color = '#28a745';
+                    changeAmountElement.style.fontWeight = 'bold';
+                }
+            }
+            // Для других способов оплаты или "оплатит позже"
+            else {
+                changeAmountElement.textContent = 'Не требуется';
+                changeAmountElement.style.color = '#6c757d';
+                changeAmountElement.style.fontWeight = 'normal';
+            }
+        }
+
+        quantityInputs.forEach(input => {
+            input.addEventListener('input', function() {
+                const itemId = this.dataset.itemId;
+                const itemPrice = parseFloat(this.dataset.price);
+                const itemName = this.dataset.itemName;
+                const quantity = parseInt(this.value) || 0;
+
+                if (quantity > 0) {
+                    selectedItems[itemId] = {
+                        name: itemName,
+                        price: itemPrice,
+                        quantity: quantity,
+                        total: itemPrice * quantity
+                    };
+                    this.classList.add('highlight');
+                } else {
+                    delete selectedItems[itemId];
+                    this.classList.remove('highlight');
+                }
+
+                updateSelectedItems();
+                calculateTotal();
+            });
+        });
 
         // Handle payment type changes
-    paymentTypeSelect.addEventListener('change', function() {
-        updatePaymentUI();
-        calculateChange();
-    });
-    
-    // Handle pay later checkbox
-    payLaterCheckbox.addEventListener('change', function() {
-        updatePaymentUI();
-       // If "Оплатит позже" is checked, clear payment type
-        if (this.checked) {
-            paymentTypeSelect.value = '';
+        paymentTypeSelect.addEventListener('change', function() {
+            updatePaymentSections();
+            updatePaymentUI();
+            calculateChange();
+        });
+        
+        // Handle pay later checkbox
+        payLaterCheckbox.addEventListener('change', function() {
+            updatePaymentUI();
+           // If "Оплатит позже" is checked, clear payment type
+            if (this.checked) {
+                paymentTypeSelect.value = '';
+            }
+            updatePaymentSections();
+            calculateChange();
+        });
+        
+        // Update UI based on payment type and pay later status
+        function updatePaymentUI() {
+            const paymentType = paymentTypeSelect.value;
+            const payLater = payLaterCheckbox.checked;
+            
+            // Disable payment type selection if "оплатит позже"
+            paymentTypeSelect.disabled = payLater;
+            
+            // Для наличных платежей включаем поле "Получено от клиента"
+            const isCashPayment = paymentType === 'cash' && !payLater;
+            cashReceivedInput.disabled = !isCashPayment;
+            
+            // Для других способов оплаты очищаем поле
+            if (!isCashPayment) {
+                cashReceivedInput.value = '';
+            }
+            
+            // Показываем/скрываем подсказку для поля "Получено от клиента"
+            const cashReceivedLabel = cashReceivedSection.querySelector('label');
+            if (isCashPayment) {
+                cashReceivedLabel.innerHTML = 'Получено от клиента: <small class="text-muted">(для расчета сдачи)</small>';
+            } else {
+                cashReceivedLabel.textContent = 'Получено от клиента:';
+            }
         }
-    });
-    
-    // Update UI based on payment type and pay later status
-    function updatePaymentUI() {
-        const paymentType = paymentTypeSelect.value;
-        const payLater = payLaterCheckbox.checked;
-        
-        // Disable cash input and change calculation for non-cash payments or pay later
-        paymentTypeSelect.disabled = payLater;
-        
-        // Disable cash input for non-cash payments or when paying later
-        const isCashPayment = paymentType === 'cash' && !payLater;
-        cashReceivedInput.disabled = !isCashPayment;
-        
-        // Clear cash input when disabled
-        if (!isCashPayment) {
-            cashReceivedInput.value = '';
-        }
-    }
 
-    // Listen for changes in the cash received input
-    cashReceivedInput.addEventListener('input', function () {
-        calculateChange();
-    });
+        // Listen for changes in the cash received input
+        cashReceivedInput.addEventListener('input', function () {
+            calculateChange();
+        });
 
-    // Calculate total on page load (in case of pre-filled values)
-    calculateTotal();
-    
-    // WebSocket message handler
-    orderSocket.onmessage = function(event) {
-        const data = JSON.parse(event.data);
-        if (data.message === 'new_order') {
-            // Optional: Add visual feedback for new order confirmation
-            console.log('Order created:', data.order_data);
+        // Listen for changes in mixed payment inputs
+        if (cashAmountInput) {
+            cashAmountInput.addEventListener('input', function() {
+                calculateMixedTotal();
+                calculateChange();
+            });
         }
-        setTimeout(function () {
-        window.location.reload(1);
-      }, 2000);
-    };
-});
+        if (onlineAmountInput) {
+            onlineAmountInput.addEventListener('input', function() {
+                calculateMixedTotal();
+                calculateChange();
+            });
+        }
+
+        // Calculate total on page load (in case of pre-filled values)
+        calculateTotal();
+        updatePaymentSections();
+        updatePaymentUI();
+        
+        // WebSocket message handler
+        orderSocket.onmessage = function(event) {
+            const data = JSON.parse(event.data);
+            if (data.message === 'new_order') {
+                // Optional: Add visual feedback for new order confirmation
+                console.log('Order created:', data.order_data);
+            }
+            setTimeout(function () {
+                window.location.reload(1);
+            }, 2000);
+        };
+    });
 </script>
 {% endblock %}
