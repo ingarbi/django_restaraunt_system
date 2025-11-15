@@ -24,11 +24,11 @@
               <strong>Тип:</strong> {{ order.get_order_type_display }}
             </p>
 
-            <p>
+            {% comment %} <p>
               {% if order.order_type == 'dine_in' and order.table_number %}
                 <strong>Стол:{{ order.table_number }}</strong>
               {% endif %}
-            </p>
+            </p> {% endcomment %}
             <p class="welcome-name">
               <strong>Дата создания:</strong> {{ order.created_at|date:'d.m.Y H:i' }}
             </p>

@@ -26,7 +26,7 @@
                     </select>
                     
 
-                    <div class="mb-3" id="table-selection" style="display:none;">
+                    {% comment %} <div class="mb-3" id="table-selection" style="display:none;">
                         <label for="id_table_number" class="form-label welcome-name">Номер стола:</label>
                         <select id="id_table_number" name="table_number" class="form-control">
                             <option value="1" >Стол 1</option>
@@ -40,7 +40,7 @@
                             <option value="9">Стол 9</option>
                             <option value="10">Стол 10</option>
                             </select>
-                    </div>
+                    </div> {% endcomment %}
 
                     <div id="id_delivery" class="mt-2 " style="display: none;">
                         <label class="mt-1 welcome-name" for="phone">Тел.:</label>
@@ -313,7 +313,7 @@
 
     // Existing quantity input handlers
     const selectElement = document.getElementById('id_order_type');
-    const tableSelection = document.getElementById("table-selection")
+    {% comment %} const tableSelection = document.getElementById("table-selection") {% endcomment %}
     const targetDiv = document.getElementById('id_delivery');
     const quantityInputs = document.querySelectorAll('.item-quantity');
     const selectedItemsList = document.getElementById('selected-items-list');
@@ -340,7 +340,7 @@
     });
     selectElement.dispatchEvent(new Event('change'));
 
-    function toggleTableField() {
+    {% comment %} function toggleTableField() {
     if (selectElement.value === "dine_in") {
       tableSelection.style.display = "block";
       document.getElementById("id_table_number").selectedIndex = 0;
@@ -352,7 +352,7 @@
   }
 
     selectElement.addEventListener("change", toggleTableField);
-    toggleTableField();
+    toggleTableField(); {% endcomment %}
 
     function updateSelectedItems() {
         selectedItemsList.innerHTML = '';
