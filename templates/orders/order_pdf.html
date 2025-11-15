@@ -19,6 +19,11 @@
         <div><strong>Тип заказа:</strong> {{ order.get_order_type_display }}</div>
         <div><strong>Оплата:</strong> {{ order.get_payment_type_display }}</div>
         {% if order.name %}<div><strong>Клиент:</strong> {{ order.name }}</div>{% endif %}
+        {% if order.comment %}
+        <div class="comment-section">
+            <strong>Комментарий:</strong> {{ order.comment }}
+        </div>
+        {% endif %}
     </div>
 
     <table>

@@ -37,6 +37,7 @@ def create_order(request):
             phone = request.POST.get("phone", "")
             first_name = request.POST.get("first_name", "")
             address = request.POST.get("addres", "")
+            comment = request.POST.get("comment", "")
             payment_type = request.POST.get('payment_type')
             pay_later = request.POST.get('pay_later') == 'on'
             
@@ -66,6 +67,7 @@ def create_order(request):
             order.phone_number = phone
             order.name = first_name
             order.address = address
+            order.comment = comment
             order.payment_type = payment_type
             order.created_by = request.user
 
@@ -97,6 +99,7 @@ def create_order(request):
                         "status": order.status,
                         "paid": order.paid,
                         "created_at": order.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+                        "comment": order.comment,
                         "items": [
                             {"name": item.menu_item.name, "quantity": item.quantity}
                             for item in order.items.all()

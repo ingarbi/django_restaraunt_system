@@ -24,6 +24,11 @@
       {% if order.name %}
       <div><strong>Клиент:</strong> {{ order.name }}</div>
       {% endif %}
+      {% if order.comment %}
+      <div class="comment-section">
+          <strong>Комментарий:</strong> {{ order.comment }}
+      </div>
+      {% endif %}
     </div>
 
     <table>

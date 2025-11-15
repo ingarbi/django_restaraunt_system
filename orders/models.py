@@ -96,6 +96,13 @@ class Order(models.Model):
     )
     paid = models.BooleanField(verbose_name="Оплачен", default=False)
     table_number = models.PositiveSmallIntegerField(null=True, blank=True)
+    comment = models.TextField(
+        verbose_name="Комментарий к заказу", 
+        max_length=500, 
+        null=True, 
+        blank=True,
+        help_text="Дополнительная информация к заказу"
+    )
 
     def __str__(self):
         return f"Заказ #{self.id} --- {self.created_by}"
