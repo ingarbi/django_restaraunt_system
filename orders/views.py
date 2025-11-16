@@ -11,6 +11,7 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.utils import timezone
+import pytz
 from decimal import Decimal, InvalidOperation
 
 from .forms import OrderForm
@@ -225,8 +226,9 @@ def mark_order_cancelled(request, order_id):
 def all_orders(request):
     if request.user.profile.role != 'cashier' and request.user.profile.role != 'supervisor':
         raise PermissionDenied("У вас нет доступа к этой странице.")
-    # Get today's date
-    today = timezone.now().date()
+    msk_tz = pytz.timezone('Europe/Moscow')
+    now_msk = timezone.now().astimezone(msk_tz)
+    today = now_msk.date()
     # Filter orders created today and sort by status
     orders = Order.objects.filter(created_at__date=today).order_by(
         "status", "-created_at"
@@ -347,6 +349,7 @@ def update_order_payment(request, order_id):
                 order.cash_amount = 0
                 order.online_amount = 0
                 order.paid = True
+
             
             order.save()
             

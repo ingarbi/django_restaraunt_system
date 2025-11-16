@@ -2,6 +2,7 @@ from django.conf import settings
 from django.db import models
 from django.urls import reverse
 from django.utils import timezone
+import pytz
 
 
 class Category(models.Model):
@@ -129,8 +130,12 @@ class Order(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.order_number:
-            # Generate order number with date prefix (e.g., "2023-10-05-001")
-            today = timezone.now().date()
+            # FIX: Use Moscow time for order number generation
+            
+            msk_tz = pytz.timezone('Europe/Moscow')
+            now_msk = timezone.now().astimezone(msk_tz)
+            today = now_msk.date()
+            
             date_prefix = today.strftime("%Y-%m-%d")
             last_order = (
                 Order.objects.filter(order_number__startswith=date_prefix)
@@ -139,9 +144,9 @@ class Order(models.Model):
             )
             if last_order:
                 last_number = int(last_order.order_number.split("-")[-1])
-                self.order_number = f"{date_prefix}-{last_number + 1:03d}"  # Increment and format as 001, 002, etc.
+                self.order_number = f"{date_prefix}-{last_number + 1:03d}"
             else:
-                self.order_number = f"{date_prefix}-001"  # First order of the day
+                self.order_number = f"{date_prefix}-001"
 
         super().save(*args, **kwargs)
 
