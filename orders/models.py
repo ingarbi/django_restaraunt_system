@@ -23,8 +23,6 @@ class MenuItem(models.Model):
         related_name="menu_items",
         verbose_name="Категория",
         on_delete=models.CASCADE,
-        null=True,
-        blank=True,
     )
 
     def __str__(self):
@@ -98,7 +96,7 @@ class Order(models.Model):
         related_name="orders_created",
     )
     paid = models.BooleanField(verbose_name="Оплачен", default=False)
-    table_number = models.PositiveSmallIntegerField(null=True, blank=True)
+    table_number = models.PositiveSmallIntegerField(verbose_name="Номер стола",null=True, blank=True)
     comment = models.TextField(
         verbose_name="Комментарий к заказу", 
         max_length=500, 

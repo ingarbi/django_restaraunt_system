@@ -306,8 +306,9 @@ def update_order_payment(request, order_id):
             data = json.loads(request.body)
             payment_type = data.get('payment_type')
             cash_received = float(data.get('cash_received', 0))
+            online_received = float(data.get('online_received', 0))
             total = float(data.get('total', 0))
-            
+
             # Validate payment data
             if not payment_type:
                 return JsonResponse({'success': False, 'message': 'Необходимо выбрать способ оплаты'})

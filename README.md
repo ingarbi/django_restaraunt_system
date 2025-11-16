@@ -18,7 +18,8 @@
 
 5) В папке где клон репо на компьютере нужно открыть командную строку и выполнить следующие команды:
      > 1. `python -m venv venv`
-     > 2. `.\venv\Scripts\Activate.ps1` или `.\venv\Scripts\activate.bat` or  source venv/Scripts/activate
+     > 2. `.\venv\Scripts\Activate.ps1` или `.\venv\Scripts\activate.bat` or  `source venv/Scripts/activate`
+    Если выдает ошибку "cannot be loaded because running scripts is disabled" то в PowerShell пропишите  `Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy Unrestricted`
      > 3. `pip install -r req.txt` 
      > 4. `python manage.py makemigrations` 
      > 5. `python manage.py migrate` 

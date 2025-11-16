@@ -141,7 +141,7 @@ class OrderAdmin(ModelAdminTotals):
     online_amount_display.short_description = "Перевод"
     online_amount_display.admin_order_field = "online_amount"
     
-    readonly_fields = ('created_by',  "completion_time", 'cash_amount', 'online_amount')
+    readonly_fields = ('order_number','created_at','created_by',  "completion_time", 'cash_amount', 'online_amount')
 
     fieldsets = (
         (None, {
