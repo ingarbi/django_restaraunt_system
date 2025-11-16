@@ -9,7 +9,7 @@ call venv\Scripts\activate
 echo ==========================
 echo Updating project...
 echo ==========================
-git pull origin main
+git pull cafe/macchiato_1781
 
 echo ==========================
 echo Installing dependencies...

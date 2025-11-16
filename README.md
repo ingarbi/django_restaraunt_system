@@ -12,7 +12,7 @@
     [ссылке](https://github.com/git-for-windows/git/releases/download/v2.50.0.windows.1/Git-2.50.0-64-bit.exe)
 
 3) Клонировать этот репозиторий
-    `git clone https://github.com/ingarbi/django_restaraunt_system.git` 
+    `git clone https://github.com/ingarbi/django_restaraunt_system.git' 
 
 4) Установить уже из заклонированного репо GTK (файл с названием gtk3-win64.exe)
 
