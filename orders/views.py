@@ -11,6 +11,7 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.utils import timezone
+from decimal import Decimal, InvalidOperation
 
 from .forms import OrderForm
 from .models import MenuItem, Order, OrderItem
@@ -299,35 +300,57 @@ def quick_receipt_printing(request, order_id):
 
 def update_order_payment(request, order_id):
     if request.method == 'POST' and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        
         try:
             order = Order.objects.get(id=order_id)
+            if order.paid:
+                return JsonResponse({'success': False, 'message': 'Заказ уже оплачен'})
             
             # Get payment data from request
-            data = json.loads(request.body)
-            payment_type = data.get('payment_type')
-            cash_received = float(data.get('cash_received', 0))
-            online_received = float(data.get('online_received', 0))
-            total = float(data.get('total', 0))
+            try:
+                data = json.loads(request.body)
+            except Exception:
+                return JsonResponse({'success': False, 'message': 'Неверные данные'})
 
-            # Validate payment data
-            if not payment_type:
-                return JsonResponse({'success': False, 'message': 'Необходимо выбрать способ оплаты'})
-            
-            if payment_type == 'cash' and cash_received < total:
-                return JsonResponse({'success': False, 'message': 'Недостаточно средств'})
-            
-            # Update order payment details
-            order.payment_type = payment_type
-        
-            order.paid = True
-            
-            # For cash payments, calculate change
+            payment_type = data.get('payment_type')
+            cash_received = Decimal(data.get('cash_received', 0))
+            online_received = Decimal(data.get('online_received', 0))
+            total = Decimal(data.get('total', 0))
+
+            # Validate payment type
+            if payment_type not in dict(Order.PAYMENT_TYPE_CHOICES):
+                return JsonResponse({'success': False, 'message': 'Неверный тип оплаты'})
+
             if payment_type == 'cash':
-                order.cash_received = cash_received
-                order.change = cash_received - total
+                if cash_received < order.total_sum:
+                    return JsonResponse({'success': False, 'message': 'Недостаточно наличных'})
+                order.cash_amount = cash_received
+                order.online_amount = 0
+                order.paid = True
+            
+            elif payment_type == 'online':
+                if online_received < order.total_sum:
+                    return JsonResponse({'success': False, 'message': 'Недостаточно средств по переводу'})
+                order.cash_amount = 0
+                order.online_amount = online_received
+                order.paid = True
+                
+            elif payment_type == 'mixed':
+                    total_received = cash_received + online_received
+                    if total_received < total:
+                        return JsonResponse({'success': False, 'message': 'Общая сумма оплаты недостаточна'})
+                    order.cash_amount = cash_received
+                    order.online_amount = online_received
+                    order.paid = True
+            
+            elif payment_type == 'free':
+                order.cash_amount = 0
+                order.online_amount = 0
+                order.paid = True
             
             order.save()
             
+
             return JsonResponse({'success': True})
         except Order.DoesNotExist:
             return JsonResponse({'success': False, 'message': 'Заказ не найден'})

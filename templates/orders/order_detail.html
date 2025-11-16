@@ -262,6 +262,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Расчет сдачи только для наличных
         if (paymentTypeSelect.value === 'cash') {
             const change = cashAmount - orderTotal;
+
             if (change >= 0) {
                 changeAmountElement.value = change.toFixed(0);
                 changeStatus.innerHTML = '<span class="text-success">✔</span>';
@@ -269,12 +270,30 @@ document.addEventListener('DOMContentLoaded', function() {
                 changeAmountElement.value = 'Недостаточно';
                 changeStatus.innerHTML = '<span class="text-danger">✘</span>';
             }
-        } else {
+          } else if (paymentTypeSelect.value === 'online') {
+              const change = onlineAmount - orderTotal;
+              if (change >= 0) {
+                  changeAmountElement.value = change.toFixed(0);
+                  changeStatus.innerHTML = '<span class="text-success">✔</span>';
+              } else {
+                  changeAmountElement.value = 'Недостаточно';
+                  changeStatus.innerHTML = '<span class="text-danger">✘</span>';
+              }
+          } else if (paymentTypeSelect.value === 'mixed') {
+              const change = onlineAmount + cashAmount - orderTotal;
+              if (change >= 0) {
+                  changeAmountElement.value = change.toFixed(0);
+                  changeStatus.innerHTML = '<span class="text-success">✔</span>';
+              } else {
+                  changeAmountElement.value = 'Недостаточно';
+                  changeStatus.innerHTML = '<span class="text-danger">✘</span>';
+              }
+          } else {
             changeAmountElement.value = 'Не требуется';
             changeStatus.innerHTML = '';
         }
-    }
-
+    } 
+    
     // Валидация перед отправкой
     function validatePayment() {
         const paymentType = paymentTypeSelect.value;
