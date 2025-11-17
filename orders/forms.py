@@ -1,15 +1,16 @@
 from django import forms
-from .models import Order, OrderItem, MenuItem
+
+from .models import MenuItem, Order, OrderItem
 
 
 class OrderForm(forms.ModelForm):
     class Meta:
         model = Order
-        fields = ['order_type', "table_number", "comment"]
-    
+        fields = ["order_type", "table_number", "comment"]
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        
+
         self.menu_items = MenuItem.objects.all().select_related("category")
         for item in self.menu_items:
             self.fields[f"item_{item.id}"] = forms.IntegerField(
@@ -21,11 +22,7 @@ class OrderForm(forms.ModelForm):
                     attrs={"class": "item-quantity", "data-price": item.price}
                 ),
             )
-        
-        # Настройка поля комментария
-        self.fields['comment'].widget.attrs.update({
-            'class': 'form-control',
-            'rows': 2
-        })
-        self.fields['comment'].required = False
 
+        # Настройка поля комментария
+        self.fields["comment"].widget.attrs.update({"class": "form-control", "rows": 2})
+        self.fields["comment"].required = False

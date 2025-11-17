@@ -1,8 +1,8 @@
+import pytz
 from django.conf import settings
 from django.db import models
 from django.urls import reverse
 from django.utils import timezone
-import pytz
 
 
 class Category(models.Model):
@@ -54,13 +54,14 @@ class Order(models.Model):
         ("free", "Бесплатно"),
     )
 
-
     discount = models.PositiveSmallIntegerField(default=0, verbose_name="Скидка (%)")
     order_number = models.CharField(
         verbose_name="№ Заказа", max_length=10, unique=True, editable=False
     )
     created_at = models.DateTimeField(verbose_name="Дата", auto_now_add=True)
-    completed_at = models.DateTimeField(verbose_name="Время завершения", null=True, blank=True)
+    completed_at = models.DateTimeField(
+        verbose_name="Время завершения", null=True, blank=True
+    )
     status = models.CharField(
         verbose_name="Статус", max_length=10, choices=STATUS_CHOICES, default="pending"
     )
@@ -87,12 +88,13 @@ class Order(models.Model):
     address = models.CharField(
         verbose_name="Адрес", max_length=300, null=True, blank=True
     )  # Optional address
-    total_sum = models.DecimalField(
-        verbose_name="Итого", 
-        max_digits=10, 
-        decimal_places=2, 
-        default=0
-    )
+    # total_sum = models.DecimalField(
+    #     verbose_name="Итого",
+    #     max_digits=10,
+    #     decimal_places=2,
+    #     default=0
+    # )
+    total_sum = models.PositiveSmallIntegerField(verbose_name="Итого", default=0)
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         verbose_name="Кассир",
@@ -102,32 +104,33 @@ class Order(models.Model):
         related_name="orders_created",
     )
     paid = models.BooleanField(verbose_name="Оплачен", default=False)
-    table_number = models.PositiveSmallIntegerField(verbose_name="Номер стола",null=True, blank=True)
+    table_number = models.PositiveSmallIntegerField(
+        verbose_name="Номер стола", null=True, blank=True
+    )
     comment = models.TextField(
-        verbose_name="Комментарий к заказу", 
-        max_length=500, 
-        null=True, 
+        verbose_name="Комментарий к заказу",
+        max_length=500,
+        null=True,
         blank=True,
-        help_text="Дополнительная информация к заказу"
+        help_text="Дополнительная информация к заказу",
     )
 
-
-     # Поля для смешанной оплаты
+    # Поля для смешанной оплаты
     cash_amount = models.DecimalField(
-        verbose_name="Сумма наличными", 
-        max_digits=10, 
-        decimal_places=2, 
-        default='',
+        verbose_name="Сумма наличными",
+        max_digits=10,
+        decimal_places=2,
+        default="",
         null=True,
-        blank=True
+        blank=True,
     )
     online_amount = models.DecimalField(
-        verbose_name="Сумма переводом", 
-        max_digits=10, 
-        decimal_places=2, 
-        default='',
+        verbose_name="Сумма переводом",
+        max_digits=10,
+        decimal_places=2,
+        default="",
         null=True,
-        blank=True
+        blank=True,
     )
 
     def __str__(self):
@@ -136,11 +139,11 @@ class Order(models.Model):
     def save(self, *args, **kwargs):
         if not self.order_number:
             # FIX: Use Moscow time for order number generation
-            
-            msk_tz = pytz.timezone('Europe/Moscow')
+
+            msk_tz = pytz.timezone("Europe/Moscow")
             now_msk = timezone.now().astimezone(msk_tz)
             today = now_msk.date()
-            
+
             date_prefix = today.strftime("%Y-%m-%d")
             last_order = (
                 Order.objects.filter(order_number__startswith=date_prefix)
@@ -166,16 +169,16 @@ class Order(models.Model):
         """Возвращает общую сумму всех заказов (или переданного queryset)"""
         if queryset is None:
             queryset = cls.objects.all()
-        result = queryset.aggregate(total_revenue=models.Sum('total_sum'))
-        return result['total_revenue'] or 0
-    
+        result = queryset.aggregate(total_revenue=models.Sum("total_sum"))
+        return result["total_revenue"] or 0
+
     @classmethod
     def get_orders_count(cls, queryset=None):
         """Возвращает количество всех заказов (или переданного queryset)"""
         if queryset is None:
             queryset = cls.objects.all()
         return queryset.count()
-    
+
     @classmethod
     def get_average_order_value(cls, queryset=None):
         """Возвращает средний чек"""
@@ -184,32 +187,31 @@ class Order(models.Model):
         if orders_count > 0:
             return total_revenue / orders_count
         return 0
-    
+
     @classmethod
     def get_today_statistics(cls):
         """Статистика за сегодня"""
-        msk_tz = pytz.timezone('Europe/Moscow')
+        msk_tz = pytz.timezone("Europe/Moscow")
         now_msk = timezone.now().astimezone(msk_tz)
         today = now_msk.date()
-        
+
         today_orders = cls.objects.filter(created_at__date=today)
         return {
-            'total_revenue': cls.get_total_revenue(today_orders),
-            'orders_count': cls.get_orders_count(today_orders),
-            'average_order_value': cls.get_average_order_value(today_orders),
+            "total_revenue": cls.get_total_revenue(today_orders),
+            "orders_count": cls.get_orders_count(today_orders),
+            "average_order_value": cls.get_average_order_value(today_orders),
         }
-    
+
     @classmethod
     def get_date_range_statistics(cls, start_date, end_date):
         """Статистика за указанный период"""
         date_range_orders = cls.objects.filter(
-            created_at__date__gte=start_date,
-            created_at__date__lte=end_date
+            created_at__date__gte=start_date, created_at__date__lte=end_date
         )
         return {
-            'total_revenue': cls.get_total_revenue(date_range_orders),
-            'orders_count': cls.get_orders_count(date_range_orders),
-            'average_order_value': cls.get_average_order_value(date_range_orders),
+            "total_revenue": cls.get_total_revenue(date_range_orders),
+            "orders_count": cls.get_orders_count(date_range_orders),
+            "average_order_value": cls.get_average_order_value(date_range_orders),
         }
 
     class Meta:
