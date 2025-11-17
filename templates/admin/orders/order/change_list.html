@@ -1,0 +1,27 @@
+{% extends "admin/change_list.html" %}
+{% load i18n %}
+
+{% block content_title %}
+    <h1>
+        {% if total_revenue %}
+            Заказы (Общая сумма: {{ total_revenue }} руб., Заказов: {{ orders_count }})
+        {% else %}
+            {{ cl.opts.verbose_name_plural|capfirst }}
+        {% endif %}
+    </h1>
+{% endblock %}
+
+{% block content %}
+    {{ block.super }}
+    
+    {% if total_revenue %}
+    <div style="margin-top: 20px; padding: 10px; background: #f8f8f8; border: 1px solid #ddd;">
+        <strong>Статистика по фильтру:</strong><br>
+        Общая сумма заказов: <strong>{{ total_revenue }} руб.</strong><br>
+        Количество заказов: <strong>{{ orders_count }}</strong><br>
+        {% if orders_count > 0 %}
+            Средний чек: <strong>{{ average_order_value|floatformat:2 }} руб.</strong>
+        {% endif %}
+    </div>
+    {% endif %}
+{% endblock %}

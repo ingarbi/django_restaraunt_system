@@ -82,6 +82,8 @@ class DateTimeFilter(admin.SimpleListFilter):
 
 @admin.register(Order)
 class OrderAdmin(ModelAdminTotals):
+
+    change_list_template = "admin/orders/order/change_list.html"
     
     def get_list_display(self, request):
         """Динамическое отображение колонок в зависимости от фильтра"""
@@ -117,6 +119,36 @@ class OrderAdmin(ModelAdminTotals):
             ])
         
         return base_totals
+
+    def changelist_view(self, request, extra_context=None):
+        """Переопределяем для отображения общей суммы и количества заказов"""
+        response = super().changelist_view(request, extra_context)
+        
+        try:
+            # Получаем queryset из changelist
+            if hasattr(response, 'context_data') and response.context_data and 'cl' in response.context_data:
+                cl = response.context_data['cl']
+                queryset = cl.queryset
+                
+                # Используем методы модели для подсчета статистики
+                total_revenue = Order.get_total_revenue(queryset)
+                orders_count = Order.get_orders_count(queryset)
+                average_order_value = Order.get_average_order_value(queryset)
+                
+                # Добавляем в контекст
+                response.context_data['total_revenue'] = total_revenue
+                response.context_data['orders_count'] = orders_count
+                response.context_data['average_order_value'] = average_order_value
+                response.context_data['title'] = f'Заказы (Общая сумма: {total_revenue} руб., Заказов: {orders_count})'
+                
+        except (AttributeError, KeyError, TypeError) as e:
+            # Если что-то пошло не так, устанавливаем значения по умолчанию
+            response.context_data['total_revenue'] = 0
+            response.context_data['orders_count'] = 0
+            response.context_data['average_order_value'] = 0
+            response.context_data['title'] = 'Заказы'
+        
+        return response
 
     def payment_type_display(self, obj):
         """Кастомное отображение типа оплаты с текстом для пустых значений"""
@@ -284,16 +316,7 @@ class OrderItemAdmin(admin.ModelAdmin):
     created_date.short_description = "Дата"
     sales_report_link.short_description = "Отчеты"
 
-
-class CustomAdminSite(admin.AdminSite):
-    def index(self, request, extra_context=None):
-        extra_context = extra_context or {}
-        extra_context["sales_report_url"] = reverse("admin:sales_report")
-        return super().index(request, extra_context)
-
-
-admin_site = CustomAdminSite(name="myadmin")
-
+# Удаляем кастомный админ-сайт, так как он создает конфликты
 admin.site.site_header = "Панель администратора"
 admin.site.site_title = "Панель администратора"
 admin.site.index_title = ""

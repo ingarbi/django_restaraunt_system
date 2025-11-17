@@ -87,7 +87,12 @@ class Order(models.Model):
     address = models.CharField(
         verbose_name="Адрес", max_length=300, null=True, blank=True
     )  # Optional address
-    total_sum = models.PositiveSmallIntegerField(verbose_name="Итого", default=0)
+    total_sum = models.DecimalField(
+        verbose_name="Итого", 
+        max_digits=10, 
+        decimal_places=2, 
+        default=0
+    )
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         verbose_name="Кассир",
@@ -155,6 +160,57 @@ class Order(models.Model):
 
     def get_absolute_url(self):
         return reverse("order_detail", kwargs={"order_id": self.id})
+
+    @classmethod
+    def get_total_revenue(cls, queryset=None):
+        """Возвращает общую сумму всех заказов (или переданного queryset)"""
+        if queryset is None:
+            queryset = cls.objects.all()
+        result = queryset.aggregate(total_revenue=models.Sum('total_sum'))
+        return result['total_revenue'] or 0
+    
+    @classmethod
+    def get_orders_count(cls, queryset=None):
+        """Возвращает количество всех заказов (или переданного queryset)"""
+        if queryset is None:
+            queryset = cls.objects.all()
+        return queryset.count()
+    
+    @classmethod
+    def get_average_order_value(cls, queryset=None):
+        """Возвращает средний чек"""
+        total_revenue = cls.get_total_revenue(queryset)
+        orders_count = cls.get_orders_count(queryset)
+        if orders_count > 0:
+            return total_revenue / orders_count
+        return 0
+    
+    @classmethod
+    def get_today_statistics(cls):
+        """Статистика за сегодня"""
+        msk_tz = pytz.timezone('Europe/Moscow')
+        now_msk = timezone.now().astimezone(msk_tz)
+        today = now_msk.date()
+        
+        today_orders = cls.objects.filter(created_at__date=today)
+        return {
+            'total_revenue': cls.get_total_revenue(today_orders),
+            'orders_count': cls.get_orders_count(today_orders),
+            'average_order_value': cls.get_average_order_value(today_orders),
+        }
+    
+    @classmethod
+    def get_date_range_statistics(cls, start_date, end_date):
+        """Статистика за указанный период"""
+        date_range_orders = cls.objects.filter(
+            created_at__date__gte=start_date,
+            created_at__date__lte=end_date
+        )
+        return {
+            'total_revenue': cls.get_total_revenue(date_range_orders),
+            'orders_count': cls.get_orders_count(date_range_orders),
+            'average_order_value': cls.get_average_order_value(date_range_orders),
+        }
 
     class Meta:
         verbose_name = "Заказ"
