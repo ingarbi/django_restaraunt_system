@@ -323,6 +323,8 @@ def update_order_payment(request, order_id):
             if payment_type not in dict(Order.PAYMENT_TYPE_CHOICES):
                 return JsonResponse({'success': False, 'message': 'Неверный тип оплаты'})
 
+            order.payment_type = payment_type
+
             if payment_type == 'cash':
                 if cash_received < order.total_sum:
                     return JsonResponse({'success': False, 'message': 'Недостаточно наличных'})
