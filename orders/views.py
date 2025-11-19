@@ -17,7 +17,6 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.utils import timezone
 
-from .filters import DateTimeFilter
 from .forms import OrderForm
 from .models import MenuItem, Order, OrderItem
 
