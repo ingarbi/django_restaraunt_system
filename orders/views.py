@@ -1,8 +1,7 @@
 import json
 import os
-from decimal import Decimal, InvalidOperation
 from datetime import date, datetime, timedelta  # ДОБАВЬТЕ ЭТОТ ИМПОРТ
-from django.db.models import Count, Sum, F 
+from decimal import Decimal, InvalidOperation
 
 import pytz
 import weasyprint
@@ -11,11 +10,11 @@ from channels.layers import get_channel_layer
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
+from django.db.models import Count, F, Sum
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.utils import timezone
-from .filters import DateTimeFilter
 
 from .forms import OrderForm
 from .models import MenuItem, Order, OrderItem
@@ -398,6 +397,7 @@ def update_order_payment(request, order_id):
 
     return JsonResponse({"success": False, "message": "Недопустимый запрос"})
 
+
 @login_required
 def reports(request):
     if (
@@ -405,18 +405,30 @@ def reports(request):
         and request.user.profile.role != "supervisor"
     ):
         raise PermissionDenied("У вас нет доступа к этой странице.")
-    
+
     # Получаем параметры фильтрации
-    period_type = request.GET.get('period_type', '')
-    time_period = request.GET.get('time_period', '')
-    
+    period_type = request.GET.get("period_type", "")
+    time_period = request.GET.get("time_period", "")
+
     # Базовый queryset для заказов
     orders = Order.objects.all()
-    
+
     # По умолчанию отображаем все заказы
     period_display = "за все время"
     has_filter = False
-    
+
+    if time_period and time_period.startswith("last_"):
+        print("time_period", time_period.split("_")[1])
+
+        has_filter = True
+        try:
+            hours = int(time_period.split("_")[1])
+            hours_ago = timezone.now() - timedelta(hours=hours)
+            orders = orders.filter(created_at__gte=hours_ago)
+            period_display = f"за последние {hours} часов"
+        except (ValueError, IndexError):
+            pass
+
     # ПРИМЕНЯЕМ ФИЛЬТРЫ
     if period_type:
         has_filter = True
@@ -447,17 +459,7 @@ def reports(request):
             start_of_year = today.replace(month=1, day=1)
             orders = orders.filter(created_at__date__gte=start_of_year)
             period_display = "за этот год"
-    
-    # Если выбран часовой период (имеет приоритет над period_type)
-    if time_period and time_period.startswith("last_") and time_period.endswith("_hour"):
-        has_filter = True
-        try:
-            hours = int(time_period.split("_")[1])
-            hours_ago = timezone.now() - timedelta(hours=hours)
-            orders = orders.filter(created_at__gte=hours_ago)
-            period_display = f"за последние {hours} часов"
-        except (ValueError, IndexError):
-            pass
+
 
     # Если нет фильтров - показываем все заказы
     if not has_filter:
@@ -468,7 +470,7 @@ def reports(request):
     sales_data = (
         OrderItem.objects.filter(
             order__in=orders,  # Фильтруем по уже отфильтрованным заказам
-            order__status="delivered"
+            order__status="delivered",
         )
         .values("menu_item__name")
         .annotate(
@@ -479,56 +481,62 @@ def reports(request):
     )
 
     # ОБЩАЯ СТАТИСТИКА (по всем заказам из фильтра)
-    total_revenue = orders.aggregate(total=Sum('total_sum'))['total'] or 0
+    total_revenue = orders.aggregate(total=Sum("total_sum"))["total"] or 0
     orders_count = orders.count()
     average_order_value = total_revenue / orders_count if orders_count > 0 else 0
-    
+
     # Статистика по типам оплаты
-    cash_total = orders.filter(payment_type='cash').aggregate(total=Sum('total_sum'))['total'] or 0
-    online_total = orders.filter(payment_type='online').aggregate(total=Sum('total_sum'))['total'] or 0
-    
+    cash_total = (
+        orders.filter(payment_type="cash").aggregate(total=Sum("total_sum"))["total"]
+        or 0
+    )
+    online_total = (
+        orders.filter(payment_type="online").aggregate(total=Sum("total_sum"))["total"]
+        or 0
+    )
+
     # Для смешанной оплаты учитываем обе суммы
-    mixed_orders = orders.filter(payment_type='mixed')
-    cash_total += mixed_orders.aggregate(total=Sum('cash_amount'))['total'] or 0
-    online_total += mixed_orders.aggregate(total=Sum('online_amount'))['total'] or 0
+    mixed_orders = orders.filter(payment_type="mixed")
+    cash_total += mixed_orders.aggregate(total=Sum("cash_amount"))["total"] or 0
+    online_total += mixed_orders.aggregate(total=Sum("online_amount"))["total"] or 0
 
     context = {
-        'title': 'Отчеты по заказам',
-        'orders': orders.order_by('-created_at'),  # Сортируем по дате создания
-        'sales_data': sales_data,
-        'period_display': period_display,
-        'period_type': period_type,
-        'time_period': time_period,
-        'total_revenue': total_revenue,
-        'orders_count': orders_count,
-        'average_order_value': average_order_value,
-        'cash_total': cash_total,
-        'online_total': online_total,
-        'time_period_choices': [
-            ('', '---'),
-            ('last_1_hour', 'Последний 1 час'),
-            ('last_2_hours', 'Последние 2 часа'),
-            ('last_3_hours', 'Последние 3 часа'),
-            ('last_4_hours', 'Последние 4 часа'),
-            ('last_5_hours', 'Последние 5 часов'),
-            ('last_6_hours', 'Последние 6 часов'),
-            ('last_7_hours', 'Последние 7 часов'),
-            ('last_8_hours', 'Последние 8 часов'),
-            ('last_9_hours', 'Последние 9 часов'),
-            ('last_10_hours', 'Последние 10 часов'),
-            ('last_11_hours', 'Последние 11 часов'),
-            ('last_12_hours', 'Последние 12 часов'),
-            ('last_13_hours', 'Последние 13 часов'),
-            ('last_14_hours', 'Последние 14 часов'),
-            ('last_15_hours', 'Последние 15 часов'),
-            ('last_16_hours', 'Последние 16 часов'),
-            ('last_17_hours', 'Последние 17 часов'),
-            ('last_18_hours', 'Последние 18 часов'),
-            ('last_19_hours', 'Последние 19 часов'),
-            ('last_20_hours', 'Последние 20 часов'),
-            ('last_21_hours', 'Последние 21 час'),
-            ('last_22_hours', 'Последние 22 часа'),
-            ('last_23_hours', 'Последние 23 часа'),
+        "title": "Отчеты по заказам",
+        "orders": orders.order_by("-created_at"),  # Сортируем по дате создания
+        "sales_data": sales_data,
+        "period_display": period_display,
+        "period_type": period_type,
+        "time_period": time_period,
+        "total_revenue": total_revenue,
+        "orders_count": orders_count,
+        "average_order_value": average_order_value,
+        "cash_total": cash_total,
+        "online_total": online_total,
+        "time_period_choices": [
+            ("", "---"),
+            ("last_1_hour", "Последний 1 час"),
+            ("last_2_hours", "Последние 2 часа"),
+            ("last_3_hours", "Последние 3 часа"),
+            ("last_4_hours", "Последние 4 часа"),
+            ("last_5_hours", "Последние 5 часов"),
+            ("last_6_hours", "Последние 6 часов"),
+            ("last_7_hours", "Последние 7 часов"),
+            ("last_8_hours", "Последние 8 часов"),
+            ("last_9_hours", "Последние 9 часов"),
+            ("last_10_hours", "Последние 10 часов"),
+            ("last_11_hours", "Последние 11 часов"),
+            ("last_12_hours", "Последние 12 часов"),
+            ("last_13_hours", "Последние 13 часов"),
+            ("last_14_hours", "Последние 14 часов"),
+            ("last_15_hours", "Последние 15 часов"),
+            ("last_16_hours", "Последние 16 часов"),
+            ("last_17_hours", "Последние 17 часов"),
+            ("last_18_hours", "Последние 18 часов"),
+            ("last_19_hours", "Последние 19 часов"),
+            ("last_20_hours", "Последние 20 часов"),
+            ("last_21_hours", "Последние 21 час"),
+            ("last_22_hours", "Последние 22 часа"),
+            ("last_23_hours", "Последние 23 часа"),
         ],
     }
-    return render(request, 'orders/reports.html', context)
+    return render(request, "orders/reports.html", context)
