@@ -9,6 +9,7 @@ from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 from django.core.exceptions import PermissionDenied
 from django.db.models import Count, F, Sum
 from django.http import HttpResponse, JsonResponse
@@ -16,6 +17,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.utils import timezone
 
+from .filters import DateTimeFilter
 from .forms import OrderForm
 from .models import MenuItem, Order, OrderItem
 
@@ -409,13 +411,27 @@ def reports(request):
     # Получаем параметры фильтрации
     period_type = request.GET.get("period_type", "")
     time_period = request.GET.get("time_period", "")
+    cashier_id = request.GET.get("cashier", "")
+
+    print("cashier_id", cashier_id)
 
     # Базовый queryset для заказов
     orders = Order.objects.all()
 
     # По умолчанию отображаем все заказы
     period_display = "за все время"
+    cashier_display = "все кассиры"
+
     has_filter = False
+
+    if cashier_id:
+        has_filter = True
+        try:
+            cashier = User.objects.get(id=cashier_id)
+            orders = orders.filter(created_by=cashier)
+            cashier_display = f"кассир: {cashier.get_full_name() or cashier.username}"
+        except User.DoesNotExist:
+            pass
 
     if time_period and time_period.startswith("last_"):
         print("time_period", time_period.split("_")[1])
@@ -460,7 +476,6 @@ def reports(request):
             orders = orders.filter(created_at__date__gte=start_of_year)
             period_display = "за этот год"
 
-
     # Если нет фильтров - показываем все заказы
     if not has_filter:
         orders = Order.objects.all()
@@ -500,13 +515,18 @@ def reports(request):
     cash_total += mixed_orders.aggregate(total=Sum("cash_amount"))["total"] or 0
     online_total += mixed_orders.aggregate(total=Sum("online_amount"))["total"] or 0
 
+    cashiers = User.objects.filter(profile__role__in=['cashier', 'supervisor']).order_by('username')
+
     context = {
         "title": "Отчеты по заказам",
         "orders": orders.order_by("-created_at"),  # Сортируем по дате создания
         "sales_data": sales_data,
         "period_display": period_display,
+        "cashier_display": cashier_display,
         "period_type": period_type,
         "time_period": time_period,
+        "cashier_id": cashier_id,
+        "cashiers": cashiers,
         "total_revenue": total_revenue,
         "orders_count": orders_count,
         "average_order_value": average_order_value,

@@ -17,6 +17,19 @@
         </div>
         <div class="card-body">
             <form method="get" class="row g-3 align-items-end">
+                <!-- ФИЛЬТР КАССИРА -->
+            <div class="col-md-3">
+                <label class="form-label">Кассир</label>
+                <select name="cashier" id="cashier" class="form-select">
+                    <option value="" {% if not cashier_id %}selected{% endif %}>Все кассиры</option>
+                    {% for cashier in cashiers %}
+                        <option value="{{ cashier.id }}" 
+                            {% if cashier_id == cashier.id|stringformat:"i" %}selected{% endif %}>
+                            {{ cashier.get_full_name|default:cashier.username }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
                 <!-- ФИЛЬТР ПЕРИОДА -->
                 <div class="col-md-4">
                     <label class="form-label">Период</label>
@@ -105,7 +118,7 @@
             <div class="card text-center">
                 <div class="card-body py-3">
                     <h4 class="text-secondary">{{ period_display }}</h4>
-                    <small class="text-muted">Период</small>
+                <small class="text-muted">{{ cashier_display }}</small>
                 </div>
             </div>
         </div>
@@ -254,6 +267,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     const periodTypeSelect = document.getElementById('period_type');
     const timePeriodSelect = document.getElementById('time_period');
+    const cashierSelect = document.getElementById('cashier');
     
     function updateSelectStates() {
         if (periodTypeSelect.value !== '') {
@@ -268,6 +282,7 @@ document.addEventListener('DOMContentLoaded', function() {
             periodTypeSelect.disabled = false;
             timePeriodSelect.disabled = false;
         }
+        cashierSelect.disabled = false;
     }
     
     // Обработчики изменений
