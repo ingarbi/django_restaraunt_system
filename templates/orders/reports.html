@@ -1,0 +1,292 @@
+{% extends "main/base.html" %}
+{% load static %}
+{% load order_filters %}
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">{{ title }}</h1>
+        <a href="{% url 'all_orders' %}" class="btn btn-success btn-sm">
+            <i class="bi bi-eye"></i> Перейти к заказам
+        </a>
+    </div>
+
+    <!-- Форма фильтрации -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="card-title mb-0">Фильтры для отчета</h5>
+        </div>
+        <div class="card-body">
+            <form method="get" class="row g-3 align-items-end">
+                <!-- ФИЛЬТР ПЕРИОДА -->
+                <div class="col-md-4">
+                    <label class="form-label">Период</label>
+                    <select name="period_type" id="period_type" class="form-select">
+                        <option value="" {% if period_type == '' %}selected{% endif %}>---</option>
+                        <option value="today" {% if period_type == 'today' %}selected{% endif %}>Сегодня</option>
+                        <option value="yesterday" {% if period_type == 'yesterday' %}selected{% endif %}>Вчера</option>
+                        <option value="day_before_yesterday" {% if period_type == 'day_before_yesterday' %}selected{% endif %}>Позавчера</option>
+                        <option value="week" {% if period_type == 'week' %}selected{% endif %}>Неделя</option>
+                        <option value="month" {% if period_type == 'month' %}selected{% endif %}>Месяц</option>
+                        <option value="year" {% if period_type == 'year' %}selected{% endif %}>Год</option>
+                    </select>
+                </div>
+                <!-- ФИЛЬТР ПО ЧАСАМ -->
+                <div class="col-md-4">
+                    <label class="form-label">Период по часам</label>
+                    <select name="time_period" id="time_period" class="form-select">
+                        {% for value, label in time_period_choices %}
+                            <option value="{{ value }}" {% if time_period == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-filter"></i> Применить фильтры
+                    </button>
+                    {% if period_type or time_period %}
+                    <a href="{% url 'reports' %}" class="btn btn-outline-secondary w-100 mt-2">
+                        <i class="bi bi-x-circle"></i> Сбросить фильтры
+                    </a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Основная статистика -->
+    <div class="row mb-4">
+        <div class="col-md-2">
+            <div class="card text-center">
+                <div class="card-body py-3">
+                    <h4 class="text-primary">{{ orders_count }}</h4>
+                    <small class="text-muted">Всего заказов</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card text-center">
+                <div class="card-body py-3">
+                    <h4 class="text-success">{{ total_revenue|floatformat:2 }} ₽</h4>
+                    <small class="text-muted">Общая выручка</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card text-center">
+                <div class="card-body py-3">
+                    <h4 class="text-info">
+                        {% if orders_count > 0 %}
+                            {{ average_order_value|floatformat:2 }} ₽
+                        {% else %}
+                            0 ₽
+                        {% endif %}
+                    </h4>
+                    <small class="text-muted">Средний чек</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card text-center">
+                <div class="card-body py-3">
+                    <h4 class="text-warning">{{ cash_total|floatformat:2 }} ₽</h4>
+                    <small class="text-muted">Наличные</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card text-center">
+                <div class="card-body py-3">
+                    <h4 class="text-info">{{ online_total|floatformat:2 }} ₽</h4>
+                    <small class="text-muted">Безналичные</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card text-center">
+                <div class="card-body py-3">
+                    <h4 class="text-secondary">{{ period_display }}</h4>
+                    <small class="text-muted">Период</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Отчет по продажам товаров -->
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0">Отчет по продажам товаров {{ period_display }}</h5>
+            <span class="badge bg-info">{{ sales_data|length }} товаров</span>
+        </div>
+        <div class="card-body">
+            {% if sales_data %}
+            <div class="table-responsive">
+                <table class="table table-sm table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Товар</th>
+                            <th class="text-center">Количество</th>
+                            <th class="text-end">Выручка</th>
+                            <th class="text-end">Средняя цена</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in sales_data %}
+                        <tr>
+                            <td>{{ item.menu_item__name }}</td>
+                            <td class="text-center">{{ item.total_quantity }}</td>
+                            <td class="text-end">{{ item.total_revenue|floatformat:2 }} ₽</td>
+                            <td class="text-end">
+                                {% if item.total_quantity > 0 %}
+                                    {{ item.total_revenue|divide:item.total_quantity|floatformat:2 }} ₽
+                                {% else %}
+                                    0 ₽
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot class="table-light">
+                        <tr>
+                            <th>Итого</th>
+                            <th class="text-center">
+                                {{ sales_data|sum_quantity }}
+                            </th>
+                            <th class="text-end">
+                                {{ sales_data|sum_revenue|floatformat:2 }} ₽
+                            </th>
+                            <th></th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-4">
+                <i class="bi bi-graph-up display-4 text-muted"></i>
+                <p class="text-muted mt-3">Нет данных о продажах за выбранный период</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Детализация заказов -->
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0">Детализация заказов {{ period_display }}</h5>
+            <span class="badge bg-primary">{{ orders_count }}</span>
+        </div>
+        <div class="card-body p-0">
+            {% if orders %}
+            <div class="table-responsive">
+                <table class="table table-sm table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th width="100">№ Заказа</th>
+                            <th width="120">Дата</th>
+                            <th>Статус</th>
+                            <th>Тип</th>
+                            <th width="100" class="text-end">Сумма</th>
+                            <th width="100">Оплата</th>
+                            <th width="80">Оплачен</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in orders %}
+                        <tr>
+                            <td>
+                                <strong>#{{ order.order_number }}</strong>
+                            </td>
+                            <td>
+                                <small>{{ order.created_at|date:"d.m.Y" }}</small><br>
+                                <small class="text-muted">{{ order.created_at|date:"H:i" }}</small>
+                            </td>
+                            <td>
+                                <span class="badge 
+                                    {% if order.status == 'completed' or order.status == 'delivered' %}bg-success
+                                    {% elif order.status == 'pending' %}bg-warning
+                                    {% elif order.status == 'cancelled' %}bg-danger
+                                    {% else %}bg-secondary{% endif %}">
+                                    {{ order.get_status_display }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge 
+                                    {% if order.order_type == 'dine_in' %}bg-primary
+                                    {% elif order.order_type == 'takeaway' %}bg-warning
+                                    {% else %}bg-secondary{% endif %}">
+                                    {{ order.get_order_type_display }}
+                                </span>
+                            </td>
+                            <td class="text-end">
+                                <strong>{{ order.total_sum|floatformat:2 }} ₽</strong>
+                            </td>
+                            <td>
+                                <span class="badge 
+                                    {% if order.payment_type == 'cash' %}bg-success
+                                    {% elif order.payment_type == 'online' %}bg-primary
+                                    {% elif order.payment_type == 'mixed' %}bg-info
+                                    {% else %}bg-secondary{% endif %}">
+                                    {{ order.get_payment_type_display }}
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                {% if order.paid %}
+                                    <i class="bi bi-check-circle-fill text-success" title="Оплачен"></i>
+                                {% else %}
+                                    <i class="bi bi-x-circle-fill text-danger" title="Не оплачен"></i>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-inbox display-4 text-muted"></i>
+                <p class="text-muted mt-3">Нет заказов за выбранный период</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const periodTypeSelect = document.getElementById('period_type');
+    const timePeriodSelect = document.getElementById('time_period');
+    
+    function updateSelectStates() {
+        if (periodTypeSelect.value !== '') {
+            // Если выбран период - блокируем часовой фильтр
+            timePeriodSelect.disabled = true;
+            timePeriodSelect.value = ''; // Сбрасываем значение
+        } else if (timePeriodSelect.value !== '') {
+            // Если выбран часовой период - блокируем период
+            periodTypeSelect.disabled = true;
+        } else {
+            // Если ничего не выбрано - разблокируем оба
+            periodTypeSelect.disabled = false;
+            timePeriodSelect.disabled = false;
+        }
+    }
+    
+    // Обработчики изменений
+    periodTypeSelect.addEventListener('change', function() {
+        if (this.value !== '') {
+            timePeriodSelect.value = ''; // Сбрасываем часовой фильтр
+        }
+        updateSelectStates();
+    });
+    
+    timePeriodSelect.addEventListener('change', function() {
+        if (this.value !== '') {
+            periodTypeSelect.value = ''; // Сбрасываем период
+        }
+        updateSelectStates();
+    });
+    
+    // Инициализация при загрузке
+    updateSelectStates();
+});
+</script>
+{% endblock %}

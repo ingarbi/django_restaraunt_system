@@ -31,7 +31,9 @@
           <a class="nav-link account-button  {% if request.path == '/orders/create/' %}active {% else %}link-button {% endif %}" href="{% url 'create_order' %}">Новый заказ</a>
             <a class="nav-link account-button  {% if request.path == '/orders/orders/' %}active {% else %}link-button {% endif %}" href="{% url 'all_orders' %}">Все заказы</a>
             <a class="nav-link account-button  {% if request.path == '/orders/kitchen/' %}active {% else %}link-button {% endif %}" href="{% url 'kitchen_orders' %}">Кухня</a>
+            <a class="nav-link account-button {% if request.path == '/orders/reports/' %}active{% else %}link-button{% endif %}" href="{% url 'reports' %}">Отчеты</a>
           {% elif request.user.profile.role == 'cashier' %}
+          <a class="nav-link account-button {% if request.path == '/orders/reports/' %}active{% else %}link-button{% endif %}" href="{% url 'reports' %}">Отчеты</a>
             <a class="nav-link account-button  {% if request.path == '/orders/create/' %}active {% else %}link-button {% endif %}" href="{% url 'create_order' %}">Новый заказ</a>
             <a class="nav-link account-button  {% if request.path == '/orders/orders/' %}active {% else %}link-button {% endif %}" href="{% url 'all_orders' %}">Все заказы</a>
           {% elif request.user.profile.role == 'cook' %}

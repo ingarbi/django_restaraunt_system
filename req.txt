@@ -62,3 +62,4 @@ zope.interface==7.2
 zopfli==0.2.3.post1
 django-simpleui
 pytz
+django-filter

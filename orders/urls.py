@@ -33,4 +33,5 @@ urlpatterns = [
         views.update_order_payment,
         name="update_order_payment",
     ),
+    path("reports/", views.reports, name="reports"),
 ]
