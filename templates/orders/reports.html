@@ -56,6 +56,18 @@
                     <button type="submit" class="btn btn-primary w-100">
                         <i class="bi bi-filter"></i> Применить фильтры
                     </button>
+                    {% if period_type or time_period or cashier_id %}
+                        <a href="{% url 'big_reports_printing' %}?period_type={{ period_type }}&time_period={{ time_period }}&cashier={{ cashier_id }}" 
+                        class="btn btn-warning w-100 mt-2" target="_blank">
+                            <i class="bi bi-printer"></i> Печать развернутого отчета
+                        </a>
+
+                        <a href="{% url 'short_reports_printing' %}?period_type={{ period_type }}&time_period={{ time_period }}&cashier={{ cashier_id }}" 
+                            class="btn btn-warning w-100 mt-2" target="_blank">
+                            <i class="bi bi-printer"></i> Сводный отчет
+                        </a>
+                    {% endif %}
+
                     {% if period_type or time_period %}
                     <a href="{% url 'reports' %}" class="btn btn-outline-secondary w-100 mt-2">
                         <i class="bi bi-x-circle"></i> Сбросить фильтры

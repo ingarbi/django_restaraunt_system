@@ -34,4 +34,14 @@ urlpatterns = [
         name="update_order_payment",
     ),
     path("reports/", views.reports, name="reports"),
+    path(
+        "reports/short_reports/",
+        views.short_reports_printing,
+        name="short_reports_printing",
+    ),
+    path(
+        "reports/big_print/",
+        views.big_reports_printing,
+        name="big_reports_printing",
+    ),
 ]

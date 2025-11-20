@@ -1,0 +1,108 @@
+{% load static %}
+{% load order_filters %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Краткий отчет по продажам</title>
+    <style>
+        /* Стили для краткого отчета */
+        @media print {
+            @page { size: A4; margin: 1cm; }
+            .no-print { display: none !important; }
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            margin: 20px;
+        }
+        
+        .header { text-align: center; margin-bottom: 20px; }
+        .cafe-name { font-size: 18px; font-weight: bold; }
+        .report-title { font-size: 16px; font-weight: bold; margin: 10px 0; }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin: 20px 0;
+        }
+        
+        .stat-card {
+            border: 1px solid #000;
+            padding: 10px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 10px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="no-print" style="text-align: center; margin-bottom: 20px;">
+        <button onclick="window.print()" style="padding: 10px 20px;">🖨️ Печать</button>
+        <button onclick="window.close()" style="padding: 10px 20px; margin-left: 10px;">❌ Закрыть</button>
+    </div>
+
+    <div class="header">
+        <div class="cafe-name">Кафе {{ cafe_name }}</div>
+        <div class="report-title">КРАТКИЙ ОТЧЕТ ПО ПРОДАЖАМ</div>
+        <div>Период: {{ period_display }}</div>
+        <div>{{ cashier_display }}</div>
+        <div>Сформирован: {{ print_date }}</div>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-value">{{ orders_count }}</div>
+            <div>Всего заказов</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ total_revenue|floatformat:2 }} ₽</div>
+            <div>Общая выручка</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">
+                {% if orders_count > 0 %}
+                    {{ average_order_value|floatformat:2 }} ₽
+                {% else %}
+                    0 ₽
+                {% endif %}
+            </div>
+            <div>Средний чек</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ cash_total|floatformat:2 }} ₽</div>
+            <div>Наличные</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ online_total|floatformat:2 }} ₽</div>
+            <div>Безналичные</div>
+        </div>
+    </div>
+
+    <div class="footer">
+        Краткий отчет • Кафе {{ cafe_name }} • {{ print_date }}
+    </div>
+
+    <script>
+        window.onload = function() {
+            // Автопечать для краткого отчета
+            setTimeout(function() {
+                window.print();
+            }, 1000);
+        };
+    </script>
+</body>
+</html>
