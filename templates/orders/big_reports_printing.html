@@ -3,183 +3,95 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="UTF-8">
-    <title>Отчет по продажам</title>
+    <meta charset="UTF-8" />
+    <title>Развернутый отчет - {{ CAFE_NAME }}</title>
     <style>
-        @media print {
-            @page {
-                size: A4;
-                margin: 1cm;
-            }
-            body {
-                font-family: Arial, sans-serif;
-                font-size: 12px;
-                line-height: 1.4;
-            }
-            .no-print {
-                display: none !important;
-            }
-            .page-break {
-                page-break-before: always;
-            }
-        }
-        
         body {
             font-family: Arial, sans-serif;
             font-size: 12px;
-            line-height: 1.4;
             margin: 0;
-            padding: 20px;
-            color: #000;
+            padding: 10px;
         }
-        
         .header {
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             border-bottom: 2px solid #000;
             padding-bottom: 10px;
         }
-        
-        .cafe-name {
+        .restaurant-name {
             font-size: 18px;
             font-weight: bold;
-            margin-bottom: 5px;
         }
-        
-        .report-title {
-            font-size: 16px;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-        
-        .filters-info {
-            text-align: center;
+        .report-info {
             margin-bottom: 15px;
-            font-size: 11px;
         }
-        
-        .stats-grid {
+        .statistics {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 10px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
-        
-        .stat-card {
+        .stat-box {
             border: 1px solid #000;
             padding: 8px;
             text-align: center;
-            background: #f9f9f9;
         }
-        
         .stat-value {
             font-size: 14px;
             font-weight: bold;
-            margin-bottom: 2px;
         }
-        
-        .stat-label {
-            font-size: 10px;
-            color: #666;
-        }
-        
         table {
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 15px;
         }
-        
         th, td {
             border: 1px solid #000;
-            padding: 6px 8px;
+            padding: 5px;
             text-align: left;
-            font-size: 10px;
         }
-        
         th {
             background-color: #f0f0f0;
             font-weight: bold;
         }
-        
         .text-center {
             text-align: center;
         }
-        
         .text-end {
             text-align: right;
         }
-        
-        .text-bold {
-            font-weight: bold;
-        }
-        
-        .section-title {
-            font-size: 14px;
-            font-weight: bold;
-            margin: 15px 0 10px 0;
-            border-bottom: 1px solid #000;
-            padding-bottom: 5px;
-        }
-        
         .footer {
-            margin-top: 20px;
             text-align: center;
-            font-size: 10px;
-            color: #666;
+            margin-top: 20px;
             border-top: 1px solid #000;
             padding-top: 10px;
         }
-        
-        .print-btn {
-            background: #007bff;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-bottom: 20px;
-        }
-        
-        .print-btn:hover {
-            background: #0056b3;
+        @media print {
+            .no-print {
+                display: none;
+            }
         }
     </style>
 </head>
 <body>
-    <!-- Кнопка печати (видна только на экране) -->
-    <div class="no-print" style="text-align: center; margin-bottom: 20px;">
-        <button class="print-btn" onclick="window.print()">
-            🖨️ Печать отчета
-        </button>
-        <button class="print-btn" onclick="window.close()" style="background: #6c757d;">
-            ❌ Закрыть
-        </button>
-    </div>
-
-    <!-- Заголовок отчета -->
     <div class="header">
-        <div class="cafe-name">Кафе {{ cafe_name }}</div>
-        <div class="report-title">ОТЧЕТ ПО ПРОДАЖАМ</div>
-        <div class="filters-info">
-            Период: {{ period_display }} | {{ cashier_display }}
-        </div>
-        <div class="filters-info">
-            Сформирован: {{ print_date }}
-        </div>
+        <div class="restaurant-name">Кафе {{ CAFE_NAME }}</div>
+        <div>Развернутый отчет по заказам</div>
+        <div>{{ period_display }} | {{ cashier_display }}</div>
+        <div>Отчет сформирован: {% now "d.m.Y H:i" %}</div>
     </div>
 
     <!-- Основная статистика -->
-    <div class="section-title">ОСНОВНАЯ СТАТИСТИКА</div>
-    <div class="stats-grid">
-        <div class="stat-card">
+    <div class="statistics">
+        <div class="stat-box">
             <div class="stat-value">{{ orders_count }}</div>
-            <div class="stat-label">Всего заказов</div>
+            <div>Всего заказов</div>
         </div>
-        <div class="stat-card">
+        <div class="stat-box">
             <div class="stat-value">{{ total_revenue|floatformat:2 }} ₽</div>
-            <div class="stat-label">Общая выручка</div>
+            <div>Общая выручка</div>
         </div>
-        <div class="stat-card">
+        <div class="stat-box">
             <div class="stat-value">
                 {% if orders_count > 0 %}
                     {{ average_order_value|floatformat:2 }} ₽
@@ -187,20 +99,20 @@
                     0 ₽
                 {% endif %}
             </div>
-            <div class="stat-label">Средний чек</div>
+            <div>Средний чек</div>
         </div>
-        <div class="stat-card">
+        <div class="stat-box">
             <div class="stat-value">{{ cash_total|floatformat:2 }} ₽</div>
-            <div class="stat-label">Наличные</div>
+            <div>Наличные</div>
         </div>
-        <div class="stat-card">
+        <div class="stat-box">
             <div class="stat-value">{{ online_total|floatformat:2 }} ₽</div>
-            <div class="stat-label">Безналичные</div>
+            <div>Безналичные</div>
         </div>
     </div>
 
     <!-- Отчет по продажам товаров -->
-    <div class="section-title">ОТЧЕТ ПО ПРОДАЖАМ ТОВАРОВ</div>
+    <h3>Отчет по продажам товаров</h3>
     {% if sales_data %}
     <table>
         <thead>
@@ -228,22 +140,20 @@
             {% endfor %}
         </tbody>
         <tfoot>
-            <tr class="text-bold">
-                <td>Итого</td>
-                <td class="text-center">{{ sales_data|sum_quantity }}</td>
-                <td class="text-end">{{ sales_data|sum_revenue|floatformat:2 }} ₽</td>
-                <td></td>
+            <tr>
+                <th>Итого</th>
+                <th class="text-center">{{ sales_data|sum_quantity }}</th>
+                <th class="text-end">{{ sales_data|sum_revenue|floatformat:2 }} ₽</th>
+                <th></th>
             </tr>
         </tfoot>
     </table>
     {% else %}
-    <div style="text-align: center; padding: 20px; color: #666;">
-        Нет данных о продажах за выбранный период
-    </div>
+    <p>Нет данных о продажах за выбранный период</p>
     {% endif %}
 
     <!-- Детализация заказов -->
-    <div class="section-title">ДЕТАЛИЗАЦИЯ ЗАКАЗОВ ({{ orders_count }})</div>
+    <h3>Детализация заказов ({{ orders_count }})</h3>
     {% if orders %}
     <table>
         <thead>
@@ -267,39 +177,24 @@
                 <td class="text-end">{{ order.total_sum|floatformat:2 }} ₽</td>
                 <td>{{ order.get_payment_type_display }}</td>
                 <td class="text-center">
-                    {% if order.paid %}✅{% else %}❌{% endif %}
+                    {% if order.paid %}✓{% else %}✗{% endif %}
                 </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
     {% else %}
-    <div style="text-align: center; padding: 20px; color: #666;">
-        Нет заказов за выбранный период
-    </div>
+    <p>Нет заказов за выбранный период</p>
     {% endif %}
 
-    <!-- Подвал -->
     <div class="footer">
-        Отчет сформирован автоматически<br>
-        Кафе {{ cafe_name }} • {{ print_date }}
+        Отчет сформирован: {% now "d.m.Y H:i" %}<br>
+        Кафе {{ CAFE_NAME }}
     </div>
 
-    <script>
-        // Автоматическая печать при загрузке (опционально)
-        window.onload = function() {
-            // Можно раскомментировать для автоматической печати:
-            // setTimeout(function() {
-            //     window.print();
-            // }, 500);
-        };
-        
-        // Закрыть окно после печати
-        window.afterprint = function() {
-            setTimeout(function() {
-                // window.close(); // Раскомментировать для автоматического закрытия
-            }, 1000);
-        };
-    </script>
+     <script type="text/javascript">
+    window.print();
+    setTimeout(window.close, 0.5);
+</script>
 </body>
 </html>

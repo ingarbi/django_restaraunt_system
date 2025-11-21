@@ -1,78 +1,88 @@
 {% load static %}
-{% load order_filters %}
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="UTF-8">
-    <title>Краткий отчет по продажам</title>
+    <meta charset="UTF-8" />
+    <title>Сводный отчет - {{ CAFE_NAME }}</title>
     <style>
-        /* Стили для краткого отчета */
-        @media print {
-            @page { size: A4; margin: 1cm; }
-            .no-print { display: none !important; }
-        }
-        
         body {
             font-family: Arial, sans-serif;
-            font-size: 12px;
-            margin: 20px;
+            font-size: 14px;
+            margin: 0;
+            padding: 15px;
         }
-        
-        .header { text-align: center; margin-bottom: 20px; }
-        .cafe-name { font-size: 18px; font-weight: bold; }
-        .report-title { font-size: 16px; font-weight: bold; margin: 10px 0; }
-        
-        .stats-grid {
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #000;
+            padding-bottom: 15px;
+        }
+        .restaurant-name {
+            font-size: 20px;
+            font-weight: bold;
+        }
+        .report-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .statistics {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-            margin: 20px 0;
+            gap: 15px;
+            margin-bottom: 20px;
         }
-        
-        .stat-card {
-            border: 1px solid #000;
-            padding: 10px;
+        .stat-box {
+            border: 2px solid #000;
+            padding: 15px;
             text-align: center;
+            border-radius: 5px;
         }
-        
         .stat-value {
-            font-size: 16px;
+            font-size: 18px;
             font-weight: bold;
             margin-bottom: 5px;
         }
-        
-        .footer {
-            margin-top: 30px;
-            text-align: center;
-            font-size: 10px;
+        .stat-label {
+            font-size: 12px;
             color: #666;
+        }
+        .period-info {
+            text-align: center;
+            margin: 15px 0;
+            font-style: italic;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            border-top: 1px solid #000;
+            padding-top: 15px;
+            font-size: 12px;
         }
     </style>
 </head>
 <body>
-    <div class="no-print" style="text-align: center; margin-bottom: 20px;">
-        <button onclick="window.print()" style="padding: 10px 20px;">🖨️ Печать</button>
-        <button onclick="window.close()" style="padding: 10px 20px; margin-left: 10px;">❌ Закрыть</button>
-    </div>
-
     <div class="header">
-        <div class="cafe-name">Кафе {{ cafe_name }}</div>
-        <div class="report-title">КРАТКИЙ ОТЧЕТ ПО ПРОДАЖАМ</div>
-        <div>Период: {{ period_display }}</div>
-        <div>{{ cashier_display }}</div>
-        <div>Сформирован: {{ print_date }}</div>
+        <div class="restaurant-name">Кафе {{ CAFE_NAME }}</div>
+        <div class="report-title">Сводный отчет по заказам</div>
     </div>
 
-    <div class="stats-grid">
-        <div class="stat-card">
+    <div class="period-info">
+        Период: {{ period_display }}<br>
+        {{ cashier_display }}
+    </div>
+
+    <!-- Основная статистика -->
+    <div class="statistics">
+        <div class="stat-box">
             <div class="stat-value">{{ orders_count }}</div>
-            <div>Всего заказов</div>
+            <div class="stat-label">Всего заказов</div>
         </div>
-        <div class="stat-card">
+        <div class="stat-box">
             <div class="stat-value">{{ total_revenue|floatformat:2 }} ₽</div>
-            <div>Общая выручка</div>
+            <div class="stat-label">Общая выручка</div>
         </div>
-        <div class="stat-card">
+        <div class="stat-box">
             <div class="stat-value">
                 {% if orders_count > 0 %}
                     {{ average_order_value|floatformat:2 }} ₽
@@ -80,29 +90,26 @@
                     0 ₽
                 {% endif %}
             </div>
-            <div>Средний чек</div>
+            <div class="stat-label">Средний чек</div>
         </div>
-        <div class="stat-card">
+        <div class="stat-box">
             <div class="stat-value">{{ cash_total|floatformat:2 }} ₽</div>
-            <div>Наличные</div>
+            <div class="stat-label">Наличные</div>
         </div>
-        <div class="stat-card">
+        <div class="stat-box">
             <div class="stat-value">{{ online_total|floatformat:2 }} ₽</div>
-            <div>Безналичные</div>
+            <div class="stat-label">Безналичные</div>
         </div>
     </div>
 
     <div class="footer">
-        Краткий отчет • Кафе {{ cafe_name }} • {{ print_date }}
+        Отчет сформирован: {% now "d.m.Y H:i" %}<br>
+        Кафе {{ CAFE_NAME }}
     </div>
 
-    <script>
-        window.onload = function() {
-            // Автопечать для краткого отчета
-            setTimeout(function() {
-                window.print();
-            }, 1000);
-        };
-    </script>
+     <script type="text/javascript">
+    window.print();
+    setTimeout(window.close, 0.5);
+</script>
 </body>
 </html>
