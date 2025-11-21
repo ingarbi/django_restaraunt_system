@@ -19,6 +19,8 @@ from django.utils import timezone
 
 from .forms import OrderForm
 from .models import MenuItem, Order, OrderItem
+from .websocket_utils import (send_new_order_notification,
+                              send_order_status_change)
 
 
 # ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
@@ -36,7 +38,7 @@ def apply_order_filters(orders, period_type, time_period, cashier_id):
     """Применение фильтров к заказам"""
     period_display = "за все время"
     cashier_display = "все кассиры"
-    
+
     if cashier_id:
         try:
             cashier = User.objects.get(id=cashier_id)
@@ -56,7 +58,7 @@ def apply_order_filters(orders, period_type, time_period, cashier_id):
 
     if period_type:
         today = timezone.now().date()
-        
+
         period_filters = {
             "today": (today, "за сегодня"),
             "yesterday": (today - timedelta(days=1), "за вчера"),
@@ -65,7 +67,7 @@ def apply_order_filters(orders, period_type, time_period, cashier_id):
             "month": (today.replace(day=1), "за этот месяц"),
             "year": (today.replace(month=1, day=1), "за этот год"),
         }
-        
+
         if period_type in period_filters:
             filter_date, display_text = period_filters[period_type]
             orders = orders.filter(created_at__date__gte=filter_date)
@@ -83,10 +85,12 @@ def get_order_statistics(orders):
 
     # Статистика по типам оплаты
     cash_total = (
-        orders.filter(payment_type="cash").aggregate(total=Sum("total_sum"))["total"] or 0
+        orders.filter(payment_type="cash").aggregate(total=Sum("total_sum"))["total"]
+        or 0
     )
     online_total = (
-        orders.filter(payment_type="online").aggregate(total=Sum("total_sum"))["total"] or 0
+        orders.filter(payment_type="online").aggregate(total=Sum("total_sum"))["total"]
+        or 0
     )
 
     # Для смешанной оплаты
@@ -118,26 +122,13 @@ def get_order_statistics(orders):
     }
 
 
-def send_order_notification(order, action="status_change", message=None):
-    """Отправка уведомления о изменении заказа"""
-    channel_layer = get_channel_layer()
-    async_to_sync(channel_layer.group_send)(
-        "orders",
-        {
-            "type": "order_update",
-            "action": action,
-            "order_id": order.id,
-            "status": order.status,
-            "paid": order.paid,
-            "message": message,
-        },
-    )
-
-
 # ОСНОВНЫЕ ФУНКЦИИ ПРЕДСТАВЛЕНИЙ
 @login_required
 def create_order(request):
-    if request.user.profile.role not in ["cashier", "supervisor"]:
+    if (
+        request.user.profile.role != "cashier"
+        and request.user.profile.role != "supervisor"
+    ):
         raise PermissionDenied("У вас нет доступа к этой странице.")
 
     menu_items = MenuItem.objects.all().select_related("category")
@@ -195,10 +186,12 @@ def create_order(request):
                 try:
                     order.cash_amount = float(cash_amount) if cash_amount else 0
                     order.online_amount = float(online_amount) if online_amount else 0
+
                 except (ValueError, TypeError):
                     order.cash_amount = 0
                     order.online_amount = 0
             elif payment_type == "cash":
+                print(cash_amount, online_amount)
                 order.cash_amount = order.total_sum
                 order.online_amount = 0
             elif payment_type == "online":
@@ -207,7 +200,6 @@ def create_order(request):
             else:
                 order.cash_amount = 0
                 order.online_amount = 0
-            
             table_number = request.POST.get("table_number") or None
             if order.order_type == "dine_in":
                 order.table_number = table_number
@@ -222,7 +214,10 @@ def create_order(request):
             elif payment_type == "mixed":
                 # Для смешанной оплаты проверяем, покрывает ли сумма заказ
                 mixed_total = order.cash_amount + order.online_amount
-                order.paid = mixed_total >= order.total_sum
+                if mixed_total >= order.total_sum:
+                    order.paid = True
+                else:
+                    order.paid = False
             else:
                 order.paid = False
 
@@ -237,8 +232,7 @@ def create_order(request):
                     quantity=item_data["quantity"],
                 )
 
-            # Notify the kitchen about the new order
-            send_order_notification(order, "new_order", "new_order")
+            send_new_order_notification(order)
 
             if request.headers.get("X-Requested-With") == "XMLHttpRequest":
                 return JsonResponse({"success": True, "order_id": order.id})
@@ -260,7 +254,7 @@ def mark_order_completed(request, order_id):
     order.completed_at = timezone.now()
     order.save()
 
-    send_order_notification(order, "status_change")
+    send_order_status_change(order, "status_change")
     return redirect("kitchen_orders")
 
 
@@ -270,7 +264,7 @@ def mark_order_delivered(request, order_id):
     order.completed_at = timezone.now()
     order.save()
 
-    send_order_notification(order, "status_change")
+    send_order_status_change(order, "status_change")
 
     if request.headers.get("X-Requested-With") == "XMLHttpRequest":
         return JsonResponse({"success": True, "status": order.status})
@@ -283,7 +277,7 @@ def mark_order_cancelled(request, order_id):
     order.status = "cancelled"
     order.save()
 
-    send_order_notification(order, "status_change")
+    send_order_status_change(order, "status_change")
     return redirect("all_orders")
 
 
@@ -291,11 +285,11 @@ def mark_order_cancelled(request, order_id):
 def all_orders(request):
     if request.user.profile.role not in ["cashier", "supervisor"]:
         raise PermissionDenied("У вас нет доступа к этой странице.")
-    
+
     msk_tz = pytz.timezone("Europe/Moscow")
     now_msk = timezone.now().astimezone(msk_tz)
     today = now_msk.date()
-    
+
     # Filter orders created today and sort by status
     orders = Order.objects.filter(created_at__date=today).order_by(
         "status", "-created_at"
@@ -313,14 +307,14 @@ def all_orders(request):
 def kitchen_orders(request):
     if request.user.profile.role not in ["cook", "supervisor"]:
         raise PermissionDenied("У вас нет доступа к этой странице.")
-    
+
     orders = Order.objects.filter(status="pending")
 
     if request.headers.get("X-Requested-With") == "XMLHttpRequest":
         # Return only the partial HTML for AJAX requests
         html = render_to_string("orders/kitchen_order_list.html", {"orders": orders})
         return JsonResponse({"html": html})
-    
+
     return render(request, "orders/kitchen_orders.html", {"orders": orders})
 
 
@@ -381,7 +375,7 @@ def big_reports_printing(request):
 
     # Получаем статистику
     statistics = get_order_statistics(orders)
-    
+
     # Получаем название кафе
     cafe_name = get_cafe_name()
 
@@ -405,7 +399,9 @@ def big_reports_printing(request):
 
     # Создаем HTTP response с PDF файлом
     response = HttpResponse(pdf_file, content_type="application/pdf")
-    response["Content-Disposition"] = f'inline; filename="big_report_{timezone.now().strftime("%Y%m%d_%H%M")}.pdf"'
+    response["Content-Disposition"] = (
+        f'inline; filename="big_report_{timezone.now().strftime("%Y%m%d_%H%M")}.pdf"'
+    )
     return response
 
 
@@ -426,7 +422,7 @@ def short_reports_printing(request):
 
     # Получаем статистику
     statistics = get_order_statistics(orders)
-    
+
     # Получаем название кафе
     cafe_name = get_cafe_name()
 
@@ -450,7 +446,9 @@ def short_reports_printing(request):
 
     # Создаем HTTP response с PDF файлом
     response = HttpResponse(pdf_file, content_type="application/pdf")
-    response["Content-Disposition"] = f'inline; filename="short_report_{timezone.now().strftime("%Y%m%d_%H%M")}.pdf"'
+    response["Content-Disposition"] = (
+        f'inline; filename="short_report_{timezone.now().strftime("%Y%m%d_%H%M")}.pdf"'
+    )
     return response
 
 
@@ -549,7 +547,9 @@ def reports(request):
     # Получаем статистику
     statistics = get_order_statistics(orders)
 
-    cashiers = User.objects.filter(profile__role__in=['cashier', 'supervisor']).order_by('username')
+    cashiers = User.objects.filter(
+        profile__role__in=["cashier", "supervisor"]
+    ).order_by("username")
 
     # Генерируем список выбора временных периодов
     time_period_choices = [("", "---")]
