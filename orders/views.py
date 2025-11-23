@@ -98,6 +98,17 @@ def get_order_statistics(orders):
     cash_total += mixed_orders.aggregate(total=Sum("cash_amount"))["total"] or 0
     online_total += mixed_orders.aggregate(total=Sum("online_amount"))["total"] or 0
 
+    # НОВАЯ СТАТИСТИКА: Суммы бесплатных и неоплаченных заказов
+    free_orders_total = (
+        orders.filter(payment_type="free").aggregate(total=Sum("total_sum"))["total"]
+        or 0
+    )
+    
+    unpaid_orders_total = (
+        orders.filter(paid=False).aggregate(total=Sum("total_sum"))["total"]
+        or 0
+    )
+
     # Данные по продажам
     sales_data = (
         OrderItem.objects.filter(
@@ -118,6 +129,8 @@ def get_order_statistics(orders):
         "average_order_value": average_order_value,
         "cash_total": cash_total,
         "online_total": online_total,
+        "free_orders_total": free_orders_total,
+        "unpaid_orders_total": unpaid_orders_total,  
         "sales_data": sales_data,
     }
 

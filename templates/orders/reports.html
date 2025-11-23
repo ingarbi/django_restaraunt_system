@@ -127,10 +127,12 @@
             </div>
         </div>
         <div class="col-md-2">
-            <div class="card text-center">
-                <div class="card-body py-3">
-                    <h4 class="text-secondary">{{ period_display }}</h4>
-                <small class="text-muted">{{ cashier_display }}</small>
+            <div class="card text-center ">
+                <div class="card-body p-0">
+                    <h4 class="text-danger p-0 m-0 fs-6">{{ free_orders_total|floatformat:2 }} ₽</h4>
+                    <small class="text-muted p-0 m-0">Бесплатные</small>
+                    <h4 class="text-secondary p-0 m-0 fs-6">{{ unpaid_orders_total|floatformat:2 }} ₽</h4>
+                    <small class="text-muted p-0 m-0">Неоплаченные</small>
                 </div>
             </div>
         </div>
