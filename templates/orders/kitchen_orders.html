@@ -27,11 +27,11 @@
         .then((data) => {
           document.getElementById("orders-container").innerHTML = data.html;
         });
-      if (notificationStatusSound) {
-        notificationStatusSound.play().catch((error) => {
-          console.error("Error playing sound:", error);
-        });
-      }
+      // if (notificationStatusSound) {
+      //   notificationStatusSound.play().catch((error) => {
+      //     console.error("Error playing sound:", error);
+      //   });
+      // }
     }
 
     // Handle new order creation
@@ -68,11 +68,11 @@
             `;
       ordersContainer.prepend(card); // Add the new card at the top of the container
 
-      if (notificationSound) {
-        notificationSound.play().catch((error) => {
-          console.error("Error playing sound:", error);
-        });
-      }
+      // if (notificationSound) {
+      //   notificationSound.play().catch((error) => {
+      //     console.error("Error playing sound:", error);
+      //   });
+      // }
 
       setTimeout(function () {
         window.location.reload(1);
