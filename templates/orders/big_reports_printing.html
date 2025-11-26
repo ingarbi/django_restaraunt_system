@@ -109,6 +109,15 @@
             <div class="stat-value">{{ online_total|floatformat:2 }} ₽</div>
             <div>Безналичные</div>
         </div>
+
+        <div class="stat-box">
+        <div class="stat-value">{{ free_orders_total|floatformat:2 }} ₽</div>
+        <div>Бесплатные</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-value">{{ unpaid_orders_total|floatformat:2 }} ₽</div>
+            <div>Неоплаченные</div>
+        </div>
     </div>
 
     <!-- Отчет по продажам товаров -->

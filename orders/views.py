@@ -1,17 +1,15 @@
 import json
 import os
-from datetime import date, datetime, timedelta
-from decimal import Decimal, InvalidOperation
+from datetime import timedelta
+from decimal import Decimal
 
 import pytz
 import weasyprint
-from asgiref.sync import async_to_sync
-from channels.layers import get_channel_layer
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.core.exceptions import PermissionDenied
-from django.db.models import Count, F, Sum
+from django.db.models import F, Sum
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
@@ -103,10 +101,9 @@ def get_order_statistics(orders):
         orders.filter(payment_type="free").aggregate(total=Sum("total_sum"))["total"]
         or 0
     )
-    
+
     unpaid_orders_total = (
-        orders.filter(paid=False).aggregate(total=Sum("total_sum"))["total"]
-        or 0
+        orders.filter(paid=False).aggregate(total=Sum("total_sum"))["total"] or 0
     )
 
     # Данные по продажам
@@ -130,7 +127,7 @@ def get_order_statistics(orders):
         "cash_total": cash_total,
         "online_total": online_total,
         "free_orders_total": free_orders_total,
-        "unpaid_orders_total": unpaid_orders_total,  
+        "unpaid_orders_total": unpaid_orders_total,
         "sales_data": sales_data,
     }
 
@@ -473,6 +470,15 @@ def big_reports_printing(request):
         orders.filter(payment_type="online").aggregate(total=Sum("total_sum"))["total"]
         or 0
     )
+    
+    free_orders_total = (
+        orders.filter(payment_type="free").aggregate(total=Sum("total_sum"))["total"]
+        or 0
+    )
+
+    unpaid_orders_total = (
+        orders.filter(paid=False).aggregate(total=Sum("total_sum"))["total"] or 0
+    )
 
     mixed_orders = orders.filter(payment_type="mixed")
     cash_total += mixed_orders.aggregate(total=Sum("cash_amount"))["total"] or 0
@@ -488,6 +494,8 @@ def big_reports_printing(request):
         "average_order_value": average_order_value,
         "cash_total": cash_total,
         "online_total": online_total,
+        "free_orders_total": free_orders_total,
+        "unpaid_orders_total": unpaid_orders_total,
         "CAFE_NAME": cafe_name,
     }
 
@@ -523,7 +531,7 @@ def short_reports_printing(request):
             hours_ago = timezone.now() - timedelta(hours=hours)
             orders = orders.filter(created_at__gte=hours_ago)
             if hours == 1:
-                period_display = f"за последний 1 час"
+                period_display = f"за последний {hours} час"
             elif 2 <= hours <= 4:
                 period_display = f"за последние {hours} часа"
             else:
@@ -551,6 +559,16 @@ def short_reports_printing(request):
         or 0
     )
 
+    free_orders_total = (
+        orders.filter(payment_type="free").aggregate(total=Sum("total_sum"))["total"]
+        or 0
+    )
+
+    unpaid_orders_total = (
+        orders.filter(paid=False).aggregate(total=Sum("total_sum"))["total"] or 0
+    )
+
+
     mixed_orders = orders.filter(payment_type="mixed")
     cash_total += mixed_orders.aggregate(total=Sum("cash_amount"))["total"] or 0
     online_total += mixed_orders.aggregate(total=Sum("online_amount"))["total"] or 0
@@ -572,6 +590,8 @@ def short_reports_printing(request):
         "average_order_value": average_order_value,
         "cash_total": cash_total,
         "online_total": online_total,
+        "free_orders_total": free_orders_total,  
+        "unpaid_orders_total": unpaid_orders_total,
         "CAFE_NAME": cafe_name,
     }
 
