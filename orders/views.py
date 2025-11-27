@@ -449,7 +449,7 @@ def big_reports_printing(request):
             order__in=orders,
             order__status="delivered",
         )
-        .values("menu_item__name")
+        .values("menu_item__name", "menu_item__price")
         .annotate(
             total_quantity=Sum("quantity"),
             total_revenue=Sum(F("quantity") * F("menu_item__price")),
@@ -479,6 +479,9 @@ def big_reports_printing(request):
     unpaid_orders_total = (
         orders.filter(paid=False).aggregate(total=Sum("total_sum"))["total"] or 0
     )
+    cancelled_orders_total = (
+        orders.filter(status="cancelled").aggregate(total=Sum("total_sum"))["total"] or 0
+    )
 
     mixed_orders = orders.filter(payment_type="mixed")
     cash_total += mixed_orders.aggregate(total=Sum("cash_amount"))["total"] or 0
@@ -496,6 +499,7 @@ def big_reports_printing(request):
         "online_total": online_total,
         "free_orders_total": free_orders_total,
         "unpaid_orders_total": unpaid_orders_total,
+        "cancelled_orders_total":cancelled_orders_total,
         "CAFE_NAME": cafe_name,
     }
 
@@ -531,7 +535,7 @@ def short_reports_printing(request):
             hours_ago = timezone.now() - timedelta(hours=hours)
             orders = orders.filter(created_at__gte=hours_ago)
             if hours == 1:
-                period_display = f"за последний {hours} час"
+                period_display = f"за последний 1 час"
             elif 2 <= hours <= 4:
                 period_display = f"за последние {hours} часа"
             else:
@@ -543,7 +547,29 @@ def short_reports_printing(request):
             today = timezone.now().date()
             orders = orders.filter(created_at__date=today)
             period_display = "за сегодня"
-        # ... include other period types as above
+        elif period_type == "yesterday":
+            yesterday = timezone.now().date() - timedelta(days=1)
+            orders = orders.filter(created_at__date=yesterday)
+            period_display = "за вчера"
+        elif period_type == "day_before_yesterday":
+            day_before_yesterday = timezone.now().date() - timedelta(days=2)
+            orders = orders.filter(created_at__date=day_before_yesterday)
+            period_display = "за позавчера"
+        elif period_type == "week":
+            today = timezone.now().date()
+            start_of_week = today - timedelta(days=today.weekday())
+            orders = orders.filter(created_at__date__gte=start_of_week)
+            period_display = "за эту неделю"
+        elif period_type == "month":
+            today = timezone.now().date()
+            start_of_month = today.replace(day=1)
+            orders = orders.filter(created_at__date__gte=start_of_month)
+            period_display = "за этот месяц"
+        elif period_type == "year":
+            today = timezone.now().date()
+            start_of_year = today.replace(month=1, day=1)
+            orders = orders.filter(created_at__date__gte=start_of_year)
+            period_display = "за этот год"
 
     # Calculate totals only (no detailed data)
     total_revenue = orders.aggregate(total=Sum("total_sum"))["total"] or 0
@@ -567,7 +593,9 @@ def short_reports_printing(request):
     unpaid_orders_total = (
         orders.filter(paid=False).aggregate(total=Sum("total_sum"))["total"] or 0
     )
-
+    cancelled_orders_total = (
+        orders.filter(status="cancelled").aggregate(total=Sum("total_sum"))["total"] or 0
+    )
 
     mixed_orders = orders.filter(payment_type="mixed")
     cash_total += mixed_orders.aggregate(total=Sum("cash_amount"))["total"] or 0
@@ -592,6 +620,7 @@ def short_reports_printing(request):
         "online_total": online_total,
         "free_orders_total": free_orders_total,  
         "unpaid_orders_total": unpaid_orders_total,
+        "cancelled_orders_total":cancelled_orders_total,
         "CAFE_NAME": cafe_name,
     }
 

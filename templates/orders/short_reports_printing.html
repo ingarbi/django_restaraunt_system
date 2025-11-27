@@ -100,11 +100,24 @@
             <div class="stat-value">{{ online_total|floatformat:2 }} ₽</div>
             <div class="stat-label">Безналичные</div>
         </div>
+        <div class="stat-box">
+            <div class="stat-value">{{ free_orders_total|floatformat:2 }} ₽</div>
+            <div>Бесплатные</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-value">{{ unpaid_orders_total|floatformat:2 }} ₽</div>
+            <div>Неоплаченные</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-value">{{ cancelled_orders_total|floatformat:2 }} ₽</div>
+            <div>Отмененные</div>
+        </div>
     </div>
 
     <div class="footer">
         Отчет сформирован: {% now "d.m.Y H:i" %}<br>
         Кафе {{ CAFE_NAME }}
+        Кассир: {{ request.user.username|default:"Кассир" }}
     </div>
 
      <script type="text/javascript">

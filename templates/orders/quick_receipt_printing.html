@@ -60,7 +60,7 @@
     <div class="footer">
       Спасибо за посещение!<br />
       {{ order.created_at|date:"d.m.Y H:i" }}<br />
-      Кассир: {{ request.user.get_full_name|default:"Кассир" }}
+      Кассир: {{ request.user.username|default:"Кассир" }}
     </div>
     <script type="text/javascript">
     window.print();

@@ -111,12 +111,16 @@
         </div>
 
         <div class="stat-box">
-        <div class="stat-value">{{ free_orders_total|floatformat:2 }} ₽</div>
-        <div>Бесплатные</div>
+            <div class="stat-value">{{ free_orders_total|floatformat:2 }} ₽</div>
+            <div>Бесплатные</div>
         </div>
         <div class="stat-box">
             <div class="stat-value">{{ unpaid_orders_total|floatformat:2 }} ₽</div>
             <div>Неоплаченные</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-value">{{ cancelled_orders_total|floatformat:2 }} ₽</div>
+            <div>Отмененные</div>
         </div>
     </div>
 
@@ -128,8 +132,8 @@
             <tr>
                 <th>Товар</th>
                 <th class="text-center">Количество</th>
-                <th class="text-end">Выручка</th>
-                <th class="text-end">Средняя цена</th>
+                <th class="text-end">Цена</th>
+                <th class="text-end">Сумма</th>
             </tr>
         </thead>
         <tbody>
@@ -137,14 +141,14 @@
             <tr>
                 <td>{{ item.menu_item__name }}</td>
                 <td class="text-center">{{ item.total_quantity }}</td>
-                <td class="text-end">{{ item.total_revenue|floatformat:2 }} ₽</td>
                 <td class="text-end">
                     {% if item.total_quantity > 0 %}
-                        {{ item.total_revenue|divide:item.total_quantity|floatformat:2 }} ₽
+                    {{ item.menu_item__price }} ₽
                     {% else %}
-                        0 ₽
+                    0 ₽
                     {% endif %}
                 </td>
+                <td class="text-end">{{ item.total_revenue|floatformat:2 }} ₽</td>
             </tr>
             {% endfor %}
         </tbody>
@@ -162,7 +166,7 @@
     {% endif %}
 
     <!-- Детализация заказов -->
-    <h3>Детализация заказов ({{ orders_count }})</h3>
+    {% comment %} <h3>Детализация заказов ({{ orders_count }})</h3>
     {% if orders %}
     <table>
         <thead>
@@ -194,11 +198,12 @@
     </table>
     {% else %}
     <p>Нет заказов за выбранный период</p>
-    {% endif %}
+    {% endif %} {% endcomment %}
 
     <div class="footer">
         Отчет сформирован: {% now "d.m.Y H:i" %}<br>
         Кафе {{ CAFE_NAME }}
+        Кассир: {{ request.user.username|default:"Кассир" }}
     </div>
 
      <script type="text/javascript">
