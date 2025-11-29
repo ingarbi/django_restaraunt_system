@@ -1,8 +1,8 @@
 {% extends 'main/base.html' %} {% block content %}
 {% load static %}
 <div class="container ms-2">
-  <h2 class="text-center" >Все заказы на сегодня <span id="current_date"></span> </h2>
-  
+  {% comment %}<h2 class="text-center" >Все заказы на сегодня <span id="current_date"></span> </h2>{% endcomment %}
+  <h2 class="text-center">Все заказы за последние 4 часа <span id="current_time"></span></h2>
   <link href="{% static 'css/all_order.css' %}" rel="stylesheet" />
 
   <!-- Container for pending orders -->
@@ -212,8 +212,22 @@
     }
   };
 
-document.getElementById("current_date").innerHTML = new Date().toLocaleDateString('ru-RU');
+{% comment %} document.getElementById("current_date").innerHTML = new Date().toLocaleDateString('ru-RU');{% endcomment %}
 
+ // Обновляем время каждую секунду
+ {% comment %}function updateCurrentTime() {
+  const now = new Date();
+  const timeString = now.toLocaleTimeString('ru-RU', { 
+    hour: '2-digit', 
+    minute: '2-digit',
+    second: '2-digit'
+  });
+  document.getElementById("current_time").innerHTML = timeString;
+}
+
+// Обновляем сразу и запускаем интервал
+updateCurrentTime();
+setInterval(updateCurrentTime, 1000);{% endcomment %}
 
 </script>
 {% endblock %}
