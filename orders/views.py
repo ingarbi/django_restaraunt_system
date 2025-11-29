@@ -298,10 +298,11 @@ def all_orders(request):
 
     msk_tz = pytz.timezone("Europe/Moscow")
     now_msk = timezone.now().astimezone(msk_tz)
-    today = now_msk.date()
+    #today = now_msk.date()
+    twenty_eight_hours_ago = now_msk - timedelta(hours=27)
 
     # Filter orders created today and sort by status
-    orders = Order.objects.filter(created_at__date=today).order_by(
+    orders = Order.objects.filter(created_at__gte=twenty_eight_hours_ago).order_by(
         "status", "-created_at"
     )
 
