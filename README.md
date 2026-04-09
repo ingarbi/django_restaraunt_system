@@ -72,3 +72,5 @@
 
 ###### P.S.
     python generate_license.py --client cafe123 --days 1
+
+    python manage.py generate_fake_orders --year 2024 --count 100
