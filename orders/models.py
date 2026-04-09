@@ -1,3 +1,4 @@
+import pytz
 from django.conf import settings
 from django.db import models
 from django.urls import reverse
@@ -103,7 +104,10 @@ class Order(models.Model):
     def save(self, *args, **kwargs):
         if not self.order_number:
             # Generate order number with date prefix (e.g., "2023-10-05-001")
-            today = timezone.now().date()
+            msk_tz = pytz.timezone("Europe/Moscow")
+            now_msk = timezone.now().astimezone(msk_tz)
+            today = now_msk.date()
+            
             date_prefix = today.strftime("%Y-%m-%d")
             last_order = (
                 Order.objects.filter(order_number__startswith=date_prefix)

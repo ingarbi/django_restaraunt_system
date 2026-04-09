@@ -1,6 +1,7 @@
 from django.utils import timezone
 from datetime import date, datetime, timedelta
 
+
 from admin_totals.admin import ModelAdminTotals
 from django.contrib import admin
 from django.contrib.admin import DateFieldListFilter
@@ -9,6 +10,7 @@ from django.db.models.functions import Coalesce
 from django.shortcuts import render
 from django.urls import path, reverse
 from django.utils.html import format_html
+
 
 from .models import Category, MenuItem, Order, OrderItem
 
