@@ -14,6 +14,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "more_admin_filters",
     "channels",
     "orders",
     "main",
@@ -93,6 +94,9 @@ TIME_ZONE = "Europe/Moscow"
 USE_I18N = True
 
 USE_TZ = True
+
+USE_L10N = True
+
 LOGIN_REDIRECT_URL = "/"
 
 

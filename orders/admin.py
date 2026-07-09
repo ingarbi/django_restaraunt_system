@@ -1,7 +1,5 @@
 from django.utils import timezone
 from datetime import date, datetime, timedelta
-
-
 from admin_totals.admin import ModelAdminTotals
 from django.contrib import admin
 from django.contrib.admin import DateFieldListFilter
@@ -10,6 +8,7 @@ from django.db.models.functions import Coalesce
 from django.shortcuts import render
 from django.urls import path, reverse
 from django.utils.html import format_html
+from more_admin_filters import MultiSelectDropdownFilter
 
 
 from .models import Category, MenuItem, Order, OrderItem
@@ -117,7 +116,7 @@ class OrderAdmin(ModelAdminTotals):
         "order_number",
     ]
     search_fields = ["order_number"]
-    list_filter = ["status", "order_type", DateTimeFilter, 'created_by', "payment_type"]
+    list_filter = [('status', MultiSelectDropdownFilter),"order_type", DateTimeFilter, ("created_at", DateFieldListFilter), 'created_by', "payment_type"]
 
     def completion_time(self, obj):
         """Время выполнения заказа"""
