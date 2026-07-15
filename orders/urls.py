@@ -27,7 +27,8 @@ urlpatterns = [
         name="quick_receipt_printing",
     ),
     path("order/<int:order_id>/", views.order_detail, name="order_detail"),
-    path("orders/", views.all_orders, name="all_orders"), 
+    path("orders/", views.all_orders, name="all_orders"),
+    path('stats/', views.stats_dashboard, name='stats_dashboard'),
 
     path('order/<int:order_id>/update-payment/', views.update_order_payment, name='update_order_payment'),
 ]

@@ -1,6 +1,5 @@
 from django.contrib import admin
 from django.urls import path, include
-from custom_auth import urls
 from custom_auth.views import *
 from django.conf import settings
 from django.conf.urls.static import static
@@ -13,6 +12,7 @@ urlpatterns = [
     path('login/', loginView, name='login'),
     path('logout/', logoutView, name='logout'),
     path('register/', registerView, name='register'),
+    # path('stats/', views.stats_dashboard, name='stats_dashboard'),
 ]
 
 if settings.DEBUG:

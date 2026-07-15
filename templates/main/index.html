@@ -44,6 +44,7 @@
             </a>
           </div>
         </div>
+        
     {% if user.is_superuser %}
         <div class="card">
           <div class="card-icon bg-danger">
@@ -56,6 +57,18 @@
             </a>
           </div>
         </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-icon bg-info">
+        <i class="ri-bar-chart-line"></i>
+      </div>
+      <div class="card-content">
+        <h3 class="welcome-name">Статистика</h3>
+        <a href="{% url 'stats_dashboard' %}" class="btn btn-info">
+          <i class="ri-pie-chart-line"></i> Перейти
+        </a>
       </div>
     </div>
   

@@ -11,10 +11,19 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.utils import timezone
+from datetime import datetime
+from django.db.models import Sum
+from django.contrib.admin.views.decorators import staff_member_required
+from django.db.models import Sum, F, ExpressionWrapper, DecimalField, Q
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
+from django.contrib.auth import get_user_model
+
 
 from .forms import OrderForm
 from .models import MenuItem, Order, OrderItem
 
+
+User = get_user_model()
 
 @login_required
 def create_order(request):
@@ -294,3 +303,109 @@ def update_order_payment(request, order_id):
             return JsonResponse({'success': False, 'message': str(e)})
     
     return JsonResponse({'success': False, 'message': 'Недопустимый запрос'})
+
+@staff_member_required
+def stats_dashboard(request):
+    # Получаем параметры фильтрации
+    date_from = request.GET.get('date_from')
+    date_to = request.GET.get('date_to')
+    menu_item_id = request.GET.get('menu_item')
+    status = request.GET.get('status')
+    order_type = request.GET.get('order_type')
+    created_by_id = request.GET.get('created_by')
+
+    # Базовый QuerySet для заказов
+    orders_qs = Order.objects.select_related('created_by').order_by('-created_at')
+
+    # Фильтр по дате
+    if date_from:
+        try:
+            dt_from = datetime.strptime(date_from, '%Y-%m-%d').date()
+            orders_qs = orders_qs.filter(created_at__date__gte=dt_from)
+        except ValueError:
+            dt_from = None
+    else:
+        dt_from = None
+
+    if date_to:
+        try:
+            dt_to = datetime.strptime(date_to, '%Y-%m-%d').date()
+            orders_qs = orders_qs.filter(created_at__date__lte=dt_to)
+        except ValueError:
+            dt_to = None
+    else:
+        dt_to = None
+
+    # Фильтр по блюду
+    if menu_item_id:
+        orders_qs = orders_qs.filter(items__menu_item_id=menu_item_id).distinct()
+
+    # Фильтр по статусу
+    if status:
+        orders_qs = orders_qs.filter(status=status)
+
+    # Фильтр по типу заказа
+    if order_type:
+        orders_qs = orders_qs.filter(order_type=order_type)
+
+    # Фильтр по кассиру
+    if created_by_id:
+        orders_qs = orders_qs.filter(created_by_id=created_by_id)
+
+    # Подсчёт общего количества и суммы (до пагинации)
+    total_orders_count = orders_qs.count()
+    total_orders_sum = orders_qs.aggregate(total=Sum('total_sum'))['total'] or 0
+
+    # Пагинация
+    paginator = Paginator(orders_qs, 20)
+    page = request.GET.get('page')
+    try:
+        orders_page = paginator.page(page)
+    except PageNotAnInteger:
+        orders_page = paginator.page(1)
+    except EmptyPage:
+        orders_page = paginator.page(paginator.num_pages)
+
+    # Статистика по блюдам (с учётом всех фильтров, кроме статуса, типа, кассира – они не влияют на состав блюд)
+    # Но если мы хотим учитывать только те заказы, которые попали в фильтры, то используем тот же orders_qs для фильтрации OrderItem
+    # Для этого выделим отдельный queryset заказов без пагинации, но с теми же фильтрами.
+    filtered_orders_ids = orders_qs.values_list('id', flat=True)  # все id отфильтрованных заказов
+    order_items_qs = OrderItem.objects.filter(order_id__in=filtered_orders_ids)
+
+    if menu_item_id:
+        order_items_qs = order_items_qs.filter(menu_item_id=menu_item_id)
+
+    product_stats = (
+        order_items_qs
+        .values('menu_item__id', 'menu_item__name')
+        .annotate(
+            total_quantity=Sum('quantity'),
+            total_revenue=Sum(ExpressionWrapper(F('menu_item__price') * F('quantity'), output_field=DecimalField(max_digits=10, decimal_places=2)))
+        )
+        .order_by('-total_quantity')
+    )
+
+    # Списки для выпадающих фильтров
+    all_menu_items = MenuItem.objects.all().order_by('name')
+    status_choices = Order.STATUS_CHOICES
+    order_type_choices = Order.ORDER_TYPE_CHOICES
+    # Список кассиров (только те, у кого есть заказы)
+    cashiers = User.objects.filter(orders_created__isnull=False).distinct().order_by('username')
+
+    context = {
+        'orders': orders_page,
+        'total_orders_count': total_orders_count,
+        'total_orders_sum': total_orders_sum,
+        'product_stats': product_stats,
+        'all_menu_items': all_menu_items,
+        'selected_menu_item': menu_item_id,
+        'date_from': date_from,
+        'date_to': date_to,
+        'selected_status': status,
+        'selected_order_type': order_type,
+        'selected_cashier': created_by_id,
+        'status_choices': status_choices,
+        'order_type_choices': order_type_choices,
+        'cashiers': cashiers,
+    }
+    return render(request, 'orders/stats_dashboard.html', context)
