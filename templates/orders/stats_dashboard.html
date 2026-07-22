@@ -1,183 +1,636 @@
 {% extends 'main/base.html' %}
 
+{% block extra_css %}
+<style>
+  /* === ОБЩИЙ КОНТЕЙНЕР === */
+  .stats-container {
+    max-width: 1400px;
+    margin: 20px auto;
+    padding: 0 24px;
+  }
+
+  .stats-container h1 {
+    font-size: 2rem !important;
+    font-weight: 700 !important;
+    color: #1a1a2e !important;
+    margin-bottom: 8px !important;
+    letter-spacing: -0.5px;
+  }
+
+  .stats-container h2 {
+    font-size: 1.35rem !important;
+    font-weight: 600 !important;
+    color: #1f2937 !important;
+    margin-bottom: 20px !important;
+    margin-top: 32px !important;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .stats-container h2::before {
+    content: '';
+    width: 4px;
+    height: 24px;
+    background: linear-gradient(180deg, #6366f1, #8b5cf6);
+    border-radius: 2px;
+  }
+
+  /* === КАРТОЧКА ФИЛЬТРОВ === */
+  .filters-card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 28px;
+    margin-bottom: 32px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+    transition: all 0.3s ease;
+  }
+
+  .filters-card:hover {
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.06);
+  }
+
+  .filters-card .filter-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+    display: block;
+  }
+
+  .filters-card .form-control {
+    border: 1.5px solid #e5e7eb !important;
+    border-radius: 10px !important;
+    padding: 9px 14px !important;
+    font-size: 0.9rem !important;
+    background: #f9fafb !important;
+    color: #1f2937 !important;
+    transition: all 0.2s ease !important;
+    width: 100%;
+  }
+
+  .filters-card .form-control:focus {
+    background: #ffffff !important;
+    border-color: #6366f1 !important;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1) !important;
+    outline: none !important;
+  }
+
+  .filters-card .filter-group {
+    margin-bottom: 14px;
+  }
+
+  .filters-actions {
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #f3f4f6;
+  }
+
+  .filters-actions .btn {
+    padding: 9px 22px !important;
+    border-radius: 10px !important;
+    font-weight: 500 !important;
+    font-size: 0.9rem !important;
+    transition: all 0.25s ease !important;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .btn-apply {
+    background: #6366f1 !important;
+    color: #ffffff !important;
+    border: 1.5px solid #6366f1 !important;
+  }
+
+  .btn-apply:hover {
+    background: #4f46e5 !important;
+    border-color: #4f46e5 !important;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(99, 102, 241, 0.25) !important;
+  }
+
+  .btn-reset {
+    background: #ffffff !important;
+    color: #374151 !important;
+    border: 1.5px solid #e5e7eb !important;
+  }
+
+  .btn-reset:hover {
+    background: #1f2937 !important;
+    color: #ffffff !important;
+    border-color: #1f2937 !important;
+    transform: translateY(-2px);
+  }
+
+  /* === ТАБЛИЦЫ === */
+  .stats-table-wrapper {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+    margin-bottom: 32px;
+  }
+
+  .stats-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0;
+  }
+
+  .stats-table thead {
+    background: linear-gradient(180deg, #f9fafb, #f3f4f6);
+    border-bottom: 2px solid #e5e7eb;
+  }
+
+  .stats-table thead th {
+    padding: 14px 18px !important;
+    font-size: 0.8rem !important;
+    font-weight: 600 !important;
+    color: #4b5563 !important;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    text-align: left !important;
+    border: none !important;
+  }
+
+  .stats-table thead th.num {
+    text-align: right !important;
+  }
+
+  .stats-table tbody td {
+    padding: 14px 18px !important;
+    font-size: 0.92rem !important;
+    color: #1f2937 !important;
+    border: none !important;
+    border-bottom: 1px solid #f3f4f6 !important;
+    transition: background 0.2s ease;
+  }
+
+  .stats-table tbody td.num {
+    text-align: right !important;
+    font-variant-numeric: tabular-nums;
+    font-weight: 500;
+    color: #374151;
+  }
+
+  .stats-table tbody td.revenue {
+    color: #10b981 !important;
+    font-weight: 600 !important;
+  }
+
+  .stats-table tbody tr:last-child td {
+    border-bottom: none !important;
+  }
+
+  .stats-table tbody tr {
+    transition: background 0.2s ease;
+  }
+
+  .stats-table tbody tr:hover {
+    background: #f9fafb;
+  }
+
+  .stats-table tbody tr:hover td {
+    color: #1a1a2e !important;
+  }
+
+  /* === БЛОК ИНФОРМАЦИИ О ЗАКАЗАХ === */
+  .orders-summary {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+
+  .summary-card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 16px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    transition: all 0.3s ease;
+    flex: 1;
+    min-width: 200px;
+  }
+
+  .summary-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+    border-color: transparent;
+  }
+
+  .summary-card.count {
+    border-left: 4px solid #6366f1;
+  }
+
+  .summary-card.sum {
+    border-left: 4px solid #10b981;
+  }
+
+  .summary-label {
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .summary-value {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #1f2937;
+  }
+
+  .summary-card.count .summary-value {
+    color: #6366f1;
+  }
+
+  .summary-card.sum .summary-value {
+    color: #10b981;
+  }
+
+  /* === BADGE ДЛЯ СТАТУСОВ === */
+  .status-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    background: #f3f4f6;
+    color: #4b5563;
+  }
+
+  .status-badge.completed { background: #d1fae5; color: #065f46; }
+  .status-badge.cooking { background: #fef3c7; color: #92400e; }
+  .status-badge.new { background: #dbeafe; color: #1e40af; }
+  .status-badge.cancelled { background: #fee2e2; color: #991b1b; }
+
+  /* === ПАГИНАЦИЯ === */
+  .pagination-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin-top: 32px;
+    padding: 20px 0;
+    flex-wrap: wrap;
+  }
+
+  .pagination-wrapper .page-info {
+    font-size: 0.85rem;
+    color: #6b7280;
+    margin: 0 12px;
+    font-weight: 500;
+  }
+
+  .page-link-custom {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 38px;
+    height: 38px;
+    padding: 0 12px;
+    border-radius: 10px;
+    background: #ffffff;
+    border: 1.5px solid #e5e7eb;
+    color: #374151;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.25s ease;
+    cursor: pointer;
+  }
+
+  .page-link-custom:hover {
+    background: #f9fafb;
+    border-color: #6366f1;
+    color: #6366f1;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
+    text-decoration: none;
+  }
+
+  .page-link-custom.active {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    border-color: transparent;
+    color: #ffffff;
+    font-weight: 600;
+    cursor: default;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
+  }
+
+  .page-link-custom.active:hover {
+    transform: none;
+  }
+
+  .page-link-custom.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    pointer-events: none;
+    background: #f9fafb;
+  }
+
+  .page-link-custom.nav-btn {
+    padding: 0 16px;
+    font-size: 0.85rem;
+  }
+
+  .page-ellipsis {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 38px;
+    height: 38px;
+    color: #9ca3af;
+    font-weight: 500;
+  }
+
+  /* === EMPTY STATE === */
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #9ca3af;
+    font-size: 0.95rem;
+  }
+
+  .empty-state i {
+    font-size: 3rem;
+    margin-bottom: 12px;
+    color: #d1d5db;
+  }
+
+  /* === RESPONSIVE === */
+  @media (max-width: 768px) {
+    .stats-container h1 {
+      font-size: 1.5rem !important;
+    }
+    .filters-card {
+      padding: 18px;
+    }
+    .stats-table thead th,
+    .stats-table tbody td {
+      padding: 10px 12px !important;
+      font-size: 0.85rem !important;
+    }
+    .pagination-wrapper {
+      gap: 4px;
+    }
+    .page-link-custom {
+      min-width: 34px;
+      height: 34px;
+      padding: 0 8px;
+      font-size: 0.85rem;
+    }
+  }
+</style>
+{% endblock %}
+
 {% block content %}
-<h1>Статистика заказов</h1>
+<div class="stats-container">
+  <h1>📊 Статистика заказов</h1>
+  <p style="color: #6b7280; margin-bottom: 28px;">Аналитика продаж и заказов с возможностью фильтрации</p>
 
-<!-- Форма фильтров -->
-<form method="get" class="mb-4">
-    <div class="row">
+  <!-- Форма фильтров -->
+  <div class="filters-card">
+    <form method="get">
+      <div class="row">
         <div class="col-md-2">
-            <label for="date_from">С даты:</label>
+          <div class="filter-group">
+            <label class="filter-label" for="date_from">С даты</label>
             <input type="date" id="date_from" name="date_from" value="{{ date_from|default:'' }}" class="form-control">
+          </div>
         </div>
         <div class="col-md-2">
-            <label for="date_to">По дату:</label>
+          <div class="filter-group">
+            <label class="filter-label" for="date_to">По дату</label>
             <input type="date" id="date_to" name="date_to" value="{{ date_to|default:'' }}" class="form-control">
+          </div>
         </div>
         <div class="col-md-2">
-            <label for="menu_item">Блюдо:</label>
+          <div class="filter-group">
+            <label class="filter-label" for="menu_item">Блюдо</label>
             <select id="menu_item" name="menu_item" class="form-control">
-                <option value="">Все блюда</option>
-                {% for item in all_menu_items %}
-                    <option value="{{ item.id }}" {% if selected_menu_item == item.id|stringformat:"s" %}selected{% endif %}>
-                        {{ item.name }}
-                    </option>
-                {% endfor %}
+              <option value="">Все блюда</option>
+              {% for item in all_menu_items %}
+                <option value="{{ item.id }}" {% if selected_menu_item == item.id|stringformat:"s" %}selected{% endif %}>
+                  {{ item.name }}
+                </option>
+              {% endfor %}
             </select>
+          </div>
         </div>
         <div class="col-md-2">
-            <label for="status">Статус:</label>
+          <div class="filter-group">
+            <label class="filter-label" for="status">Статус</label>
             <select id="status" name="status" class="form-control">
-                <option value="">Все статусы</option>
-                {% for key, value in status_choices %}
-                    <option value="{{ key }}" {% if selected_status == key %}selected{% endif %}>
-                        {{ value }}
-                    </option>
-                {% endfor %}
+              <option value="">Все статусы</option>
+              {% for key, value in status_choices %}
+                <option value="{{ key }}" {% if selected_status == key %}selected{% endif %}>
+                  {{ value }}
+                </option>
+              {% endfor %}
             </select>
+          </div>
         </div>
         <div class="col-md-2">
-            <label for="order_type">Тип заказа:</label>
+          <div class="filter-group">
+            <label class="filter-label" for="order_type">Тип заказа</label>
             <select id="order_type" name="order_type" class="form-control">
-                <option value="">Все типы</option>
-                {% for key, value in order_type_choices %}
-                    <option value="{{ key }}" {% if selected_order_type == key %}selected{% endif %}>
-                        {{ value }}
-                    </option>
-                {% endfor %}
+              <option value="">Все типы</option>
+              {% for key, value in order_type_choices %}
+                <option value="{{ key }}" {% if selected_order_type == key %}selected{% endif %}>
+                  {{ value }}
+                </option>
+              {% endfor %}
             </select>
+          </div>
         </div>
         <div class="col-md-2">
-            <label for="created_by">Кассир:</label>
+          <div class="filter-group">
+            <label class="filter-label" for="created_by">Кассир</label>
             <select id="created_by" name="created_by" class="form-control">
-                <option value="">Все кассиры</option>
-                {% for cashier in cashiers %}
-                    <option value="{{ cashier.id }}" {% if selected_cashier == cashier.id|stringformat:"s" %}selected{% endif %}>
-                        {{ cashier.get_full_name|default:cashier.username }}
-                    </option>
-                {% endfor %}
+              <option value="">Все кассиры</option>
+              {% for cashier in cashiers %}
+                <option value="{{ cashier.id }}" {% if selected_cashier == cashier.id|stringformat:"s" %}selected{% endif %}>
+                  {{ cashier.get_full_name|default:cashier.username }}
+                </option>
+              {% endfor %}
             </select>
+          </div>
         </div>
-    </div>
-    <div class="row mt-2">
-        <div class="col-12">
-            <button type="submit" class="btn btn-primary">Применить фильтры</button>
-            <a href="{% url 'stats_dashboard' %}" class="btn btn-secondary">Сбросить</a>
+      </div>
+      <div class="row">
+        <div class="col-md-2">
+          <div class="filter-group">
+            <label class="filter-label" for="payment_type">Тип оплаты</label>
+            <select id="payment_type" name="payment_type" class="form-control">
+              <option value="">Все способы</option>
+              {% for key, value in payment_type_choices %}
+                <option value="{{ key }}" {% if selected_payment_type == key %}selected{% endif %}>
+                  {{ value }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
         </div>
-    </div>
-</form>
+        <div class="col-md-10">
+          <div class="filters-actions">
+            <button type="submit" class="btn btn-apply">
+              <i class="ri-filter-3-line"></i> Применить фильтры
+            </button>
+            <a href="{% url 'stats_dashboard' %}" class="btn btn-reset">
+              <i class="ri-refresh-line"></i> Сбросить
+            </a>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
 
-<!-- Блок статистики по блюдам -->
-<h2>Продажи по блюдам</h2>
-<table class="table table-bordered table-hover">
-    <thead>
+  <!-- Блок статистики по блюдам -->
+  <h2>Продажи по блюдам</h2>
+  <div class="stats-table-wrapper">
+    {% if product_stats %}
+    <table class="stats-table">
+      <thead>
         <tr>
-            <th>Блюдо</th>
-            <th>Количество (шт)</th>
-            <th>Выручка (₽)</th>
+          <th style="width: 50%;">Блюдо</th>
+          <th class="num">Количество (шт)</th>
+          <th class="num">Выручка (₽)</th>
         </tr>
-    </thead>
-    <tbody>
+      </thead>
+      <tbody>
         {% for stat in product_stats %}
         <tr>
-            <td>{{ stat.menu_item__name }}</td>
-            <td>{{ stat.total_quantity }}</td>
-            <td>{{ stat.total_revenue|floatformat:2 }}</td>
+          <td>{{ stat.menu_item__name }}</td>
+          <td class="num">{{ stat.total_quantity }}</td>
+          <td class="num revenue">{{ stat.total_revenue|floatformat:2 }} ₽</td>
         </tr>
-        {% empty %}
-        <tr><td colspan="3">Нет данных за выбранный период</td></tr>
         {% endfor %}
-    </tbody>
-</table>
-
-<!-- Информация о заказах -->
-<h2 class="mt-5">Заказы</h2>
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <div>
-        <strong>Найдено заказов:</strong> {{ total_orders_count }} &nbsp;|&nbsp;
-        <strong>Общая сумма:</strong> {{ total_orders_sum }} ₽
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+      <i class="ri-shopping-basket-line"></i>
+      <p>Нет данных за выбранный период</p>
     </div>
-</div>
+    {% endif %}
+  </div>
 
-<!-- Таблица заказов -->
-<table class="table table-striped">
-    <thead>
+  <!-- Информация о заказах -->
+  <h2>Заказы</h2>
+
+  <!-- Summary cards -->
+  <div class="orders-summary">
+    <div class="summary-card count">
+      <span class="summary-label">Найдено заказов</span>
+      <span class="summary-value">{{ total_orders_count|default:0 }}</span>
+    </div>
+    <div class="summary-card sum">
+      <span class="summary-label">Общая сумма</span>
+      <span class="summary-value">{{ total_orders_sum|floatformat:2|default:"0.00" }} ₽</span>
+    </div>
+  </div>
+
+  <!-- Таблица заказов -->
+  <div class="stats-table-wrapper">
+    {% if orders %}
+    <table class="stats-table">
+      <thead>
         <tr>
-            <th>№ заказа</th>
-            <th>Дата</th>
-            <th>Статус</th>
-            <th>Сумма</th>
-            <th>Кассир</th>
-            <th>Тип</th>
+          <th>№ заказа</th>
+          <th>Дата</th>
+          <th>Статус</th>
+          <th class="num">Сумма</th>
+          <th>Кассир</th>
+          <th>Тип заказа</th>
+          <th>Тип оплаты</th>
         </tr>
-    </thead>
-    <tbody>
+      </thead>
+      <tbody>
         {% for order in orders %}
         <tr>
-            <td>{{ order.order_number }}</td>
-            <td>{{ order.created_at|date:"d.m.Y H:i" }}</td>
-            <td>{{ order.get_status_display }}</td>
-            <td>{{ order.total_sum }}</td>
-            <td>
-                {% if order.created_by %}
-                    {{ order.created_by.get_full_name|default:order.created_by.username }}
-                {% else %}
-                    <span class="text-muted">Не указан</span>
-                {% endif %}
-            </td>
-            <td>{{ order.get_order_type_display }}</td>
+          <td><strong>#{{ order.order_number }}</strong></td>
+          <td>{{ order.created_at|date:"d.m.Y H:i" }}</td>
+          <td><span class="status-badge">{{ order.get_status_display }}</span></td>
+          <td class="num"><strong>{{ order.total_sum|floatformat:2 }} ₽</strong></td>
+          <td>
+            {% if order.created_by %}
+              {{ order.created_by.get_full_name|default:order.created_by.username }}
+            {% else %}
+              <span style="color: #9ca3af;">Не указан</span>
+            {% endif %}
+          </td>
+          <td>{{ order.get_order_type_display }}</td>
+          <td>{{ order.get_payment_type_display }}</td>
         </tr>
-        {% empty %}
-        <tr><td colspan="6">Нет заказов, соответствующих фильтрам</td></tr>
         {% endfor %}
-    </tbody>
-</table>
+      </tbody>
+    </table>
 
-<!-- Пагинация -->
-<div class="pagination">
-    <span class="step-links">
-        {% if orders.has_previous %}
-            <a href="?page=1
-               {% if date_from %}&date_from={{ date_from }}{% endif %}
-               {% if date_to %}&date_to={{ date_to }}{% endif %}
-               {% if selected_menu_item %}&menu_item={{ selected_menu_item }}{% endif %}
-               {% if selected_status %}&status={{ selected_status }}{% endif %}
-               {% if selected_order_type %}&order_type={{ selected_order_type }}{% endif %}
-               {% if selected_cashier %}&created_by={{ selected_cashier }}{% endif %}
-            ">&laquo; первая</a>
-            <a href="?page={{ orders.previous_page_number }}
-               {% if date_from %}&date_from={{ date_from }}{% endif %}
-               {% if date_to %}&date_to={{ date_to }}{% endif %}
-               {% if selected_menu_item %}&menu_item={{ selected_menu_item }}{% endif %}
-               {% if selected_status %}&status={{ selected_status }}{% endif %}
-               {% if selected_order_type %}&order_type={{ selected_order_type }}{% endif %}
-               {% if selected_cashier %}&created_by={{ selected_cashier }}{% endif %}
-            ">предыдущая</a>
+    <!-- КРАСИВАЯ ПАГИНАЦИЯ -->
+    {% if orders.paginator.num_pages > 1 %}
+    <div class="pagination-wrapper">
+
+      {# Кнопка «Первая» #}
+      {% if orders.has_previous %}
+        <a href="?page=1{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}{% if selected_menu_item %}&menu_item={{ selected_menu_item }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}{% if selected_order_type %}&order_type={{ selected_order_type }}{% endif %}{% if selected_cashier %}&created_by={{ selected_cashier }}{% endif %}{% if selected_payment_type %}&payment_type={{ selected_payment_type }}{% endif %}" class="page-link-custom nav-btn" title="Первая страница">
+          <i class="ri-skip-back-mini-fill"></i>
+        </a>
+        <a href="?page={{ orders.previous_page_number }}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}{% if selected_menu_item %}&menu_item={{ selected_menu_item }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}{% if selected_order_type %}&order_type={{ selected_order_type }}{% endif %}{% if selected_cashier %}&created_by={{ selected_cashier }}{% endif %}{% if selected_payment_type %}&payment_type={{ selected_payment_type }}{% endif %}" class="page-link-custom nav-btn" title="Предыдущая">
+          <i class="ri-arrow-left-s-line"></i>
+        </a>
+      {% else %}
+        <span class="page-link-custom nav-btn disabled"><i class="ri-skip-back-mini-fill"></i></span>
+        <span class="page-link-custom nav-btn disabled"><i class="ri-arrow-left-s-line"></i></span>
+      {% endif %}
+
+      {# Номера страниц с умным сокращением #}
+      {% for num in orders.paginator.page_range %}
+        {% if num == orders.number %}
+          <span class="page-link-custom active">{{ num }}</span>
+        {% elif num > orders.number|add:"-4" and num < orders.number|add:"4" %}
+          <a href="?page={{ num }}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}{% if selected_menu_item %}&menu_item={{ selected_menu_item }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}{% if selected_order_type %}&order_type={{ selected_order_type }}{% endif %}{% if selected_cashier %}&created_by={{ selected_cashier }}{% endif %}{% if selected_payment_type %}&payment_type={{ selected_payment_type }}{% endif %}" class="page-link-custom">{{ num }}</a>
+        {% elif num == orders.number|add:"-4" or num == orders.number|add:"4" %}
+          <span class="page-ellipsis">…</span>
+        {% elif num == 1 or num == orders.paginator.num_pages %}
+          <a href="?page={{ num }}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}{% if selected_menu_item %}&menu_item={{ selected_menu_item }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}{% if selected_order_type %}&order_type={{ selected_order_type }}{% endif %}{% if selected_cashier %}&created_by={{ selected_cashier }}{% endif %}{% if selected_payment_type %}&payment_type={{ selected_payment_type }}{% endif %}" class="page-link-custom">{{ num }}</a>
         {% endif %}
+      {% endfor %}
 
-        <span class="current">
-            Страница {{ orders.number }} из {{ orders.paginator.num_pages }}
-        </span>
+      {# Кнопка «Следующая» #}
+      {% if orders.has_next %}
+        <a href="?page={{ orders.next_page_number }}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}{% if selected_menu_item %}&menu_item={{ selected_menu_item }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}{% if selected_order_type %}&order_type={{ selected_order_type }}{% endif %}{% if selected_cashier %}&created_by={{ selected_cashier }}{% endif %}{% if selected_payment_type %}&payment_type={{ selected_payment_type }}{% endif %}" class="page-link-custom nav-btn" title="Следующая">
+          <i class="ri-arrow-right-s-line"></i>
+        </a>
+        <a href="?page={{ orders.paginator.num_pages }}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}{% if selected_menu_item %}&menu_item={{ selected_menu_item }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}{% if selected_order_type %}&order_type={{ selected_order_type }}{% endif %}{% if selected_cashier %}&created_by={{ selected_cashier }}{% endif %}{% if selected_payment_type %}&payment_type={{ selected_payment_type }}{% endif %}" class="page-link-custom nav-btn" title="Последняя страница">
+          <i class="ri-skip-forward-mini-fill"></i>
+        </a>
+      {% else %}
+        <span class="page-link-custom nav-btn disabled"><i class="ri-arrow-right-s-line"></i></span>
+        <span class="page-link-custom nav-btn disabled"><i class="ri-skip-forward-mini-fill"></i></span>
+      {% endif %}
 
-        {% if orders.has_next %}
-            <a href="?page={{ orders.next_page_number }}
-               {% if date_from %}&date_from={{ date_from }}{% endif %}
-               {% if date_to %}&date_to={{ date_to }}{% endif %}
-               {% if selected_menu_item %}&menu_item={{ selected_menu_item }}{% endif %}
-               {% if selected_status %}&status={{ selected_status }}{% endif %}
-               {% if selected_order_type %}&order_type={{ selected_order_type }}{% endif %}
-               {% if selected_cashier %}&created_by={{ selected_cashier }}{% endif %}
-            ">следующая</a>
-            <a href="?page={{ orders.paginator.num_pages }}
-               {% if date_from %}&date_from={{ date_from }}{% endif %}
-               {% if date_to %}&date_to={{ date_to }}{% endif %}
-               {% if selected_menu_item %}&menu_item={{ selected_menu_item }}{% endif %}
-               {% if selected_status %}&status={{ selected_status }}{% endif %}
-               {% if selected_order_type %}&order_type={{ selected_order_type }}{% endif %}
-               {% if selected_cashier %}&created_by={{ selected_cashier }}{% endif %}
-            ">последняя &raquo;</a>
-        {% endif %}
-    </span>
+      <span class="page-info">Стр. {{ orders.number }} из {{ orders.paginator.num_pages }}</span>
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div class="empty-state">
+      <i class="ri-inbox-line"></i>
+      <p>Нет заказов, соответствующих фильтрам</p>
+    </div>
+    {% endif %}
+  </div>
 </div>
-
 {% endblock %}

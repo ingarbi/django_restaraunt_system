@@ -26,67 +26,7 @@
   gap: 2rem;
 }
 
-.card {
-  background-color: #fff;
-  border-radius: 1rem;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-  overflow: hidden;
-  transition: transform 0.3s ease;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  height: 100%;
-}
 
-.card:hover {
-  transform: translateY(-5px);
-}
-
-.card-icon {
-  padding: 1.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 2rem;
-}
-
-.card-icon i {
-  transition: transform 0.3s ease;
-}
-
-.card:hover .card-icon i {
-  transform: scale(1.1);
-}
-
-.card-content {
-  padding: 1.5rem;
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
-
-.card-content h3 {
-  font-size: 1.25rem;
-  margin-bottom: 1rem;
-  color: #1f2937;
-}
-
-.btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  border-radius: 5rem;
-  padding: 0.5rem 1rem;
-  font-weight: 600;
-  transition: all 0.3s ease;
-}
-
-.btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-}
 
 .btn i {
   font-size: 1rem;
@@ -163,11 +103,6 @@
   font-weight: 500;
 }
 
-/* Color-specific card icons */
-.bg-primary { background-color: #0891b2; }
-.bg-success { background-color: #10b981; }
-.bg-warning { background-color: #f59e0b; }
-.bg-danger { background-color: #ef4444; }
 
 
 .nav-link.active {

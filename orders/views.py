@@ -313,6 +313,7 @@ def stats_dashboard(request):
     status = request.GET.get('status')
     order_type = request.GET.get('order_type')
     created_by_id = request.GET.get('created_by')
+    payment_type = request.GET.get('payment_type')
 
     # Базовый QuerySet для заказов
     orders_qs = Order.objects.select_related('created_by').order_by('-created_at')
@@ -351,6 +352,9 @@ def stats_dashboard(request):
     # Фильтр по кассиру
     if created_by_id:
         orders_qs = orders_qs.filter(created_by_id=created_by_id)
+    
+    if payment_type:
+        orders_qs = orders_qs.filter(payment_type=payment_type)
 
     # Подсчёт общего количества и суммы (до пагинации)
     total_orders_count = orders_qs.count()
@@ -391,6 +395,7 @@ def stats_dashboard(request):
     order_type_choices = Order.ORDER_TYPE_CHOICES
     # Список кассиров (только те, у кого есть заказы)
     cashiers = User.objects.filter(orders_created__isnull=False).distinct().order_by('username')
+    payment_type_choices = Order.PAYMENT_TYPE_CHOICES
 
     context = {
         'orders': orders_page,
@@ -407,5 +412,6 @@ def stats_dashboard(request):
         'status_choices': status_choices,
         'order_type_choices': order_type_choices,
         'cashiers': cashiers,
+        'payment_type_choices': payment_type_choices,
     }
     return render(request, 'orders/stats_dashboard.html', context)

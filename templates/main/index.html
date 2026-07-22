@@ -1,93 +1,416 @@
 {% extends 'main/base.html' %}
+
+{% block extra_css %}
+<style>
+  /* === ПЕРЕОПРЕДЕЛЕНИЕ СТАРЫХ СТИЛЕЙ === */
+  .welcome-container {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 0 24px !important;
+  }
+
+  .welcome-container .dashboard-header {
+    text-align: center;
+    margin-bottom: 48px !important;
+  }
+
+  .welcome-container .dashboard-header h1 {
+    font-size: 2rem !important;
+    font-weight: 700 !important;
+    color: #1a1a2e !important;
+    margin-bottom: 8px !important;
+    letter-spacing: -0.5px;
+  }
+
+  .welcome-container .dashboard-subtitle {
+    font-size: 1.05rem !important;
+    color: #6b7280 !important;
+    font-weight: 400 !important;
+  }
+
+  /* === GRID: верхний ряд 3 карточки === */
+  .welcome-container .dashboard-cards {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 24px !important;
+    margin-bottom: 24px !important;
+  }
+
+  /* === GRID: нижний ряд 2 карточки === */
+  .welcome-container .dashboard-cards-bottom {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 24px !important;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  /* === КАРТОЧКА (базовый стиль) === */
+  .welcome-container .card {
+    background: #ffffff !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 16px !important;
+    padding: 32px 28px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    gap: 20px !important;
+    height: auto !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05) !important;
+    overflow: hidden !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    cursor: pointer;
+    position: relative;
+  }
+
+  .welcome-container .card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: transparent;
+    transition: background 0.3s ease;
+  }
+
+  /* Общий hover для всех карточек */
+  .welcome-container .card:hover {
+    transform: translateY(-6px) !important;
+    border-color: transparent !important;
+  }
+
+  .welcome-container .card:active {
+    transform: translateY(-2px);
+  }
+
+  /* === ИКОНКА (базовый стиль) === */
+  .welcome-container .card-icon {
+    width: 64px !important;
+    height: 64px !important;
+    border-radius: 14px !important;
+    padding: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 1.6rem !important;
+    background: #f3f4f6 !important;
+    color: #374151 !important;
+    transition: all 0.3s ease !important;
+  }
+
+  .welcome-container .card:hover .card-icon i {
+    transform: none !important;
+  }
+
+  /* === КОНТЕНТ КАРТОЧКИ === */
+  .welcome-container .card-content {
+    padding: 0 !important;
+    flex-grow: 0 !important;
+  }
+
+  .welcome-container .card-content h3 {
+    font-size: 1.15rem !important;
+    font-weight: 600 !important;
+    color: #1f2937 !important;
+    margin-bottom: 4px !important;
+  }
+
+  .welcome-container .card-content p {
+    font-size: 0.875rem;
+    color: #9ca3af;
+    margin-bottom: 16px;
+  }
+
+  /* === КНОПКА (базовый стиль) === */
+  .welcome-container .card .btn {
+    display: inline-flex !important;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 24px !important;
+    font-size: 0.875rem !important;
+    font-weight: 500 !important;
+    border-radius: 10px !important;
+    text-decoration: none !important;
+    transition: all 0.25s ease !important;
+    border: 1.5px solid #e5e7eb !important;
+    background: #ffffff !important;
+    color: #374151 !important;
+    box-shadow: none !important;
+  }
+
+  .welcome-container .card .btn:hover {
+    transform: none !important;
+  }
+
+  /* ============================================= */
+  /* === ЦВЕТНЫЕ АКЦЕНТЫ ДЛЯ КАЖДОЙ КАРТОЧКИ === */
+  /* ============================================= */
+
+  /* 🛒 Создать заказ — ИНДИГО */
+  .welcome-container .card-order:hover {
+    box-shadow: 0 20px 40px rgba(99, 102, 241, 0.15), 0 8px 16px rgba(99, 102, 241, 0.08) !important;
+  }
+  .welcome-container .card-order:hover::before {
+    background: linear-gradient(90deg, #6366f1, #818cf8);
+  }
+  .welcome-container .card-order:hover .card-icon {
+    background: #6366f1 !important;
+    color: #ffffff !important;
+    transform: scale(1.08);
+  }
+  .welcome-container .card-order:hover .btn {
+    background: #6366f1 !important;
+    color: #ffffff !important;
+    border-color: #6366f1 !important;
+  }
+
+  /* 📋 Все заказы — ИЗУМРУДНЫЙ */
+  .welcome-container .card-orders:hover {
+    box-shadow: 0 20px 40px rgba(16, 185, 129, 0.15), 0 8px 16px rgba(16, 185, 129, 0.08) !important;
+  }
+  .welcome-container .card-orders:hover::before {
+    background: linear-gradient(90deg, #10b981, #34d399);
+  }
+  .welcome-container .card-orders:hover .card-icon {
+    background: #10b981 !important;
+    color: #ffffff !important;
+    transform: scale(1.08);
+  }
+  .welcome-container .card-orders:hover .btn {
+    background: #10b981 !important;
+    color: #ffffff !important;
+    border-color: #10b981 !important;
+  }
+
+  /* 🔪 Заказы на кухне — ЯНТАРНЫЙ */
+  .welcome-container .card-kitchen:hover {
+    box-shadow: 0 20px 40px rgba(245, 158, 11, 0.15), 0 8px 16px rgba(245, 158, 11, 0.08) !important;
+  }
+  .welcome-container .card-kitchen:hover::before {
+    background: linear-gradient(90deg, #f59e0b, #fbbf24);
+  }
+  .welcome-container .card-kitchen:hover .card-icon {
+    background: #f59e0b !important;
+    color: #ffffff !important;
+    transform: scale(1.08);
+  }
+  .welcome-container .card-kitchen:hover .btn {
+    background: #f59e0b !important;
+    color: #ffffff !important;
+    border-color: #f59e0b !important;
+  }
+
+  /* ⚙️ Админ-панель — РОЗОВЫЙ */
+  .welcome-container .card-admin:hover {
+    box-shadow: 0 20px 40px rgba(225, 29, 72, 0.15), 0 8px 16px rgba(225, 29, 72, 0.08) !important;
+  }
+  .welcome-container .card-admin:hover::before {
+    background: linear-gradient(90deg, #e11d48, #f43f5e);
+  }
+  .welcome-container .card-admin:hover .card-icon {
+    background: #e11d48 !important;
+    color: #ffffff !important;
+    transform: scale(1.08);
+  }
+  .welcome-container .card-admin:hover .btn {
+    background: #e11d48 !important;
+    color: #ffffff !important;
+    border-color: #e11d48 !important;
+  }
+
+  /* 📊 Статистика — ФИОЛЕТОВЫЙ */
+  .welcome-container .card-stats:hover {
+    box-shadow: 0 20px 40px rgba(139, 92, 246, 0.15), 0 8px 16px rgba(139, 92, 246, 0.08) !important;
+  }
+  .welcome-container .card-stats:hover::before {
+    background: linear-gradient(90deg, #aa17fa, #a78bfa);
+  }
+  .welcome-container .card-stats:hover .card-icon {
+    background: #aa17fa !important;
+    color: #ffffff !important;
+    transform: scale(1.08);
+  }
+  .welcome-container .card-stats:hover .btn {
+    background: #aa17fa !important;
+    color: #ffffff !important;
+    border-color: #aa17fa !important;
+  }
+
+  /* === БЛОК "Вы залогинены" === */
+  .welcome-container .user-welcome {
+    display: flex;
+    justify-content: center;
+    margin-top: 48px;
+    padding: 0 !important;
+  }
+
+  .welcome-container .welcome-card {
+    background: #ffffff !important;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px !important;
+    padding: 32px 48px !important;
+    text-align: center;
+    max-width: 700px;
+    width: 100%;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05) !important;
+    transition: all 0.3s ease;
+  }
+
+  .welcome-container .welcome-card:hover {
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.06);
+    border-color: #d1d5db;
+  }
+
+  .welcome-container .welcome-content p {
+    font-size: 0.95rem !important;
+    color: #6b7280 !important;
+    margin-bottom: 12px !important;
+  }
+
+  .welcome-container .feature-item {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 10px;
+    font-size: 1.1rem !important;
+    font-weight: 600 !important;
+    color: #1f2937 !important;
+    background: transparent !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
+  }
+
+  .welcome-container .feature-item:hover {
+    transform: none !important;
+  }
+
+  .welcome-container .feature-item i {
+    color: #6366f1;
+    font-size: 1.2rem !important;
+  }
+
+  /* === RESPONSIVE === */
+  @media (max-width: 768px) {
+    .welcome-container .dashboard-cards {
+      grid-template-columns: 1fr !important;
+    }
+    .welcome-container .dashboard-cards-bottom {
+      grid-template-columns: 1fr !important;
+    }
+    .welcome-container .dashboard-header h1 {
+      font-size: 1.5rem !important;
+    }
+  }
+
+  @media (min-width: 769px) and (max-width: 1024px) {
+    .welcome-container .dashboard-cards {
+      grid-template-columns: repeat(2, 1fr) !important;
+    }
+  }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="welcome-container">
-  
-    <div class="admin-dashboard">
-      <div class="dashboard-header">
-        <h1 class="welcome-name" >Добро пожаловать в систему {{CAFE_NAME}}!</h1>
-        <p class="dashboard-subtitle">Выберите нужный раздел:</p>
+<div class="welcome-container ">
+
+  <div class="admin-dashboard">
+    <div class="dashboard-header">
+      <h1>Добро пожаловать в систему {{ CAFE_NAME }}!</h1>
+      <p class="dashboard-subtitle">Выберите нужный раздел</p>
+    </div>
+
+    <!-- Верхний ряд: 3 карточки -->
+    <div class="dashboard-cards">
+      <div class="card card-order" onclick="window.location='{% url 'create_order' %}'">
+        <div class="card-icon">
+          <i class="ri-shopping-cart-line"></i>
+        </div>
+        <div class="card-content">
+          <h3>Создать заказ</h3>
+          <p>Оформить новый заказ</p>
+          <a href="{% url 'create_order' %}" class="btn">
+            <i class="ri-add-line"></i> Перейти
+          </a>
+        </div>
       </div>
-      
-      <div class="dashboard-cards">
-        <div class="card">
-          <div class="card-icon bg-primary">
-            <i class="ri-shopping-cart-line"></i>
-          </div>
-          <div class="card-content">
-            <h3  class="welcome-name" >Создать заказ</h3>
-            <a href="{% url 'create_order' %}" class="btn btn-primary">
-              <i class="ri-add-line"></i> Перейти
-            </a>
-          </div>
+
+      <div class="card card-orders" onclick="window.location='{% url 'all_orders' %}'">
+        <div class="card-icon">
+          <i class="ri-list-check"></i>
         </div>
-        
-        <div class="card">
-          <div class="card-icon bg-success">
-            <i class="ri-list-check"></i>
-          </div>
-          <div class="card-content">
-            <h3 class="welcome-name">Все заказы</h3>
-            <a href="{% url 'all_orders' %}" class="btn btn-success">
-              <i class="ri-eye-line"></i> Просмотреть
-            </a>
-          </div>
+        <div class="card-content">
+          <h3>Все заказы</h3>
+          <p>Просмотр всех заказов</p>
+          <a href="{% url 'all_orders' %}" class="btn">
+            <i class="ri-eye-line"></i> Просмотреть
+          </a>
         </div>
-        
-        <div class="card">
-          <div class="card-icon bg-warning">
-            <i class="ri-knife-line"></i>
-          </div>
-          <div class="card-content">
-            <h3  class="welcome-name">Заказы на кухне</h3>
-            <a href="{% url 'kitchen_orders' %}" class="btn btn-warning">
-              <i class="ri-cooking-line"></i> Открыть
-            </a>
-          </div>
+      </div>
+
+      <div class="card card-kitchen" onclick="window.location='{% url 'kitchen_orders' %}'">
+        <div class="card-icon">
+          <i class="ri-knife-line"></i>
         </div>
-        
-    {% if user.is_superuser %}
-        <div class="card">
-          <div class="card-icon bg-danger">
-            <i class="ri-settings-line"></i>
-          </div>
-          <div class="card-content">
-            <h3  class="welcome-name">Админ-панель</h3>
-            <a href="{% url 'admin:index' %}" class="btn btn-danger">
-              <i class="ri-admin-line"></i> Войти
-            </a>
-          </div>
+        <div class="card-content">
+          <h3>Заказы на кухне</h3>
+          <p>Активные заказы на кухне</p>
+          <a href="{% url 'kitchen_orders' %}" class="btn">
+            <i class="ri-restaurant-line"></i> Открыть
+          </a>
         </div>
       </div>
     </div>
 
-    <div class="card">
-      <div class="card-icon bg-info">
-        <i class="ri-bar-chart-line"></i>
+    {% if user.is_superuser %}
+    <!-- Нижний ряд: Админ-панель и Статистика -->
+    <div class="dashboard-cards-bottom">
+      <div class="card card-admin" onclick="window.location='{% url 'admin:index' %}'">
+        <div class="card-icon">
+          <i class="ri-settings-line"></i>
+        </div>
+        <div class="card-content">
+          <h3>Админ-панель</h3>
+          <p>Управление системой</p>
+          <a href="{% url 'admin:index' %}" class="btn">
+            <i class="ri-admin-line"></i> Войти
+          </a>
+        </div>
       </div>
-      <div class="card-content">
-        <h3 class="welcome-name">Статистика</h3>
-        <a href="{% url 'stats_dashboard' %}" class="btn btn-info">
-          <i class="ri-pie-chart-line"></i> Перейти
-        </a>
+
+      <div class="card card-stats" onclick="window.location='{% url 'stats_dashboard' %}'">
+        <div class="card-icon">
+          <i class="ri-bar-chart-line"></i>
+        </div>
+        <div class="card-content">
+          <h3>Статистика</h3>
+          <p>Аналитика и отчёты</p>
+          <a href="{% url 'stats_dashboard' %}" class="btn">
+            <i class="ri-pie-chart-line"></i> Перейти
+          </a>
+        </div>
       </div>
     </div>
-  
-  {% else %}
-    <div class="user-welcome">
+    {% else %}
+    <div class="user-welcome ">
       <div class="welcome-card">
         <div class="welcome-content">
-          <p>Вы залогинены как:</p>
+          <p >Вы залогинены как:</p>
           <div class="features">
-            <div class="feature-item">
+            <div class="feature-item ">
               <i class="ri-check-double-line"></i>
+              
               {% if request.user.is_authenticated %}
-              {{ request.user.get_full_name|default:request.user.username }}
+                {{ request.user.get_full_name|default:request.user.username }}
               {% endif %}
             </div>
           </div>
         </div>
       </div>
     </div>
-  {% endif %}
+    {% endif %}
+  </div>
+
 </div>
 {% endblock %}

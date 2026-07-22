@@ -38,7 +38,7 @@
                   <div class="mb-2">
                     {% if order.status == 'delivered' %}
                       <span class="badge bg-success-subtle text-success">
-                        Выполнен
+                        Выдан
                       </span>
                     {% elif order.status == 'cancelled' %}
                       <span class="badge bg-danger-subtle text-danger">
@@ -76,7 +76,7 @@
                       {% if order.payment_type == "cash" %}
                         <i class="bi bi-cash-coin fs-5 text-success" title="Наличные"></i>
                       {% elif order.payment_type == "online" %}
-                        <i class="bi bi-phone-fill fs-5 text-primary" title="Перевод"></i>
+                        <i class="bi bi-broadcast fs-5 text-primary" title="Перевод"></i>
                       {% elif order.payment_type == "free" %}
                         <i class="bi bi-gift-fill fs-5 text-info" title="Бесплатно"></i>
                       {% endif %}
