@@ -2,6 +2,100 @@
 
 {% block extra_css %}
 <style>
+  /* === TOM SELECT СТИЛИ === */
+  .ts-wrapper {
+    margin-bottom: 0 !important;
+  }
+  
+  .ts-wrapper .ts-control {
+    border: 1.5px solid #e5e7eb !important;
+    border-radius: 10px !important;
+    padding: 6px 10px !important;
+    background: #f9fafb !important;
+    min-height: 38px !important;
+    transition: all 0.2s ease !important;
+  }
+  
+  .ts-wrapper .ts-control:hover {
+    border-color: #d1d5db !important;
+  }
+  
+  .ts-wrapper.focus .ts-control {
+    background: #ffffff !important;
+    border-color: #6366f1 !important;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1) !important;
+    outline: none !important;
+  }
+  
+  .ts-wrapper .ts-control .item {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6) !important;
+    color: #ffffff !important;
+    border-radius: 6px !important;
+    padding: 2px 8px !important;
+    font-size: 0.82rem !important;
+    font-weight: 500 !important;
+    border: none !important;
+    margin: 2px 2px 2px 0 !important;
+  }
+  
+  .ts-wrapper .ts-control .item.active {
+    background: linear-gradient(135deg, #4f46e5, #7c3aed) !important;
+  }
+  
+  .ts-wrapper .ts-control .remove {
+    color: #ffffff !important;
+    border-left: 1px solid rgba(255, 255, 255, 0.3) !important;
+    padding-left: 6px !important;
+    margin-left: 4px !important;
+  }
+  
+  .ts-wrapper .ts-control .remove:hover {
+    background: rgba(255, 255, 255, 0.2) !important;
+    color: #ffffff !important;
+  }
+  
+  .ts-wrapper .ts-dropdown {
+    border: 1.5px solid #e5e7eb !important;
+    border-radius: 10px !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1) !important;
+    margin-top: 4px !important;
+    overflow: hidden !important;
+  }
+  
+  .ts-wrapper .ts-dropdown .option {
+    padding: 8px 12px !important;
+    font-size: 0.9rem !important;
+    transition: background 0.15s ease !important;
+  }
+  
+  .ts-wrapper .ts-dropdown .option:hover,
+  .ts-wrapper .ts-dropdown .option.active {
+    background: #f3f4f6 !important;
+    color: #1f2937 !important;
+  }
+  
+  .ts-wrapper .ts-dropdown .option.selected {
+    background: #e0e7ff !important;
+    color: #3730a3 !important;
+    font-weight: 600 !important;
+  }
+  
+  .ts-wrapper .ts-dropdown .option.selected::after {
+    content: '✓';
+    float: right;
+    color: #6366f1;
+    font-weight: bold;
+  }
+  
+  .ts-wrapper .ts-control input {
+    font-size: 0.9rem !important;
+    color: #1f2937 !important;
+  }
+  
+  .ts-wrapper .ts-control input::placeholder {
+    color: #9ca3af !important;
+  }
+
   /* === ОБЩИЙ КОНТЕЙНЕР === */
   .stats-container {
     max-width: 1400px;
@@ -270,10 +364,10 @@
     color: #4b5563;
   }
 
-  .status-badge.completed { background: #d1fae5; color: #065f46; }
-  .status-badge.cooking { background: #fef3c7; color: #92400e; }
-  .status-badge.new { background: #dbeafe; color: #1e40af; }
   .status-badge.cancelled { background: #fee2e2; color: #991b1b; }
+  .status-badge.pending   { background: #dbeafe; color: #1e40af; }
+  .status-badge.done      { background: #d1fae5; color: #065f46; }
+  .status-badge.delivered { background: #e0e7ff; color: #3730a3; }
 
   /* === ПАГИНАЦИЯ === */
   .pagination-wrapper {
@@ -418,11 +512,10 @@
         </div>
         <div class="col-md-2">
           <div class="filter-group">
-            <label class="filter-label" for="menu_item">Блюдо</label>
-            <select id="menu_item" name="menu_item" class="form-control">
-              <option value="">Все блюда</option>
+            <label class="filter-label" for="menu_item">Блюда</label>
+            <select id="menu_item" name="menu_item" multiple placeholder="Выберите блюда...">
               {% for item in all_menu_items %}
-                <option value="{{ item.id }}" {% if selected_menu_item == item.id|stringformat:"s" %}selected{% endif %}>
+                <option value="{{ item.id }}" {% if item.id|stringformat:"s" in selected_menu_items %}selected{% endif %}>
                   {{ item.name }}
                 </option>
               {% endfor %}
@@ -431,11 +524,10 @@
         </div>
         <div class="col-md-2">
           <div class="filter-group">
-            <label class="filter-label" for="status">Статус</label>
-            <select id="status" name="status" class="form-control">
-              <option value="">Все статусы</option>
+            <label class="filter-label" for="status">Статусы</label>
+            <select id="status" name="status" multiple placeholder="Выберите статусы...">
               {% for key, value in status_choices %}
-                <option value="{{ key }}" {% if selected_status == key %}selected{% endif %}>
+                <option value="{{ key }}" {% if key in selected_statuses %}selected{% endif %}>
                   {{ value }}
                 </option>
               {% endfor %}
@@ -444,11 +536,10 @@
         </div>
         <div class="col-md-2">
           <div class="filter-group">
-            <label class="filter-label" for="order_type">Тип заказа</label>
-            <select id="order_type" name="order_type" class="form-control">
-              <option value="">Все типы</option>
+            <label class="filter-label" for="order_type">Типы заказа</label>
+            <select id="order_type" name="order_type" multiple placeholder="Выберите типы...">
               {% for key, value in order_type_choices %}
-                <option value="{{ key }}" {% if selected_order_type == key %}selected{% endif %}>
+                <option value="{{ key }}" {% if key in selected_order_types %}selected{% endif %}>
                   {{ value }}
                 </option>
               {% endfor %}
@@ -457,11 +548,10 @@
         </div>
         <div class="col-md-2">
           <div class="filter-group">
-            <label class="filter-label" for="created_by">Кассир</label>
-            <select id="created_by" name="created_by" class="form-control">
-              <option value="">Все кассиры</option>
+            <label class="filter-label" for="created_by">Кассиры</label>
+            <select id="created_by" name="created_by" multiple placeholder="Выберите кассиров...">
               {% for cashier in cashiers %}
-                <option value="{{ cashier.id }}" {% if selected_cashier == cashier.id|stringformat:"s" %}selected{% endif %}>
+                <option value="{{ cashier.id }}" {% if cashier.id|stringformat:"s" in selected_cashiers %}selected{% endif %}>
                   {{ cashier.get_full_name|default:cashier.username }}
                 </option>
               {% endfor %}
@@ -472,11 +562,10 @@
       <div class="row">
         <div class="col-md-2">
           <div class="filter-group">
-            <label class="filter-label" for="payment_type">Тип оплаты</label>
-            <select id="payment_type" name="payment_type" class="form-control">
-              <option value="">Все способы</option>
+            <label class="filter-label" for="payment_type">Типы оплаты</label>
+            <select id="payment_type" name="payment_type" multiple placeholder="Выберите способы...">
               {% for key, value in payment_type_choices %}
-                <option value="{{ key }}" {% if selected_payment_type == key %}selected{% endif %}>
+                <option value="{{ key }}" {% if key in selected_payment_types %}selected{% endif %}>
                   {{ value }}
                 </option>
               {% endfor %}
@@ -578,16 +667,17 @@
       </tbody>
     </table>
 
-    <!-- КРАСИВАЯ ПАГИНАЦИЯ -->
+    
+        <!-- КРАСИВАЯ ПАГИНАЦИЯ -->
     {% if orders.paginator.num_pages > 1 %}
     <div class="pagination-wrapper">
 
       {# Кнопка «Первая» #}
       {% if orders.has_previous %}
-        <a href="?page=1{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}{% if selected_menu_item %}&menu_item={{ selected_menu_item }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}{% if selected_order_type %}&order_type={{ selected_order_type }}{% endif %}{% if selected_cashier %}&created_by={{ selected_cashier }}{% endif %}{% if selected_payment_type %}&payment_type={{ selected_payment_type }}{% endif %}" class="page-link-custom nav-btn" title="Первая страница">
+        <a href="?page=1{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}{% for item_id in selected_menu_items %}&menu_item={{ item_id }}{% endfor %}{% for status in selected_statuses %}&status={{ status }}{% endfor %}{% for order_type in selected_order_types %}&order_type={{ order_type }}{% endfor %}{% for cashier_id in selected_cashiers %}&created_by={{ cashier_id }}{% endfor %}{% for payment_type in selected_payment_types %}&payment_type={{ payment_type }}{% endfor %}" class="page-link-custom nav-btn" title="Первая страница">
           <i class="ri-skip-back-mini-fill"></i>
         </a>
-        <a href="?page={{ orders.previous_page_number }}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}{% if selected_menu_item %}&menu_item={{ selected_menu_item }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}{% if selected_order_type %}&order_type={{ selected_order_type }}{% endif %}{% if selected_cashier %}&created_by={{ selected_cashier }}{% endif %}{% if selected_payment_type %}&payment_type={{ selected_payment_type }}{% endif %}" class="page-link-custom nav-btn" title="Предыдущая">
+        <a href="?page={{ orders.previous_page_number }}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}{% for item_id in selected_menu_items %}&menu_item={{ item_id }}{% endfor %}{% for status in selected_statuses %}&status={{ status }}{% endfor %}{% for order_type in selected_order_types %}&order_type={{ order_type }}{% endfor %}{% for cashier_id in selected_cashiers %}&created_by={{ cashier_id }}{% endfor %}{% for payment_type in selected_payment_types %}&payment_type={{ payment_type }}{% endfor %}" class="page-link-custom nav-btn" title="Предыдущая">
           <i class="ri-arrow-left-s-line"></i>
         </a>
       {% else %}
@@ -600,20 +690,20 @@
         {% if num == orders.number %}
           <span class="page-link-custom active">{{ num }}</span>
         {% elif num > orders.number|add:"-4" and num < orders.number|add:"4" %}
-          <a href="?page={{ num }}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}{% if selected_menu_item %}&menu_item={{ selected_menu_item }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}{% if selected_order_type %}&order_type={{ selected_order_type }}{% endif %}{% if selected_cashier %}&created_by={{ selected_cashier }}{% endif %}{% if selected_payment_type %}&payment_type={{ selected_payment_type }}{% endif %}" class="page-link-custom">{{ num }}</a>
+          <a href="?page={{ num }}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}{% for item_id in selected_menu_items %}&menu_item={{ item_id }}{% endfor %}{% for status in selected_statuses %}&status={{ status }}{% endfor %}{% for order_type in selected_order_types %}&order_type={{ order_type }}{% endfor %}{% for cashier_id in selected_cashiers %}&created_by={{ cashier_id }}{% endfor %}{% for payment_type in selected_payment_types %}&payment_type={{ payment_type }}{% endfor %}" class="page-link-custom">{{ num }}</a>
         {% elif num == orders.number|add:"-4" or num == orders.number|add:"4" %}
           <span class="page-ellipsis">…</span>
         {% elif num == 1 or num == orders.paginator.num_pages %}
-          <a href="?page={{ num }}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}{% if selected_menu_item %}&menu_item={{ selected_menu_item }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}{% if selected_order_type %}&order_type={{ selected_order_type }}{% endif %}{% if selected_cashier %}&created_by={{ selected_cashier }}{% endif %}{% if selected_payment_type %}&payment_type={{ selected_payment_type }}{% endif %}" class="page-link-custom">{{ num }}</a>
+          <a href="?page={{ num }}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}{% for item_id in selected_menu_items %}&menu_item={{ item_id }}{% endfor %}{% for status in selected_statuses %}&status={{ status }}{% endfor %}{% for order_type in selected_order_types %}&order_type={{ order_type }}{% endfor %}{% for cashier_id in selected_cashiers %}&created_by={{ cashier_id }}{% endfor %}{% for payment_type in selected_payment_types %}&payment_type={{ payment_type }}{% endfor %}" class="page-link-custom">{{ num }}</a>
         {% endif %}
       {% endfor %}
 
       {# Кнопка «Следующая» #}
       {% if orders.has_next %}
-        <a href="?page={{ orders.next_page_number }}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}{% if selected_menu_item %}&menu_item={{ selected_menu_item }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}{% if selected_order_type %}&order_type={{ selected_order_type }}{% endif %}{% if selected_cashier %}&created_by={{ selected_cashier }}{% endif %}{% if selected_payment_type %}&payment_type={{ selected_payment_type }}{% endif %}" class="page-link-custom nav-btn" title="Следующая">
+        <a href="?page={{ orders.next_page_number }}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}{% for item_id in selected_menu_items %}&menu_item={{ item_id }}{% endfor %}{% for status in selected_statuses %}&status={{ status }}{% endfor %}{% for order_type in selected_order_types %}&order_type={{ order_type }}{% endfor %}{% for cashier_id in selected_cashiers %}&created_by={{ cashier_id }}{% endfor %}{% for payment_type in selected_payment_types %}&payment_type={{ payment_type }}{% endfor %}" class="page-link-custom nav-btn" title="Следующая">
           <i class="ri-arrow-right-s-line"></i>
         </a>
-        <a href="?page={{ orders.paginator.num_pages }}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}{% if selected_menu_item %}&menu_item={{ selected_menu_item }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}{% if selected_order_type %}&order_type={{ selected_order_type }}{% endif %}{% if selected_cashier %}&created_by={{ selected_cashier }}{% endif %}{% if selected_payment_type %}&payment_type={{ selected_payment_type }}{% endif %}" class="page-link-custom nav-btn" title="Последняя страница">
+        <a href="?page={{ orders.paginator.num_pages }}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}{% for item_id in selected_menu_items %}&menu_item={{ item_id }}{% endfor %}{% for status in selected_statuses %}&status={{ status }}{% endfor %}{% for order_type in selected_order_types %}&order_type={{ order_type }}{% endfor %}{% for cashier_id in selected_cashiers %}&created_by={{ cashier_id }}{% endfor %}{% for payment_type in selected_payment_types %}&payment_type={{ payment_type }}{% endfor %}" class="page-link-custom nav-btn" title="Последняя страница">
           <i class="ri-skip-forward-mini-fill"></i>
         </a>
       {% else %}

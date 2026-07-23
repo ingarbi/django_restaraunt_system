@@ -306,14 +306,14 @@ def update_order_payment(request, order_id):
 
 @staff_member_required
 def stats_dashboard(request):
-    # Получаем параметры фильтрации
+    # Получаем параметры фильтрации (множественный выбор)
     date_from = request.GET.get('date_from')
     date_to = request.GET.get('date_to')
-    menu_item_id = request.GET.get('menu_item')
-    status = request.GET.get('status')
-    order_type = request.GET.get('order_type')
-    created_by_id = request.GET.get('created_by')
-    payment_type = request.GET.get('payment_type')
+    menu_item_ids = request.GET.getlist('menu_item')  # Множественный выбор
+    statuses = request.GET.getlist('status')  # Множественный выбор
+    order_types = request.GET.getlist('order_type')  # Множественный выбор
+    created_by_ids = request.GET.getlist('created_by')  # Множественный выбор
+    payment_types = request.GET.getlist('payment_type')  # Множественный выбор
 
     # Базовый QuerySet для заказов
     orders_qs = Order.objects.select_related('created_by').order_by('-created_at')
@@ -337,24 +337,25 @@ def stats_dashboard(request):
     else:
         dt_to = None
 
-    # Фильтр по блюду
-    if menu_item_id:
-        orders_qs = orders_qs.filter(items__menu_item_id=menu_item_id).distinct()
+    # Фильтр по блюдам (множественный)
+    if menu_item_ids:
+        orders_qs = orders_qs.filter(items__menu_item_id__in=menu_item_ids).distinct()
 
-    # Фильтр по статусу
-    if status:
-        orders_qs = orders_qs.filter(status=status)
+    # Фильтр по статусам (множественный)
+    if statuses:
+        orders_qs = orders_qs.filter(status__in=statuses)
 
-    # Фильтр по типу заказа
-    if order_type:
-        orders_qs = orders_qs.filter(order_type=order_type)
+    # Фильтр по типам заказа (множественный)
+    if order_types:
+        orders_qs = orders_qs.filter(order_type__in=order_types)
 
-    # Фильтр по кассиру
-    if created_by_id:
-        orders_qs = orders_qs.filter(created_by_id=created_by_id)
+    # Фильтр по кассирам (множественный)
+    if created_by_ids:
+        orders_qs = orders_qs.filter(created_by_id__in=created_by_ids)
     
-    if payment_type:
-        orders_qs = orders_qs.filter(payment_type=payment_type)
+    # Фильтр по типам оплаты (множественный)
+    if payment_types:
+        orders_qs = orders_qs.filter(payment_type__in=payment_types)
 
     # Подсчёт общего количества и суммы (до пагинации)
     total_orders_count = orders_qs.count()
@@ -370,14 +371,12 @@ def stats_dashboard(request):
     except EmptyPage:
         orders_page = paginator.page(paginator.num_pages)
 
-    # Статистика по блюдам (с учётом всех фильтров, кроме статуса, типа, кассира – они не влияют на состав блюд)
-    # Но если мы хотим учитывать только те заказы, которые попали в фильтры, то используем тот же orders_qs для фильтрации OrderItem
-    # Для этого выделим отдельный queryset заказов без пагинации, но с теми же фильтрами.
-    filtered_orders_ids = orders_qs.values_list('id', flat=True)  # все id отфильтрованных заказов
+    # Статистика по блюдам
+    filtered_orders_ids = orders_qs.values_list('id', flat=True)
     order_items_qs = OrderItem.objects.filter(order_id__in=filtered_orders_ids)
 
-    if menu_item_id:
-        order_items_qs = order_items_qs.filter(menu_item_id=menu_item_id)
+    if menu_item_ids:
+        order_items_qs = order_items_qs.filter(menu_item_id__in=menu_item_ids)
 
     product_stats = (
         order_items_qs
@@ -393,7 +392,6 @@ def stats_dashboard(request):
     all_menu_items = MenuItem.objects.all().order_by('name')
     status_choices = Order.STATUS_CHOICES
     order_type_choices = Order.ORDER_TYPE_CHOICES
-    # Список кассиров (только те, у кого есть заказы)
     cashiers = User.objects.filter(orders_created__isnull=False).distinct().order_by('username')
     payment_type_choices = Order.PAYMENT_TYPE_CHOICES
 
@@ -403,12 +401,13 @@ def stats_dashboard(request):
         'total_orders_sum': total_orders_sum,
         'product_stats': product_stats,
         'all_menu_items': all_menu_items,
-        'selected_menu_item': menu_item_id,
+        'selected_menu_items': menu_item_ids,  # Список выбранных
         'date_from': date_from,
         'date_to': date_to,
-        'selected_status': status,
-        'selected_order_type': order_type,
-        'selected_cashier': created_by_id,
+        'selected_statuses': statuses,  # Список выбранных
+        'selected_order_types': order_types,  # Список выбранных
+        'selected_cashiers': created_by_ids,  # Список выбранных
+        'selected_payment_types': payment_types,  # Список выбранных
         'status_choices': status_choices,
         'order_type_choices': order_type_choices,
         'cashiers': cashiers,

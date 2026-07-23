@@ -10,6 +10,12 @@
     <link rel="stylesheet" href="{% static 'css/theme.css' %}" type="text/css" />
     <link rel="stylesheet" href="{% static 'css/kitchen_order_list.css' %}" type="text/css" />
     <link rel="stylesheet" href="{% static 'bootstrap/bootstrap-icons/bootstrap-icons.css' %}" type="text/css" />
+    <!-- Tom Select CSS -->
+    <link rel="stylesheet" href="{% static 'tom-select/css/tom-select.default.min.css' %}">
+
+    <!-- Tom Select JS -->
+    <script src="{% static 'tom-select/js/tom-select.complete.min.js' %}"></script>
+
     {% block extra_css %}{% endblock %}
   </head>
   <body>
@@ -104,5 +110,26 @@
         alert('Звуковые уведомления включены.')
       }) {% endcomment %}
     </script>
+    <script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Инициализация Tom Select для всех множественных select
+  const selects = document.querySelectorAll('select[multiple]');
+  
+  selects.forEach(function(select) {
+    new TomSelect(select, {
+      plugins: ['remove_button'],
+      placeholder: select.getAttribute('placeholder') || 'Выберите...',
+      maxOptions: null,
+      closeAfterSelect: false,
+      allowEmptyOption: false,
+      render: {
+        option: function(data, escape) {
+          return '<div class="option">' + escape(data.text) + '</div>';
+        }
+      }
+    });
+  });
+});
+</script>
   </body>
 </html>
