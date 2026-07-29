@@ -131,5 +131,42 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 });
 </script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const showMoreBtn = document.getElementById('show-more-products');
+  if (!showMoreBtn) return;
+  
+  const table = document.getElementById('product-stats-table');
+  const hiddenRows = table.querySelectorAll('tbody tr.extra-row');
+  const countBadge = document.getElementById('hidden-count');
+  let isExpanded = false;
+  
+  showMoreBtn.addEventListener('click', function() {
+    isExpanded = !isExpanded;
+    
+    if (isExpanded) {
+      // Раскрываем по одной строке с небольшой задержкой для каскадного эффекта
+      hiddenRows.forEach((row, index) => {
+        setTimeout(() => {
+          row.classList.add('show');
+        }, index * 30); // 30ms между строками
+      });
+      showMoreBtn.classList.add('expanded');
+      showMoreBtn.querySelector('span:first-child').textContent = 'Скрыть';
+    } else {
+      // Скрываем все сразу
+      hiddenRows.forEach(row => {
+        row.classList.remove('show');
+      });
+      showMoreBtn.classList.remove('expanded');
+      showMoreBtn.querySelector('span:first-child').textContent = 'Показать ещё';
+      
+      // Прокручиваем к таблице, если она ушла выше видимой области
+      table.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  });
+});
+</script>
   </body>
 </html>

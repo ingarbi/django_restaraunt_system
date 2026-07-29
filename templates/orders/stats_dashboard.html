@@ -486,6 +486,258 @@
       font-size: 0.85rem;
     }
   }
+
+    /* === СКРЫВАЕМЫЕ СТРОКИ ТАБЛИЦЫ === */
+  .stats-table tbody tr.extra-row {
+    display: none;
+  }
+
+  .stats-table tbody tr.extra-row.show {
+    display: table-row;
+    animation: fadeInRow 0.3s ease-out;
+  }
+
+  @keyframes fadeInRow {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* === КНОПКА "ПОКАЗАТЬ ЕЩЁ" === */
+  .show-more-wrapper {
+    text-align: center;
+    padding: 16px 0;
+    background: #f9fafb;
+    border-top: 1px dashed #e5e7eb;
+  }
+
+  .show-more-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 24px;
+    border-radius: 10px;
+    background: #ffffff;
+    border: 1.5px solid #e5e7eb;
+    color: #374151;
+    font-size: 0.88rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.25s ease;
+  }
+
+  .show-more-btn:hover {
+    background: #6366f1;
+    border-color: #6366f1;
+    color: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(99, 102, 241, 0.25);
+  }
+
+  .show-more-btn i {
+    transition: transform 0.3s ease;
+  }
+
+  .show-more-btn.expanded i {
+    transform: rotate(180deg);
+  }
+
+  .show-more-btn .count {
+    display: inline-block;
+    min-width: 22px;
+    height: 22px;
+    padding: 0 6px;
+    background: #e5e7eb;
+    color: #374151;
+    border-radius: 11px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 22px;
+    transition: all 0.25s ease;
+  }
+
+  .show-more-btn:hover .count {
+    background: rgba(255, 255, 255, 0.25);
+    color: #ffffff;
+  }
+
+  /* === БЕЙДЖ ТОП-3 === */
+  .rank-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    font-size: 0.75rem;
+    font-weight: 700;
+    margin-right: 8px;
+  }
+
+  .rank-1 {
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    color: #ffffff;
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.35);
+  }
+
+  .rank-2 {
+    background: linear-gradient(135deg, #d1d5db, #9ca3af);
+    color: #ffffff;
+  }
+
+  .rank-3 {
+    background: linear-gradient(135deg, #d97706, #b45309);
+    color: #ffffff;
+  }
+    /* === БЛОК ТИПОВ ОПЛАТЫ === */
+  .payment-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-bottom: 32px;
+  }
+
+  .payment-card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 24px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .payment-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    transition: height 0.3s ease;
+  }
+
+  .payment-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
+    border-color: transparent;
+  }
+
+  .payment-card:hover::before {
+    height: 6px;
+  }
+
+  /* Цветовые схемы для разных типов оплаты */
+  .payment-card.cash::before { background: linear-gradient(90deg, #10b981, #34d399); }
+  .payment-card.cash .payment-icon { background: #d1fae5; color: #065f46; }
+  .payment-card.cash .payment-amount { color: #10b981; }
+  .payment-card.cash .payment-progress-fill { background: linear-gradient(90deg, #10b981, #34d399); }
+
+  .payment-card.online::before { background: linear-gradient(90deg, #3b82f6, #60a5fa); }
+  .payment-card.online .payment-icon { background: #dbeafe; color: #1e40af; }
+  .payment-card.online .payment-amount { color: #3b82f6; }
+  .payment-card.online .payment-progress-fill { background: linear-gradient(90deg, #3b82f6, #60a5fa); }
+
+  .payment-card.free::before { background: linear-gradient(90deg, #8b5cf6, #a78bfa); }
+  .payment-card.free .payment-icon { background: #ede9fe; color: #5b21b6; }
+  .payment-card.free .payment-amount { color: #8b5cf6; }
+  .payment-card.free .payment-progress-fill { background: linear-gradient(90deg, #8b5cf6, #a78bfa); }
+
+  .payment-card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .payment-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    transition: transform 0.3s ease;
+  }
+
+  .payment-card:hover .payment-icon {
+    transform: scale(1.08) rotate(-5deg);
+  }
+
+  .payment-title {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #6b7280;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .payment-amount {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin: 0 0 12px 0;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.5px;
+  }
+
+  .payment-amount-currency {
+    font-size: 1rem;
+    font-weight: 500;
+    margin-left: 2px;
+    opacity: 0.7;
+  }
+
+  .payment-percentage {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+
+  .payment-percentage-label {
+    font-size: 0.78rem;
+    color: #9ca3af;
+    font-weight: 500;
+  }
+
+  .payment-percentage-value {
+    font-size: 0.85rem;
+    color: #1f2937;
+    font-weight: 600;
+  }
+
+  .payment-progress {
+    width: 100%;
+    height: 6px;
+    background: #f3f4f6;
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .payment-progress-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    width: 0;
+  }
+
+  /* Анимация заполнения при загрузке страницы */
+  .payment-card.animate .payment-progress-fill {
+    transition-delay: 0.3s;
+  }
+
+  @media (max-width: 768px) {
+    .payment-stats {
+      grid-template-columns: 1fr;
+    }
+  }
 </style>
 {% endblock %}
 
@@ -588,9 +840,9 @@
 
   <!-- Блок статистики по блюдам -->
   <h2>Продажи по блюдам</h2>
-  <div class="stats-table-wrapper">
+ <div class="stats-table-wrapper">
     {% if product_stats %}
-    <table class="stats-table">
+    <table class="stats-table" id="product-stats-table">
       <thead>
         <tr>
           <th style="width: 50%;">Блюдо</th>
@@ -600,20 +852,106 @@
       </thead>
       <tbody>
         {% for stat in product_stats %}
-        <tr>
-          <td>{{ stat.menu_item__name }}</td>
+        <tr class="{% if forloop.counter > 10 %}extra-row{% endif %}">
+          <td>
+            {% if forloop.counter == 1 %}
+              <span class="rank-badge rank-1">1</span>
+            {% elif forloop.counter == 2 %}
+              <span class="rank-badge rank-2">2</span>
+            {% elif forloop.counter == 3 %}
+              <span class="rank-badge rank-3">3</span>
+            {% endif %}
+            {{ stat.menu_item__name }}
+          </td>
           <td class="num">{{ stat.total_quantity }}</td>
           <td class="num revenue">{{ stat.total_revenue|floatformat:2 }} ₽</td>
         </tr>
         {% endfor %}
       </tbody>
     </table>
+    
+    {% if product_stats|length > 10 %}
+    <div class="show-more-wrapper">
+      <button type="button" class="show-more-btn" id="show-more-products">
+        <span>Показать ещё</span>
+        <span class="count" id="hidden-count">{{ product_stats|length|add:"-10" }}</span>
+        <i class="ri-arrow-down-s-line"></i>
+      </button>
+    </div>
+    {% endif %}
+    
     {% else %}
     <div class="empty-state">
       <i class="ri-shopping-basket-line"></i>
       <p>Нет данных за выбранный период</p>
     </div>
     {% endif %}
+  </div>
+
+    <!-- Блок статистики по типам оплаты -->
+  <h2>Распределение по типам оплаты</h2>
+  <div class="payment-stats">
+    
+    <!-- Наличные -->
+    <div class="payment-card cash">
+      <div class="payment-card-header">
+        <div class="payment-icon">
+          <i class="ri-wallet-3-line"></i>
+        </div>
+        <h3 class="payment-title">Наличные</h3>
+      </div>
+      <p class="payment-amount">
+        {{ payment_stats.cash|floatformat:2 }}<span class="payment-amount-currency">₽</span>
+      </p>
+      <div class="payment-percentage">
+        <span class="payment-percentage-label">Доля от общей суммы</span>
+        <span class="payment-percentage-value">{{ payment_percentages.cash }}%</span>
+      </div>
+      <div class="payment-progress">
+        <div class="payment-progress-fill" style="width: {{ payment_percentages.cash }}%"></div>
+      </div>
+    </div>
+
+    <!-- Перевод -->
+    <div class="payment-card online">
+      <div class="payment-card-header">
+        <div class="payment-icon">
+          <i class="ri-bank-card-line"></i>
+        </div>
+        <h3 class="payment-title">Перевод</h3>
+      </div>
+      <p class="payment-amount">
+        {{ payment_stats.online|floatformat:2 }}<span class="payment-amount-currency">₽</span>
+      </p>
+      <div class="payment-percentage">
+        <span class="payment-percentage-label">Доля от общей суммы</span>
+        <span class="payment-percentage-value">{{ payment_percentages.online }}%</span>
+      </div>
+      <div class="payment-progress">
+        <div class="payment-progress-fill" style="width: {{ payment_percentages.online }}%"></div>
+      </div>
+    </div>
+
+    <!-- Бесплатно -->
+    <div class="payment-card free">
+      <div class="payment-card-header">
+        <div class="payment-icon">
+          <i class="ri-gift-line"></i>
+        </div>
+        <h3 class="payment-title">Бесплатно</h3>
+      </div>
+      <p class="payment-amount">
+        {{ payment_stats.free|floatformat:2 }}<span class="payment-amount-currency">₽</span>
+      </p>
+      <div class="payment-percentage">
+        <span class="payment-percentage-label">Доля от общей суммы</span>
+        <span class="payment-percentage-value">{{ payment_percentages.free }}%</span>
+      </div>
+      <div class="payment-progress">
+        <div class="payment-progress-fill" style="width: {{ payment_percentages.free }}%"></div>
+      </div>
+    </div>
+
   </div>
 
   <!-- Информация о заказах -->

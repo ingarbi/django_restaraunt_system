@@ -361,6 +361,33 @@ def stats_dashboard(request):
     total_orders_count = orders_qs.count()
     total_orders_sum = orders_qs.aggregate(total=Sum('total_sum'))['total'] or 0
 
+    # === НОВЫЙ БЛОК: Статистика по типам оплаты ===
+    payment_stats_qs = (
+        orders_qs
+        .values('payment_type')
+        .annotate(total=Sum('total_sum'))
+        .order_by('payment_type')
+    )
+    
+    # Преобразуем в удобный словарь
+    payment_stats = {
+        'cash': 0,
+        'online': 0,
+        'free': 0,
+    }
+    for stat in payment_stats_qs:
+        if stat['payment_type'] in payment_stats:
+            payment_stats[stat['payment_type']] = stat['total'] or 0
+
+    # Считаем проценты
+    payment_percentages = {}
+    for key, value in payment_stats.items():
+        if total_orders_sum > 0:
+            payment_percentages[key] = round(value / total_orders_sum * 100, 1)
+        else:
+            payment_percentages[key] = 0
+    # === КОНЕЦ НОВОГО БЛОКА ===
+
     # Пагинация
     paginator = Paginator(orders_qs, 20)
     page = request.GET.get('page')
@@ -412,5 +439,7 @@ def stats_dashboard(request):
         'order_type_choices': order_type_choices,
         'cashiers': cashiers,
         'payment_type_choices': payment_type_choices,
+        'payment_stats': payment_stats,
+        'payment_percentages': payment_percentages,
     }
     return render(request, 'orders/stats_dashboard.html', context)
