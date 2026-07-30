@@ -52,6 +52,7 @@ class Order(models.Model):
     PAYMENT_TYPE_CHOICES = (
         ("cash", "Наличный"),
         ("online", "Перевод"),
+        ("mixed", "Смешанный"),
         ("free", "Бесплатно"),
     )
     discount = models.PositiveSmallIntegerField(default=0, verbose_name="Скидка (%)")
@@ -97,6 +98,24 @@ class Order(models.Model):
     )
     paid = models.BooleanField(verbose_name="Оплачен", default=False)
     table_number = models.PositiveSmallIntegerField(null=True, blank=True)
+
+    # === НОВЫЕ ПОЛЯ ДЛЯ СМЕШАННОЙ ОПЛАТЫ ===
+    cash_amount = models.DecimalField(
+        verbose_name="Сумма наличными",
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        default=None
+    )
+    online_amount = models.DecimalField(
+        verbose_name="Сумма переводом",
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        default=None
+    )
 
     def __str__(self):
         return f"Заказ #{self.id} --- {self.created_by}"

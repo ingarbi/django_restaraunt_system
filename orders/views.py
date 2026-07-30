@@ -55,7 +55,21 @@ def create_order(request):
                 discount = int(request.POST.get("id_discount", 0))
             except:
                 discount = 0
+
+             # === СМЕШАННАЯ ОПЛАТА: получаем суммы ===
+            cash_amount_raw = request.POST.get("cash_amount", "")
+            online_amount_raw = request.POST.get("online_amount", "")
             payment_type = request.POST.get("payment_type", "")
+
+            try:
+                cash_amount = float(cash_amount_raw) if cash_amount_raw else 0
+            except (ValueError, TypeError):
+                cash_amount = 0
+                
+            try:
+                online_amount = float(online_amount_raw) if online_amount_raw else 0
+            except (ValueError, TypeError):
+                online_amount = 0
 
             total_sum = 0
             for item in menu_items:
@@ -78,20 +92,37 @@ def create_order(request):
             order.payment_type = payment_type
             order.created_by = request.user
 
+            # === СМЕШАННАЯ ОПЛАТА: сохраняем суммы ===
+            if payment_type == "mixed":
+                order.cash_amount = cash_amount
+                order.online_amount = online_amount
+            else:
+                order.cash_amount = None
+                order.online_amount = None
+
             table_number = request.POST.get("table_number") or None
             if order.order_type == "dine_in":
                 order.table_number = table_number
+
             # 🔑 Payment status logic
             if pay_later:
                 order.paid = False
-            elif payment_type in  ["online", "free"]:
+            elif payment_type in ["online", "free"]:
                 order.paid = True
             elif payment_type == "cash" and not pay_later:
                 order.paid = True
+            elif payment_type == "mixed":
+                # Проверяем, что смешанная оплата покрывает заказ
+                mixed_total = cash_amount + online_amount
+                if mixed_total >= order.total_sum and mixed_total > 0:
+                    order.paid = True
+                else:
+                    order.paid = False
             else:
                 order.paid = False
 
             order.save()
+
 
             # Notify the kitchen about the new order
             channel_layer = get_channel_layer()
@@ -286,29 +317,35 @@ def update_order_payment(request, order_id):
         try:
             order = Order.objects.get(id=order_id)
             
-            # Get payment data from request
             data = json.loads(request.body)
             payment_type = data.get('payment_type')
-            cash_received = float(data.get('cash_received', 0))
+            cash_received = float(data.get('cash_received', 0) or 0)
+            online_received = float(data.get('online_received', 0) or 0)
             total = float(data.get('total', 0))
             
-            # Validate payment data
             if not payment_type:
                 return JsonResponse({'success': False, 'message': 'Необходимо выбрать способ оплаты'})
             
             if payment_type == 'cash' and cash_received < total:
-                return JsonResponse({'success': False, 'message': 'Недостаточно средств'})
+                return JsonResponse({'success': False, 'message': 'Недостаточно наличных средств'})
             
-            # Update order payment details
+            if payment_type == 'online' and online_received < total:
+                return JsonResponse({'success': False, 'message': 'Недостаточно средств по переводу'})
+            
+            if payment_type == 'mixed':
+                mixed_total = cash_received + online_received
+                if mixed_total < total:
+                    return JsonResponse({'success': False, 'message': 'Общая сумма оплаты недостаточна'})
+                if cash_received == 0 and online_received == 0:
+                    return JsonResponse({'success': False, 'message': 'Укажите хотя бы одну сумму'})
+                order.cash_amount = cash_received
+                order.online_amount = online_received
+            else:
+                order.cash_amount = None
+                order.online_amount = None
+            
             order.payment_type = payment_type
-        
             order.paid = True
-            
-            # For cash payments, calculate change
-            if payment_type == 'cash':
-                order.cash_received = cash_received
-                order.change = cash_received - total
-            
             order.save()
             
             return JsonResponse({'success': True})
@@ -319,16 +356,17 @@ def update_order_payment(request, order_id):
     
     return JsonResponse({'success': False, 'message': 'Недопустимый запрос'})
 
+
 @staff_member_required
 def stats_dashboard(request):
     # Получаем параметры фильтрации (множественный выбор)
     date_from = request.GET.get('date_from')
     date_to = request.GET.get('date_to')
-    menu_item_ids = request.GET.getlist('menu_item')  # Множественный выбор
-    statuses = request.GET.getlist('status')  # Множественный выбор
-    order_types = request.GET.getlist('order_type')  # Множественный выбор
-    created_by_ids = request.GET.getlist('created_by')  # Множественный выбор
-    payment_types = request.GET.getlist('payment_type')  # Множественный выбор
+    menu_item_ids = request.GET.getlist('menu_item')
+    statuses = request.GET.getlist('status')
+    order_types = request.GET.getlist('order_type')
+    created_by_ids = request.GET.getlist('created_by')
+    payment_types = request.GET.getlist('payment_type')
 
     # Базовый QuerySet для заказов
     orders_qs = Order.objects.select_related('created_by').order_by('-created_at')
@@ -376,23 +414,25 @@ def stats_dashboard(request):
     total_orders_count = orders_qs.count()
     total_orders_sum = orders_qs.aggregate(total=Sum('total_sum'))['total'] or 0
 
-    # === НОВЫЙ БЛОК: Статистика по типам оплаты ===
-    payment_stats_qs = (
-        orders_qs
-        .values('payment_type')
-        .annotate(total=Sum('total_sum'))
-        .order_by('payment_type')
-    )
-    
-    # Преобразуем в удобный словарь
+    # === БЛОК: Статистика по типам оплаты (с учётом смешанной) ===
     payment_stats = {
         'cash': 0,
         'online': 0,
         'free': 0,
     }
-    for stat in payment_stats_qs:
-        if stat['payment_type'] in payment_stats:
-            payment_stats[stat['payment_type']] = stat['total'] or 0
+    
+    # Проходим по всем отфильтрованным заказам
+    for order in orders_qs:
+        if order.payment_type == 'mixed':
+            # Смешанная оплата: распределяем по частям
+            payment_stats['cash'] += float(order.cash_amount or 0)
+            payment_stats['online'] += float(order.online_amount or 0)
+        elif order.payment_type == 'cash':
+            payment_stats['cash'] += float(order.total_sum or 0)
+        elif order.payment_type == 'online':
+            payment_stats['online'] += float(order.total_sum or 0)
+        elif order.payment_type == 'free':
+            payment_stats['free'] += float(order.total_sum or 0)
 
     # Считаем проценты
     payment_percentages = {}
@@ -401,7 +441,7 @@ def stats_dashboard(request):
             payment_percentages[key] = round(value / total_orders_sum * 100, 1)
         else:
             payment_percentages[key] = 0
-    # === КОНЕЦ НОВОГО БЛОКА ===
+    # === КОНЕЦ БЛОКА ===
 
     # Пагинация
     paginator = Paginator(orders_qs, 20)
@@ -443,13 +483,13 @@ def stats_dashboard(request):
         'total_orders_sum': total_orders_sum,
         'product_stats': product_stats,
         'all_menu_items': all_menu_items,
-        'selected_menu_items': menu_item_ids,  # Список выбранных
+        'selected_menu_items': menu_item_ids,
         'date_from': date_from,
         'date_to': date_to,
-        'selected_statuses': statuses,  # Список выбранных
-        'selected_order_types': order_types,  # Список выбранных
-        'selected_cashiers': created_by_ids,  # Список выбранных
-        'selected_payment_types': payment_types,  # Список выбранных
+        'selected_statuses': statuses,
+        'selected_order_types': order_types,
+        'selected_cashiers': created_by_ids,
+        'selected_payment_types': payment_types,
         'status_choices': status_choices,
         'order_type_choices': order_type_choices,
         'cashiers': cashiers,

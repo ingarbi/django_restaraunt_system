@@ -72,6 +72,7 @@
                     <option value="" selected disabled>Не выбран</option>
                     <option value="cash">Наличными</option>
                     <option value="online">Переводом</option>
+                    <option value="mixed">Смешанная</option>
                     <option value="free">Бесплатно</option>
                     </select>
                 </div>
@@ -101,6 +102,34 @@
                 </div>
             </div>
 
+            <!-- Блок для смешанной оплаты -->
+            <div id="mixed_payment_section" class="row mb-3 mt-2 p-3 rounded" style="display: none; background: #f0f9ff; border: 1.5px solid #3b82f6;">
+                <div class="col-12 mb-2">
+                    <h6 class="welcome-name mb-0">
+                        <i class="bi bi-cash-stack me-2"></i>Смешанная оплата
+                    </h6>
+                </div>
+                <div class="col-md-6">
+                    <label for="cash_amount" class="form-label small welcome-name">
+                        💵 Сумма наличными:
+                    </label>
+                    <input type="number" name="cash_amount" id="cash_amount" 
+                        class="form-control" min="0" step="1" placeholder="0">
+                </div>
+                <div class="col-md-6">
+                    <label for="online_amount" class="form-label small welcome-name">
+                        💳 Сумма переводом:
+                    </label>
+                    <input type="number" name="online_amount" id="online_amount" 
+                        class="form-control" min="0" step="1" placeholder="0">
+                </div>
+                <div class="col-12 mt-2">
+                    <div id="mixed_payment_total" class="alert py-2 mb-0" style="background: #dbeafe; border-color: #3b82f6;">
+                        <strong>Итого смешанной оплаты:</strong> <span id="mixed_total">0</span> ₽
+                        <span id="mixed_validation" class="ms-2"></span>
+                    </div>
+                </div>
+            </div>
             <!-- Total and Submit -->
            <div class="totals-container">
             <div class="row align-items-center mb-3">
@@ -217,103 +246,9 @@
     document.addEventListener('DOMContentLoaded', function() {
     const orderSocket = new WebSocket('ws://' + window.location.host + '/ws/orders/');
 
-    let clickedButton = null;
-
-    document.querySelectorAll('#order-form button[type="submit"]').forEach(btn => {
-        btn.addEventListener('click', function() {
-            clickedButton = this;
-        });
-    });
-    
-
-    function showAlert(message, type = "danger") {
-        const container = document.getElementById("alert-container");
-        const alert = document.createElement("div");
-
-        alert.className = `alert alert-${type} alert-dismissible fade show shadow`;
-        alert.role = "alert";
-        alert.innerHTML = `
-            ${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        `;
-
-        container.appendChild(alert);
-
-        // auto dismiss after 5s
-        setTimeout(() => {
-            alert.classList.remove("show");
-            setTimeout(() => alert.remove(), 150);
-        }, 5000);
-        }
-
-
-    // Handle form submission via AJAX
-    document.getElementById('order-form').addEventListener('submit', function(e) {
-        
-        e.preventDefault();
-
-        const paymentType = document.getElementById('id_payment_type').value;
-        const payLater = document.getElementById('pay-later').checked;
-        const total = parseFloat(totalSumElement.textContent) || 0;
-        const cashReceived = parseFloat(cashReceivedInput.value) || 0;
-
-        // Only validate payment if not paying later
-            if (!payLater) {
-                if (!paymentType) {
-                    showAlert('Ошибка: Необходимо выбрать способ оплаты.', 'danger');
-                    return;
-                }
-                
-                // Only validate cash amount if paying with cash
-                if (paymentType === 'cash') {
-                    if (cashReceived < total) {
-                        showAlert('Ошибка: Недостаточно средств для завершения заказа.', 'danger');
-                        return;
-                    }
-                }
-            }
-    
-            
-            const formData = new FormData(this);
-            formData.append('payment_type', paymentType);
-            formData.append('pay_later', payLater);
-            
-            if (clickedButton) {
-                formData.append('action', clickedButton.value);
-            }
-
-            fetch("{% url 'create_order' %}", {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': '{{ csrf_token }}',
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Reset form and UI
-                    this.reset();
-                    document.querySelectorAll('.item-quantity').forEach(input => input.value = 0);
-                    selectedItems = {};
-                    updateSelectedItems();
-                    calculateTotal();
-                    
-                    // Optional: Show success message
-                    showAlert('Заказ успешно создан!', 'success');
-                    if (data.order_id && clickedButton?.value === 'send_and_print') {
-                        window.open(`/orders/order_quick/${data.order_id}/pdf/`, '_blank');
-                    }
-                }
-            });
-        
-
-    });
-
-    // Existing quantity input handlers
+    // === ВСЕ ПЕРЕМЕННЫЕ DOM-ЭЛЕМЕНТОВ В НАЧАЛЕ ===
     const selectElement = document.getElementById('id_order_type');
-    const tableSelection = document.getElementById("table-selection")
+    const tableSelection = document.getElementById("table-selection");
     const targetDiv = document.getElementById('id_delivery');
     const quantityInputs = document.querySelectorAll('.item-quantity');
     const selectedItemsList = document.getElementById('selected-items-list');
@@ -322,94 +257,129 @@
     const changeAmountElement = document.getElementById('change-amount');
     const discountSelect = document.getElementById('id_discount');
     const paymentTypeSelect = document.getElementById('id_payment_type');
+    const mixedPaymentSection = document.getElementById('mixed_payment_section');
+    const cashAmountInput = document.getElementById('cash_amount');
+    const onlineAmountInput = document.getElementById('online_amount');
+    const mixedTotalSpan = document.getElementById('mixed_total');
+    const mixedValidationSpan = document.getElementById('mixed_validation');
     const payLaterCheckbox = document.getElementById('pay-later');
     
+    let clickedButton = null;
     let selectedItems = {};
 
+    // === ФУНКЦИИ ===
+    
+    function showAlert(message, type = "danger") {
+        const container = document.getElementById("alert-container");
+        const alert = document.createElement("div");
+        alert.className = `alert alert-${type} alert-dismissible fade show shadow`;
+        alert.role = "alert";
+        alert.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        `;
+        container.appendChild(alert);
+        setTimeout(() => {
+            alert.classList.remove("show");
+            setTimeout(() => alert.remove(), 150);
+        }, 5000);
+    }
 
-    selectElement.addEventListener('change', function() {
-        if (['delivery', 'takeaway'].includes(this.value)) {
-            targetDiv.style.display = 'block';
-            this.style.background = '#007bff';
-            this.style.color = '#fff';
+    function calculateMixedTotal() {
+    if (!cashAmountInput || !onlineAmountInput) return;
+    
+    const cashAmount = parseFloat(cashAmountInput.value) || 0;
+    const onlineAmount = parseFloat(onlineAmountInput.value) || 0;
+    const mixedTotal = cashAmount + onlineAmount;
+    const totalSum = parseFloat(totalSumElement.textContent) || 0;
+    
+    mixedTotalSpan.textContent = mixedTotal.toFixed(0);
+    
+    const diff = mixedTotal - totalSum;
+    
+    if (mixedTotal === 0) {
+        mixedValidationSpan.innerHTML = '';
+        mixedValidationSpan.dataset.valid = 'false';
+    } else if (mixedTotal < totalSum) {
+        mixedValidationSpan.innerHTML = `<span class="text-danger">❌ Не хватает: ${Math.abs(diff).toFixed(0)} ₽</span>`;
+        mixedValidationSpan.dataset.valid = 'false';
+    } else if (mixedTotal > totalSum) {
+        mixedValidationSpan.innerHTML = `<span class="text-danger">❌ Переплата: ${diff.toFixed(0)} ₽ — сумма должна быть ровно ${totalSum.toFixed(0)} ₽</span>`;
+        mixedValidationSpan.dataset.valid = 'false';
+    } else {
+        mixedValidationSpan.innerHTML = '<span class="text-success">✅ Оплата полностью покрыта</span>';
+        mixedValidationSpan.dataset.valid = 'true';
+    }
+}
+
+    function updatePaymentUI() {
+        const paymentType = paymentTypeSelect.value;
+        const payLater = payLaterCheckbox.checked;
+        
+        paymentTypeSelect.disabled = payLater;
+        
+        if (paymentType === 'mixed' && !payLater) {
+            mixedPaymentSection.style.display = 'flex';
+            cashReceivedInput.disabled = true;
+            cashReceivedInput.value = '';
         } else {
-            targetDiv.style.display = 'none';
-            this.style.background = '';
-            this.style.color = '#000';
+            mixedPaymentSection.style.display = 'none';
+            if (cashAmountInput) cashAmountInput.value = '';
+            if (onlineAmountInput) onlineAmountInput.value = '';
         }
-    });
-    selectElement.dispatchEvent(new Event('change'));
+        
+        const isCashPayment = paymentType === 'cash' && !payLater;
+        cashReceivedInput.disabled = !isCashPayment || paymentType === 'mixed';
+        
+        if (!isCashPayment || paymentType === 'mixed') {
+            cashReceivedInput.value = '';
+        }
+        
+        calculateMixedTotal();
+    }
 
     function toggleTableField() {
-    if (selectElement.value === "dine_in") {
-      tableSelection.style.display = "block";
-      document.getElementById("id_table_number").selectedIndex = 0;
-      
-    } else {
-      tableSelection.style.display = "none";
-      document.getElementById("id_table_number").value = "";
+        if (selectElement.value === "dine_in") {
+            tableSelection.style.display = "block";
+            document.getElementById("id_table_number").selectedIndex = 0;
+        } else {
+            tableSelection.style.display = "none";
+            document.getElementById("id_table_number").value = "";
+        }
     }
-  }
-
-    selectElement.addEventListener("change", toggleTableField);
-    toggleTableField();
 
     function updateSelectedItems() {
         selectedItemsList.innerHTML = '';
-
         if (Object.keys(selectedItems).length === 0) {
-        // show placeholder if no items
-        const placeholder = document.createElement('li');
-        placeholder.id = 'placeholder-item';
-        placeholder.className = 'text-muted';
-        placeholder.textContent = 'Товары ещё не выбраны';
-        selectedItemsList.appendChild(placeholder);
-        return;
-    }
+            const placeholder = document.createElement('li');
+            placeholder.id = 'placeholder-item';
+            placeholder.className = 'text-muted';
+            placeholder.textContent = 'Товары ещё не выбраны';
+            selectedItemsList.appendChild(placeholder);
+            return;
+        }
 
         for (const [id, item] of Object.entries(selectedItems)) {
             if (item.quantity > 0) {
-            const li = document.createElement('li');
-            li.innerHTML = `${item.name} x ${item.quantity} = ${item.total.toFixed(2)} руб. 
-                <span class="remove-btn" data-id="${id}">×</span>`;
-            selectedItemsList.appendChild(li);
-        }
+                const li = document.createElement('li');
+                li.innerHTML = `${item.name} x ${item.quantity} = ${item.total.toFixed(2)} руб. 
+                    <span class="remove-btn" data-id="${id}">×</span>`;
+                selectedItemsList.appendChild(li);
+            }
         }
 
         document.querySelectorAll('.remove-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const itemId = this.getAttribute('data-id');
-            // Reset item quantity input
-            const input = document.querySelector(`[name="item_${itemId}"]`);
-            if (input) input.value = 0;
-            // Remove from selectedItems
-            delete selectedItems[itemId];
-            updateSelectedItems();
-            calculateTotal();
+            btn.addEventListener('click', function() {
+                const itemId = this.getAttribute('data-id');
+                const input = document.querySelector(`[name="item_${itemId}"]`);
+                if (input) input.value = 0;
+                delete selectedItems[itemId];
+                updateSelectedItems();
+                calculateTotal();
+            });
         });
-    });
-
     }
 
-
-    document.querySelectorAll('.quantity-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const itemId = this.dataset.itemId;
-            const action = this.dataset.action;
-            const input = document.querySelector(`input[name="item_${itemId}"]`);
-
-            let currentValue = parseInt(input.value) || 0;
-            if (action === "increase") {
-            currentValue++;
-            } else if (action === "decrease" && currentValue > 0) {
-            currentValue--;
-            }
-            input.value = currentValue;
-            input.dispatchEvent(new Event('input')); // trigger your existing logic
-        });
-        });
-
-    
     function calculateTotal() {
         let total = 0;
         for (const item of Object.values(selectedItems)) {
@@ -422,18 +392,13 @@
    
         totalSumElement.textContent = totalAfterDiscount.toFixed(2);
         calculateChange();
+        calculateMixedTotal();
     }
-
-    // Listen for discount changes
-    discountSelect.addEventListener('change', () => {
-        calculateTotal();
-    });
 
     function calculateChange() {
         const paymentType = paymentTypeSelect.value;
         const payLater = payLaterCheckbox.checked;
         
-        // If not paying with cash, or paying later, show "Не требуется" instead of change
         if (paymentType !== 'cash' || payLater) {
             changeAmountElement.textContent = 'Не требуется';
             changeAmountElement.style.color = '#6c757d';
@@ -448,6 +413,129 @@
         changeAmountElement.style.color = change >= 0 ? '#28a745' : '#dc3545';
     }
 
+    // === ОБРАБОТЧИКИ СОБЫТИЙ ===
+
+    // Кнопки отправки формы
+    document.querySelectorAll('#order-form button[type="submit"]').forEach(btn => {
+        btn.addEventListener('click', function() {
+            clickedButton = this;
+        });
+    });
+
+    // Обработчик отправки формы
+    document.getElementById('order-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const paymentType = paymentTypeSelect.value;
+        const payLater = payLaterCheckbox.checked;
+        const total = parseFloat(totalSumElement.textContent) || 0;
+        const cashReceived = parseFloat(cashReceivedInput.value) || 0;
+
+        if (!payLater) {
+            if (!paymentType) {
+                showAlert('Ошибка: Необходимо выбрать способ оплаты.', 'danger');
+                return;
+            }
+            
+            if (paymentType === 'cash') {
+                if (cashReceived < total) {
+                    showAlert('Ошибка: Недостаточно средств для завершения заказа.', 'danger');
+                    return;
+                }
+            }
+            
+            if (paymentType === 'mixed') {
+            // Заново читаем значения из input'ов
+            const cashAmt = parseFloat(cashAmountInput.value) || 0;
+            const onlineAmt = parseFloat(onlineAmountInput.value) || 0;
+            const mixedSum = cashAmt + onlineAmt;
+            
+            if (cashAmt === 0 && onlineAmt === 0) {
+                showAlert('Ошибка: Укажите хотя бы одну сумму для смешанной оплаты.', 'danger');
+                return;
+            }
+            
+            if (mixedSum !== total) {
+                const diff = mixedSum - total;
+                if (diff < 0) {
+                    showAlert(`Ошибка: Не хватает ${Math.abs(diff).toFixed(0)} ₽. Сумма должна быть ровно ${total.toFixed(0)} ₽`, 'danger');
+                } else {
+                    showAlert(`Ошибка: Переплата ${diff.toFixed(0)} ₽. Сумма должна быть ровно ${total.toFixed(0)} ₽`, 'danger');
+                }
+                return;
+            }
+        }
+        }
+
+        const formData = new FormData(this);
+        formData.append('payment_type', paymentType);
+        formData.append('pay_later', payLater);
+        
+        if (clickedButton) {
+            formData.append('action', clickedButton.value);
+        }
+
+        fetch("{% url 'create_order' %}", {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                this.reset();
+                document.querySelectorAll('.item-quantity').forEach(input => input.value = 0);
+                selectedItems = {};
+                updateSelectedItems();
+                calculateTotal();
+                
+                showAlert('Заказ успешно создан!', 'success');
+                if (data.order_id && clickedButton?.value === 'send_and_print') {
+                    window.open(`/orders/order_quick/${data.order_id}/pdf/`, '_blank');
+                }
+            }
+        });
+    });
+
+    // Тип заказа
+    selectElement.addEventListener('change', function() {
+        if (['delivery', 'takeaway'].includes(this.value)) {
+            targetDiv.style.display = 'block';
+            this.style.background = '#007bff';
+            this.style.color = '#fff';
+        } else {
+            targetDiv.style.display = 'none';
+            this.style.background = '';
+            this.style.color = '#000';
+        }
+    });
+    selectElement.dispatchEvent(new Event('change'));
+
+    selectElement.addEventListener("change", toggleTableField);
+    toggleTableField();
+
+    // Кнопки количества
+    document.querySelectorAll('.quantity-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const itemId = this.dataset.itemId;
+            const action = this.dataset.action;
+            const input = document.querySelector(`input[name="item_${itemId}"]`);
+            let currentValue = parseInt(input.value) || 0;
+            
+            if (action === "increase") {
+                currentValue++;
+            } else if (action === "decrease" && currentValue > 0) {
+                currentValue--;
+            }
+            input.value = currentValue;
+            input.dispatchEvent(new Event('input'));
+        });
+    });
+
+    // Поля количества
     quantityInputs.forEach(input => {
         input.addEventListener('input', function() {
             const itemId = this.dataset.itemId;
@@ -473,57 +561,51 @@
         });
     });
 
-        // Handle payment type changes
+    // Скидка
+    discountSelect.addEventListener('change', () => {
+        calculateTotal();
+    });
+
+    // Тип оплаты
     paymentTypeSelect.addEventListener('change', function() {
         updatePaymentUI();
         calculateChange();
     });
     
-    // Handle pay later checkbox
+    // Чекбокс "Оплатит позже"
     payLaterCheckbox.addEventListener('change', function() {
         updatePaymentUI();
-       // If "Оплатит позже" is checked, clear payment type
         if (this.checked) {
             paymentTypeSelect.value = '';
         }
     });
-    
-    // Update UI based on payment type and pay later status
-    function updatePaymentUI() {
-        const paymentType = paymentTypeSelect.value;
-        const payLater = payLaterCheckbox.checked;
-        
-        // Disable cash input and change calculation for non-cash payments or pay later
-        paymentTypeSelect.disabled = payLater;
-        
-        // Disable cash input for non-cash payments or when paying later
-        const isCashPayment = paymentType === 'cash' && !payLater;
-        cashReceivedInput.disabled = !isCashPayment;
-        
-        // Clear cash input when disabled
-        if (!isCashPayment) {
-            cashReceivedInput.value = '';
-        }
+
+    // Поля смешанной оплаты
+    if (cashAmountInput) {
+        cashAmountInput.addEventListener('input', calculateMixedTotal);
+    }
+    if (onlineAmountInput) {
+        onlineAmountInput.addEventListener('input', calculateMixedTotal);
     }
 
-    // Listen for changes in the cash received input
+    // Получено от клиента
     cashReceivedInput.addEventListener('input', function () {
         calculateChange();
     });
 
-    // Calculate total on page load (in case of pre-filled values)
+    // === ИНИЦИАЛИЗАЦИЯ ===
     calculateTotal();
+    updatePaymentUI();
     
-    // WebSocket message handler
+    // WebSocket
     orderSocket.onmessage = function(event) {
         const data = JSON.parse(event.data);
         if (data.message === 'new_order') {
-            // Optional: Add visual feedback for new order confirmation
             console.log('Order created:', data.order_data);
         }
         setTimeout(function () {
-        window.location.reload(1);
-      }, 2000);
+            window.location.reload(1);
+        }, 2000);
     };
 });
 </script>

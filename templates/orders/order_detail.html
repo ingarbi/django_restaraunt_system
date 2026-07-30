@@ -86,7 +86,6 @@
           </tbody>
         </table>
 
-        <!-- Payment Update Section - Only show if order was created with "pay_later" -->
                 <!-- Payment Update Section - Only show if order was created with "pay_later" -->
         {% if not order.paid %}
           <div class="payment-update-section mt-4 p-3 rounded" style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border: 1.5px solid #f59e0b;">
@@ -96,21 +95,31 @@
             </div>
 
             <div class="row g-3">
+              <!-- Способ оплаты -->
               <div class="col-md-4">
                 <label for="update_payment_type" class="form-label fw-semibold">Способ оплаты:</label>
                 <select name="payment_type" id="update_payment_type" class="form-control" required>
                   <option value="" selected disabled>Выбрать</option>
                   <option value="cash">Наличными</option>
                   <option value="online">Переводом</option>
+                  <option value="mixed">Смешанная</option>
                   <option value="free">Бесплатно</option>
                 </select>
               </div>
 
-              <div class="col-md-4">
-                <label for="update_cash_received" class="form-label fw-semibold">Получено от клиента:</label>
+              <!-- Поле для наличных -->
+              <div class="col-md-4 cash-fields" style="display: none;">
+                <label for="update_cash_received" class="form-label fw-semibold">💵 Получено наличными:</label>
                 <input type="number" id="update_cash_received" name="cash_received" placeholder="Введите сумму" min="0" step="1" class="form-control" />
               </div>
 
+              <!-- Поле для перевода -->
+              <div class="col-md-4 online-fields" style="display: none;">
+                <label for="update_online_received" class="form-label fw-semibold">💳 Оплачено переводом:</label>
+                <input type="number" id="update_online_received" name="online_received" placeholder="Введите сумму" min="0" step="1" class="form-control" />
+              </div>
+
+              <!-- Сдача и кнопка -->
               <div class="col-md-4 d-flex align-items-end">
                 <div class="w-100">
                   <label class="form-label fw-semibold">Сдача:</label>
@@ -120,6 +129,33 @@
                     <button class="btn btn-success fw-bold" id="update-payment-btn">
                       <i class="bi bi-cash-coin"></i> Оплатить
                     </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Блок сводки для смешанной оплаты -->
+            <div class="row g-3 mt-2 mixed-fields" style="display: none;">
+              <div class="col-12">
+                <div class="p-3 bg-white rounded border">
+                  <h6 class="mb-2 fw-semibold">📊 Сводка оплаты:</h6>
+                  <div class="row">
+                    <div class="col-md-3">
+                      <small class="text-muted">Наличными:</small>
+                      <div class="fw-bold"><span id="update_cash_amount_display">0</span> ₽</div>
+                    </div>
+                    <div class="col-md-3">
+                      <small class="text-muted">Переводом:</small>
+                      <div class="fw-bold"><span id="update_online_amount_display">0</span> ₽</div>
+                    </div>
+                    <div class="col-md-3">
+                      <small class="text-muted">Всего оплачено:</small>
+                      <div class="fw-bold text-success"><span id="update_total_paid_display">0</span> ₽</div>
+                    </div>
+                    <div class="col-md-3">
+                      <small class="text-muted">Осталось оплатить:</small>
+                      <div class="fw-bold text-danger"><span id="update_remaining_display">{{ order.total_sum }}</span> ₽</div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -172,9 +208,8 @@
       </div>
     </div>
   </div>
-  <script>
+<script>
 function markAsDelivered(orderId) {
-  // Сначала проверим, оплачен ли заказ (на случай если кнопка активна)
   fetch(`/orders/delivere/${orderId}/`, {
     method: 'POST',
     headers: {
@@ -186,22 +221,14 @@ function markAsDelivered(orderId) {
     .then(response => response.json())
     .then(data => {
       if (data.success) {
-        // Красивое уведомление вместо alert
-        showCustomAlert('Заказ успешно выдан!', 'success');
+        showCustomAlert('Заказ выполнен!', 'success');
         setTimeout(() => window.location.reload(), 1000);
       } else {
-        // Показываем понятное сообщение
         showCustomAlert(data.message || 'Невозможно выдать заказ', 'danger');
-        
-        // Прокручиваем к форме оплаты
         setTimeout(() => {
           const paymentSection = document.querySelector('.payment-update-section');
           if (paymentSection) {
             paymentSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            paymentSection.style.boxShadow = '0 0 0 3px rgba(220, 53, 69, 0.3)';
-            setTimeout(() => {
-              paymentSection.style.boxShadow = '';
-            }, 2000);
           }
         }, 500);
       }
@@ -212,26 +239,17 @@ function markAsDelivered(orderId) {
     });
 }
 
-// Функция для показа уведомления об обязательной оплате
 function showPaymentRequiredAlert() {
-  showCustomAlert('⚠️ Нельзя выдать неоплаченный заказ. Сначала подтвердите оплату ниже.', 'warning');
-  
-  // Прокручиваем к форме оплаты
+  showCustomAlert('⚠️ Нельзя выдать неоплаченный заказ. Сначала подтвердите оплату.', 'warning');
   setTimeout(() => {
     const paymentSection = document.querySelector('.payment-update-section');
     if (paymentSection) {
       paymentSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      paymentSection.style.boxShadow = '0 0 0 3px rgba(255, 193, 7, 0.4)';
-      setTimeout(() => {
-        paymentSection.style.boxShadow = '';
-      }, 3000);
     }
   }, 500);
 }
 
-// Красивое кастомное уведомление вместо alert()
 function showCustomAlert(message, type = 'info') {
-  // Удаляем предыдущее уведомление если есть
   const existing = document.getElementById('custom-alert');
   if (existing) existing.remove();
   
@@ -263,7 +281,6 @@ function showCustomAlert(message, type = 'info') {
   `;
   alertDiv.innerHTML = `<strong>${color.icon}</strong> ${message}`;
   
-  // Добавляем стили анимации если их ещё нет
   if (!document.getElementById('custom-alert-styles')) {
     const style = document.createElement('style');
     style.id = 'custom-alert-styles';
@@ -272,19 +289,14 @@ function showCustomAlert(message, type = 'info') {
         from { transform: translateX(100%); opacity: 0; }
         to { transform: translateX(0); opacity: 1; }
       }
-      @keyframes slideOutRight {
-        from { transform: translateX(0); opacity: 1; }
-        to { transform: translateX(100%); opacity: 0; }
-      }
     `;
     document.head.appendChild(style);
   }
   
   document.body.appendChild(alertDiv);
   
-  // Автоматически скрываем через 5 секунд
   setTimeout(() => {
-    alertDiv.style.animation = 'slideOutRight 0.3s ease-out';
+    alertDiv.style.opacity = '0';
     setTimeout(() => alertDiv.remove(), 300);
   }, 5000);
 }
@@ -292,72 +304,189 @@ function showCustomAlert(message, type = 'info') {
 document.addEventListener('DOMContentLoaded', function() {
     const paymentTypeSelect = document.getElementById('update_payment_type');
     const cashReceivedInput = document.getElementById('update_cash_received');
+    const onlineReceivedInput = document.getElementById('update_online_received');
     const changeAmountElement = document.getElementById('update_change_amount');
     const updatePaymentBtn = document.getElementById('update-payment-btn');
     const changeStatus = document.getElementById('change-status');
+    
+    const cashAmountDisplay = document.getElementById('update_cash_amount_display');
+    const onlineAmountDisplay = document.getElementById('update_online_amount_display');
+    const totalPaidDisplay = document.getElementById('update_total_paid_display');
+    const remainingDisplay = document.getElementById('update_remaining_display');
+    
     const orderTotal = {{ order.total_sum }};
     const orderId = {{ order.id }};
 
-    function calculateChange() {
-        if (!paymentTypeSelect || !cashReceivedInput || !changeAmountElement) return;
-        const paymentType = paymentTypeSelect.value;
-        const cashReceived = parseInt(cashReceivedInput.value) || 0;
-
-        if (paymentType !== 'cash') {
-            changeAmountElement.value = 'Не требуется';
-            changeStatus.innerHTML = '';
-            return;
+    // Показ/скрытие полей в зависимости от типа оплаты
+    function togglePaymentFields() {
+    if (!paymentTypeSelect) return;
+    
+    const paymentType = paymentTypeSelect.value;
+    
+    // Безопасно скрываем все поля (с проверкой на существование)
+    document.querySelectorAll('.cash-fields, .online-fields, .mixed-fields').forEach(field => {
+        if (field) field.style.display = 'none';
+    });
+    
+    // Очищаем поля (с проверкой на null)
+    if (cashReceivedInput) cashReceivedInput.value = '';
+    if (onlineReceivedInput) onlineReceivedInput.value = '';
+    if (changeAmountElement) changeAmountElement.value = '';
+    if (changeStatus) changeStatus.innerHTML = '';
+    
+    // Показываем нужные поля (с проверкой на существование)
+    if (paymentType === 'cash') {
+        const cashField = document.querySelector('.cash-fields');
+        if (cashField) cashField.style.display = 'block';
+    } else if (paymentType === 'online') {
+        const onlineField = document.querySelector('.online-fields');
+        if (onlineField) onlineField.style.display = 'block';
+    } else if (paymentType === 'mixed') {
+        const cashField = document.querySelector('.cash-fields');
+        const onlineField = document.querySelector('.online-fields');
+        const mixedField = document.querySelector('.mixed-fields');
+        if (cashField) cashField.style.display = 'block';
+        if (onlineField) onlineField.style.display = 'block';
+        if (mixedField) mixedField.style.display = 'block';
+    }
+    
+    updatePaymentSummary();
+}
+    // Обновление сводки оплаты
+    function updatePaymentSummary() {
+    const cashAmount = (cashReceivedInput ? parseInt(cashReceivedInput.value) : 0) || 0;
+    const onlineAmount = (onlineReceivedInput ? parseInt(onlineReceivedInput.value) : 0) || 0;
+    const totalPaid = cashAmount + onlineAmount;
+    
+    // Обновляем отображение
+    if (cashAmountDisplay) cashAmountDisplay.textContent = cashAmount;
+    if (onlineAmountDisplay) onlineAmountDisplay.textContent = onlineAmount;
+    if (totalPaidDisplay) totalPaidDisplay.textContent = totalPaid;
+    if (remainingDisplay) remainingDisplay.textContent = Math.max(0, orderTotal - totalPaid);
+    
+    // === ВАЛИДАЦИЯ СМешанной ОПЛАТЫ ===
+    const paymentType = paymentTypeSelect ? paymentTypeSelect.value : '';
+    const mixedField = document.querySelector('.mixed-fields');
+    
+    if (paymentType === 'mixed' && mixedField) {
+        // Ищем или создаём блок для предупреждения о переплате
+        let overpayAlert = mixedField.querySelector('.overpay-alert');
+        if (!overpayAlert) {
+            overpayAlert = document.createElement('div');
+            overpayAlert.className = 'overpay-alert mt-2 p-2 rounded';
+            mixedField.querySelector('.col-12').appendChild(overpayAlert);
         }
-
-        const change = cashReceived - orderTotal;
-        if (change >= 0) {
-            changeAmountElement.value = change.toFixed(0);
-            changeStatus.innerHTML = '<span class="text-success">✔</span>';
+        
+        const diff = totalPaid - orderTotal;
+        
+        if (totalPaid === 0) {
+            overpayAlert.style.display = 'none';
+            if (updatePaymentBtn) updatePaymentBtn.disabled = true;
+        } else if (totalPaid < orderTotal) {
+            overpayAlert.style.display = 'block';
+            overpayAlert.style.background = '#fef3c7';
+            overpayAlert.style.border = '1px solid #f59e0b';
+            overpayAlert.style.color = '#92400e';
+            overpayAlert.innerHTML = `⚠️ Не хватает: <strong>${Math.abs(diff)} ₽</strong>`;
+            if (updatePaymentBtn) updatePaymentBtn.disabled = true;
+        } else if (totalPaid > orderTotal) {
+            overpayAlert.style.display = 'block';
+            overpayAlert.style.background = '#fee2e2';
+            overpayAlert.style.border = '1px solid #ef4444';
+            overpayAlert.style.color = '#991b1b';
+            overpayAlert.innerHTML = `❌ Переплата: <strong>${diff} ₽</strong> — сумма должна быть ровно <strong>${orderTotal} ₽</strong>`;
+            if (updatePaymentBtn) updatePaymentBtn.disabled = true;
         } else {
-            changeAmountElement.value = 'Недостаточно';
-            changeStatus.innerHTML = '<span class="text-danger">✘</span>';
+            overpayAlert.style.display = 'block';
+            overpayAlert.style.background = '#d1fae5';
+            overpayAlert.style.border = '1px solid #10b981';
+            overpayAlert.style.color = '#065f46';
+            overpayAlert.innerHTML = `✅ Оплата полностью покрыта`;
+            if (updatePaymentBtn) updatePaymentBtn.disabled = false;
+        }
+    } else {
+        // Для других типов оплаты — скрываем предупреждение
+        const overpayAlert = document.querySelector('.mixed-fields .overpay-alert');
+        if (overpayAlert) overpayAlert.style.display = 'none';
+        if (updatePaymentBtn) updatePaymentBtn.disabled = false;
+    }
+    
+    // Расчет сдачи только для наличных
+    if (paymentType === 'cash') {
+        const change = cashAmount - orderTotal;
+        if (changeAmountElement) {
+            if (change >= 0) {
+                changeAmountElement.value = change.toFixed(0);
+                if (changeStatus) changeStatus.innerHTML = '<span class="text-success">✔</span>';
+            } else {
+                changeAmountElement.value = 'Недостаточно';
+                if (changeStatus) changeStatus.innerHTML = '<span class="text-danger">✘</span>';
+            }
+        }
+        // Блокируем кнопку, если не хватает наличных
+        if (updatePaymentBtn) updatePaymentBtn.disabled = change < 0;
+    } else {
+        if (changeAmountElement) changeAmountElement.value = 'Не требуется';
+        if (changeStatus) changeStatus.innerHTML = '';
+    }
+}
+
+    // Валидация перед отправкой
+    function validatePayment() {
+    const paymentType = paymentTypeSelect.value;
+    const cashAmount = parseInt(cashReceivedInput.value) || 0;
+    const onlineAmount = parseInt(onlineReceivedInput.value) || 0;
+    const totalPaid = cashAmount + onlineAmount;
+
+    if (!paymentType) {
+        showCustomAlert('Необходимо выбрать способ оплаты', 'danger');
+        return false;
+    }
+
+    if (paymentType === 'cash' && cashAmount < orderTotal) {
+        showCustomAlert('Недостаточно наличных средств', 'danger');
+        return false;
+    }
+
+    if (paymentType === 'online' && onlineAmount < orderTotal) {
+        showCustomAlert('Недостаточно средств по переводу', 'danger');
+        return false;
+    }
+
+    if (paymentType === 'mixed') {
+        if (totalPaid !== orderTotal) {
+            const diff = totalPaid - orderTotal;
+            if (diff < 0) {
+                showCustomAlert(`Не хватает ${Math.abs(diff)} ₽. Сумма должна быть ровно ${orderTotal} ₽`, 'danger');
+            } else {
+                showCustomAlert(`Переплата ${diff} ₽. Сумма должна быть ровно ${orderTotal} ₽`, 'danger');
+            }
+            return false;
         }
     }
 
-    function toggleCashFields() {
-        if (!paymentTypeSelect) return;
-        if (paymentTypeSelect.value === 'cash') {
-            cashReceivedInput.disabled = false;
-            calculateChange();
-        } else {
-            cashReceivedInput.disabled = true;
-            cashReceivedInput.value = '';
-            changeAmountElement.value = 'Не требуется';
-            changeStatus.innerHTML = '';
-        }
-    }
-
+    return true;
+}
+    // Обработчики событий
     if (paymentTypeSelect) {
-        paymentTypeSelect.addEventListener('change', () => {
-            toggleCashFields();
-            calculateChange();
-        });
+        paymentTypeSelect.addEventListener('change', togglePaymentFields);
     }
 
     if (cashReceivedInput) {
-        cashReceivedInput.addEventListener('input', calculateChange);
+        cashReceivedInput.addEventListener('input', updatePaymentSummary);
+    }
+
+    if (onlineReceivedInput) {
+        onlineReceivedInput.addEventListener('input', updatePaymentSummary);
     }
 
     if (updatePaymentBtn) {
         updatePaymentBtn.addEventListener('click', function() {
-            if (!paymentTypeSelect) return;
+            if (!validatePayment()) return;
+
             const paymentType = paymentTypeSelect.value;
-            const cashReceived = parseInt(cashReceivedInput.value) || 0;
-
-            if (!paymentType) {
-                alert('Ошибка: Необходимо выбрать способ оплаты.');
-                return;
-            }
-
-            if (paymentType === 'cash' && cashReceived < orderTotal) {
-                alert('Ошибка: Недостаточно средств для завершения заказа.');
-                return;
-            }
+            const cashAmount = parseInt(cashReceivedInput.value) || 0;
+            const onlineAmount = parseInt(onlineReceivedInput.value) || 0;
 
             fetch(`/orders/order/${orderId}/update-payment/`, {
                 method: 'POST',
@@ -368,27 +497,29 @@ document.addEventListener('DOMContentLoaded', function() {
                 },
                 body: JSON.stringify({
                     payment_type: paymentType,
-                    cash_received: cashReceived,
+                    cash_received: cashAmount,
+                    online_received: onlineAmount,
                     total: orderTotal
                 })
             })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    alert('Оплата успешно добавлена!');
-                    location.reload();
+                    showCustomAlert('Оплата успешно добавлена!', 'success');
+                    setTimeout(() => location.reload(), 1000);
                 } else {
-                    alert('Ошибка: ' + (data.message || 'Неизвестная ошибка'));
+                    showCustomAlert('Ошибка: ' + (data.message || 'Неизвестная ошибка'), 'danger');
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('Произошла ошибка при обновлении информации об оплате');
+                showCustomAlert('Произошла ошибка при обновлении оплаты', 'danger');
             });
         });
     }
 
-    toggleCashFields();
+    // Инициализация
+    togglePaymentFields();
 });
 </script>
 {% endblock %}

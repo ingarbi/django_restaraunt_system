@@ -74,11 +74,13 @@
                       {% endif %}
 
                       {% if order.payment_type == "cash" %}
-                        <i class="bi bi-cash-coin fs-5 text-success" title="Наличные"></i>
+                          <i class="bi bi-cash-coin fs-5 text-success" title="Наличные"></i>
                       {% elif order.payment_type == "online" %}
-                        <i class="bi bi-broadcast fs-5 text-primary" title="Перевод"></i>
+                          <i class="bi bi-broadcast fs-5 text-primary" title="Перевод"></i>
                       {% elif order.payment_type == "free" %}
-                        <i class="bi bi-gift-fill fs-5 text-info" title="Бесплатно"></i>
+                          <i class="bi bi-gift-fill fs-5 text-info" title="Бесплатно"></i>
+                      {% elif order.payment_type == "mixed" %}
+                          <i class="bi bi-cash-stack fs-5 text-warning" title="Смешанная ({{ order.cash_amount|floatformat:0 }}₽ нал. + {{ order.online_amount|floatformat:0 }}₽ пер.)"></i>
                       {% endif %}
                     </div>
 
