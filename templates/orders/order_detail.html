@@ -87,13 +87,17 @@
         </table>
 
         <!-- Payment Update Section - Only show if order was created with "pay_later" -->
+                <!-- Payment Update Section - Only show if order was created with "pay_later" -->
         {% if not order.paid %}
-          <div class="payment-update-section mt-4 p-3 bg-light rounded">
-            <h5 class="mb-3">Добавить информацию об оплате</h5>
+          <div class="payment-update-section mt-4 p-3 rounded" style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border: 1.5px solid #f59e0b;">
+            <div class="d-flex align-items-center gap-2 mb-3">
+              <i class="bi bi-exclamation-triangle-fill text-warning fs-4"></i>
+              <h5 class="mb-0 text-dark">Требуется оплата перед выдачей заказа</h5>
+            </div>
 
             <div class="row g-3">
               <div class="col-md-4">
-                <label for="update_payment_type" class="form-label">Способ оплаты:</label>
+                <label for="update_payment_type" class="form-label fw-semibold">Способ оплаты:</label>
                 <select name="payment_type" id="update_payment_type" class="form-control" required>
                   <option value="" selected disabled>Выбрать</option>
                   <option value="cash">Наличными</option>
@@ -103,52 +107,74 @@
               </div>
 
               <div class="col-md-4">
-                <label for="update_cash_received" class="form-label">Получено от клиента:</label>
+                <label for="update_cash_received" class="form-label fw-semibold">Получено от клиента:</label>
                 <input type="number" id="update_cash_received" name="cash_received" placeholder="Введите сумму" min="0" step="1" class="form-control" />
               </div>
 
               <div class="col-md-4 d-flex align-items-end">
                 <div class="w-100">
-                  <label class="form-label">Сдача:</label>
+                  <label class="form-label fw-semibold">Сдача:</label>
                   <div class="input-group">
                     <input type="text" id="update_change_amount" class="form-control" readonly />
                     <span class="input-group-text" id="change-status"></span>
-                    <button class="btn btn-primary" id="update-payment-btn">Подтвердить оплату</button>
+                    <button class="btn btn-success fw-bold" id="update-payment-btn">
+                      <i class="bi bi-cash-coin"></i> Оплатить
+                    </button>
                   </div>
                 </div>
               </div>
             </div>
           </div>
+        {% else %}
+          <div class="mt-4 p-3 rounded" style="background: #d1fae5; border: 1.5px solid #10b981;">
+            <div class="d-flex align-items-center gap-2">
+              <i class="bi bi-check-circle-fill text-success fs-4"></i>
+              <p class="mb-0 text-success fw-semibold">Заказ оплачен</p>
+            </div>
+          </div>
         {% endif %}
 
-        <div class="d-flex justify-content-between mt-4">
+                <div class="d-flex justify-content-between mt-4">
           <a href="{% url 'all_orders' %}" class="btn btn-secondary">← Вернуться к списку заказов</a>
 
-         
-            <a href="{% url 'quick_receipt_printing' order.id %}" class="btn btn-primary" target="_blank"><i class="bi bi-file-earmark-pdf"></i> Печать чека</a>
-       
+          <div class="d-flex gap-2">
+            <a href="{% url 'quick_receipt_printing' order.id %}" class="btn btn-primary" target="_blank">
+              <i class="bi bi-file-earmark-pdf"></i> Печать чека
+            </a>
 
-         {% if order.status == 'done' %}
-          <button class="btn btn-success" onclick="markAsDelivered({{ order.id }})">
-            Заказ выполнен
-          </button>
+            {% if order.status == 'done' %}
+              {% if order.paid %}
+                <button class="btn btn-success" onclick="markAsDelivered({{ order.id }})">
+                  <i class="bi bi-check-circle"></i> Заказ выполнен
+                </button>
+              {% else %}
+                <button class="btn btn-success" onclick="showPaymentRequiredAlert()" title="Сначала подтвердите оплату">
+                  <i class="bi bi-check-circle"></i> Заказ выполнен
+                  <span class="badge bg-warning text-dark ms-1">!не оплачен</span>
+                </button>
+              {% endif %}
 
-        {% elif order.status == 'pending' and request.user.profile.role == 'supervisor' %}
-          <button class="btn btn-success" onclick="markAsDelivered({{ order.id }})">
-            Заказ выполнен
-            {% if not order.paid %}
-              <span class="badge bg-danger">!неоплачен</span>
+            {% elif order.status == 'pending' and request.user.profile.role == 'supervisor' %}
+              {% if order.paid %}
+                <button class="btn btn-success" onclick="markAsDelivered({{ order.id }})">
+                  <i class="bi bi-check-circle"></i> Заказ выполнен
+                </button>
+              {% else %}
+                <button class="btn btn-warning" onclick="document.querySelector('#update_payment_type').scrollIntoView({behavior: 'smooth', block: 'center'})">
+                  <i class="bi bi-cash-coin"></i> Сначала оплатите
+                </button>
+              {% endif %}
             {% endif %}
-          </button>
-        {% endif %}
-
-          
+          </div>
         </div>
+
+
       </div>
     </div>
   </div>
   <script>
 function markAsDelivered(orderId) {
+  // Сначала проверим, оплачен ли заказ (на случай если кнопка активна)
   fetch(`/orders/delivere/${orderId}/`, {
     method: 'POST',
     headers: {
@@ -160,16 +186,107 @@ function markAsDelivered(orderId) {
     .then(response => response.json())
     .then(data => {
       if (data.success) {
-         alert('Заказ выполнен');
-        window.location.reload();
+        // Красивое уведомление вместо alert
+        showCustomAlert('Заказ успешно выдан!', 'success');
+        setTimeout(() => window.location.reload(), 1000);
       } else {
-        alert('Ошибка: ' + (data.message || 'Неизвестная ошибка'));
+        // Показываем понятное сообщение
+        showCustomAlert(data.message || 'Невозможно выдать заказ', 'danger');
+        
+        // Прокручиваем к форме оплаты
+        setTimeout(() => {
+          const paymentSection = document.querySelector('.payment-update-section');
+          if (paymentSection) {
+            paymentSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            paymentSection.style.boxShadow = '0 0 0 3px rgba(220, 53, 69, 0.3)';
+            setTimeout(() => {
+              paymentSection.style.boxShadow = '';
+            }, 2000);
+          }
+        }, 500);
       }
     })
     .catch(error => {
       console.error('Error:', error);
-      alert('Произошла ошибка при обновлении статуса');
+      showCustomAlert('Произошла ошибка при обновлении статуса', 'danger');
     });
+}
+
+// Функция для показа уведомления об обязательной оплате
+function showPaymentRequiredAlert() {
+  showCustomAlert('⚠️ Нельзя выдать неоплаченный заказ. Сначала подтвердите оплату ниже.', 'warning');
+  
+  // Прокручиваем к форме оплаты
+  setTimeout(() => {
+    const paymentSection = document.querySelector('.payment-update-section');
+    if (paymentSection) {
+      paymentSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      paymentSection.style.boxShadow = '0 0 0 3px rgba(255, 193, 7, 0.4)';
+      setTimeout(() => {
+        paymentSection.style.boxShadow = '';
+      }, 3000);
+    }
+  }, 500);
+}
+
+// Красивое кастомное уведомление вместо alert()
+function showCustomAlert(message, type = 'info') {
+  // Удаляем предыдущее уведомление если есть
+  const existing = document.getElementById('custom-alert');
+  if (existing) existing.remove();
+  
+  const colors = {
+    success: { bg: '#d1fae5', text: '#065f46', border: '#10b981', icon: '✓' },
+    danger:  { bg: '#fee2e2', text: '#991b1b', border: '#ef4444', icon: '✕' },
+    warning: { bg: '#fef3c7', text: '#92400e', border: '#f59e0b', icon: '⚠' },
+    info:    { bg: '#dbeafe', text: '#1e40af', border: '#3b82f6', icon: 'ℹ' }
+  };
+  
+  const color = colors[type] || colors.info;
+  
+  const alertDiv = document.createElement('div');
+  alertDiv.id = 'custom-alert';
+  alertDiv.style.cssText = `
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    background: ${color.bg};
+    color: ${color.text};
+    padding: 16px 24px;
+    border-left: 4px solid ${color.border};
+    border-radius: 8px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    font-weight: 500;
+    max-width: 400px;
+    animation: slideInRight 0.3s ease-out;
+  `;
+  alertDiv.innerHTML = `<strong>${color.icon}</strong> ${message}`;
+  
+  // Добавляем стили анимации если их ещё нет
+  if (!document.getElementById('custom-alert-styles')) {
+    const style = document.createElement('style');
+    style.id = 'custom-alert-styles';
+    style.textContent = `
+      @keyframes slideInRight {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+      }
+      @keyframes slideOutRight {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(100%); opacity: 0; }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+  
+  document.body.appendChild(alertDiv);
+  
+  // Автоматически скрываем через 5 секунд
+  setTimeout(() => {
+    alertDiv.style.animation = 'slideOutRight 0.3s ease-out';
+    setTimeout(() => alertDiv.remove(), 300);
+  }, 5000);
 }
 
 document.addEventListener('DOMContentLoaded', function() {

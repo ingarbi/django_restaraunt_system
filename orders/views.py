@@ -147,6 +147,21 @@ def mark_order_completed(request, order_id):
 
 def mark_order_delivered(request, order_id):
     order = Order.objects.get(id=order_id)
+
+    # ПРОВЕРКА: нельзя выдать неоплаченный заказ
+    if not order.paid:
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            return JsonResponse({
+                "success": False, 
+                "message": "Нельзя выдать заказ, пока он не оплачен. Сначала подтвердите оплату."
+            })
+        else:
+            from django.contrib import messages
+            messages.error(request, "Нельзя выдать заказ, пока он не оплачен.")
+            return redirect("order_detail", order_id=order.id)
+
+
+
     order.status = "delivered"
     order.completed_at = timezone.now()
     order.save()

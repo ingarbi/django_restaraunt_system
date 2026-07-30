@@ -172,23 +172,28 @@
                         </ul>
                     </div>
                     <div class="d-flex flex-row text-center justify-content-evenly mb-1">
-                        ${
-                          order.status === "done"
-                            ? `
-                            <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#cancelModal${order.id}">
-                                Отменить заказ
-                            </button>
-                            <button type="button" class="btn btn-info btn-sm fw-bold text-light" data-bs-toggle="modal" data-bs-target="#deliverModal${order.id}">
-                                Вручить заказ
-                            </button>
-                        `
-                            : `
-                            <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#cancelModal${order.id}">
-                                Отменить заказ
-                            </button>
-                        `
-                        }
-                    </div>
+                          ${
+                            order.status === "done"
+                              ? `
+                              <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#cancelModal${order.id}">
+                                  Отменить заказ
+                              </button>
+                              ${order.paid 
+                                ? `<button type="button" class="btn btn-info btn-sm fw-bold text-light" data-bs-toggle="modal" data-bs-target="#deliverModal${order.id}">
+                                      Вручить заказ
+                                  </button>`
+                                : `<button type="button" class="btn btn-warning btn-sm fw-bold text-dark" onclick="alert('Сначала оплатите заказ в деталях!'); window.location='/orders/${order.id}/';">
+                                      ⚠ Оплатить и вручить
+                                  </button>`
+                              }
+                          `
+                              : `
+                              <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#cancelModal${order.id}">
+                                  Отменить заказ
+                              </button>
+                          `
+                          }
+                      </div>
                 </div>
             `;
       ordersContainer.prepend(card); // Add the new card at the top of the container
