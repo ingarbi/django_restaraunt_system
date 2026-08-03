@@ -115,3 +115,11 @@ SIMPLEUI_HOME_INFO = False  # Скрыть блок "Быстрые ссылки
 SIMPLEUI_DEFAULT_THEME = "admin.lte.css"  # Выбор темы
 SIMPLEUI_ANALYSIS = False
 SIMPLEUI_INDEX = "/"
+
+# Для HTTPS (CloudPub использует HTTPS)
+CSRF_TRUSTED_ORIGINS = [
+    'https://*.cloudpub.ru',
+]# Прокси-заголовки
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_X_FORWARDED_HOST = True
+USE_X_FORWARDED_PORT = True
